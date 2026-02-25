@@ -1,12 +1,10 @@
 // src/store/useStore.js
 import { create } from 'zustand'
+import { alphabetid } from '../utils/string'
 import LocalRepoService from '../service/LocalRepoService'
 import ApplicationService from '../service/ApplicationService'
-import BackUpService from '../service/BackUpService'
 
-const appService = new ApplicationService()
-const backUpService = new BackUpService(appService)
-const localRepoService = new LocalRepoService(appService, backUpService)
+const localRepoService = new LocalRepoService()
 
 const useStore = create((set, get) => ({
   // 初始化状态
@@ -15,26 +13,32 @@ const useStore = create((set, get) => ({
   currentAppName: '',
   currentAppFilesTree: [],
 
-  persistanceCurrentApp: async () => {
-    await localRepoService.persistanceCurrentApp()
-  },
-
   openApp: async id => {
     const appInfo = await localRepoService.getApp(id)
 
     if (appInfo) {
-      await appService.importAppArchive(appInfo.blob)
-      appService.setCurrentAppInfo(id, appInfo.name)
+      const appService = localRepoService.getAppService(id)
+      localRepoService.setCurrentApp(id, appService)
       await appService.updateAppFileTree()
       set({
         currentAppName: appInfo.name,
-        currentAppFilesTree: appService.fileTree
+        currentAppFilesTree: appService.getAppFileTree()
       })
     }
   },
 
   removeApp: async id => {
     await localRepoService.removeApp(id)
+    const appList = await localRepoService.getLocalAppList()
+    set({
+      appList
+    })
+  },
+
+  setCurrentAppName: name => {
+    set({
+      currentAppName: name
+    })
   },
 
   initAppStore: async () => {
@@ -43,22 +47,29 @@ const useStore = create((set, get) => ({
       loadingAppFiles: true,
       appList
     })
-    if (appList.length === 0) {
-      // 创建一个默认应用
-      await backUpService.importHelloArchive()
-      await localRepoService.persistanceCurrentApp()
+    let appService = null
+    if (appList.length === 0) { // 无应用默认创建
+      const newAppId = alphabetid(6)
+      const newAppName = '未命名应用'
+      appService = new ApplicationService(alphabetid(6))
+      appService.importHelloArchive()
+      await localRepoService.persistanceApp(newAppId, newAppName)
+      localRepoService.setCurrentApp(newAppId, appService)
     }
-    const currentAppId = await appService.getCurrentAppId()
+    const currentAppId = await localRepoService.getCurrentAppId()
+
     if (currentAppId) {
       const appInfo = await localRepoService.getApp(currentAppId)
       set({
-        currentAppName: appInfo.name,
-        currentAppFilesTree: await appService.getAppFileTree(),
-        loadingAppFiles: false
+        currentAppName: appInfo.name
       })
-    } else {
-      // 没有应用打开
+      appService = localRepoService.getAppService(currentAppId)
     }
+
+    await appService.updateAppFileTree()
+    set({
+      currentAppFilesTree: appService.getAppFileTree()
+    })
   },
 
   updateAppList: async () => {
@@ -87,5 +98,5 @@ const useStore = create((set, get) => ({
   }
 }))
 
-export { localRepoService, appService }
+export { localRepoService }
 export default useStore

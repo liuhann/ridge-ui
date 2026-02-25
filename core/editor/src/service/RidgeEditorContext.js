@@ -13,7 +13,7 @@ import { ensureLeading } from '../utils/string.js'
 import DistributionService from './DistributionService.js'
 // import PreviewComposite from '../workspace/PreviewComposite.js'
 
-import { appService } from '../store/app.store.js'
+// import { appService } from '../store/app.store.js'
 
 const debug = Debug('ridge:editor')
 
@@ -36,7 +36,7 @@ class RidgeEditorContext extends RidgeContext {
     this.theme = localStorage.getItem('ridge-theme') || '@douyinfe/semi-ui/dist/css/semi.min.css'
     this.isLight = localStorage.getItem('ridge-is-light') || true
 
-    this.services.appService = appService
+    // this.services.appService = appService
     this.services.distributeService = new DistributionService(this)
     this.services.npmService = new NpmService()
     window.ridge = this

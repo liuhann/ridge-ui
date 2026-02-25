@@ -1,41 +1,48 @@
+import ApplicationService from './ApplicationService.js'
 import NeCollection from './NeCollection.js'
-import Localforge from 'localforage'
 
 export default class LocalRepoService {
-  constructor (appService, backupService) {
+  constructor () {
     this.collection = new NeCollection('ridge.repo.db')
-    this.store = Localforge.createInstance({ name: 'ridge-repo' })
-    this.appService = appService
-    this.backupService = backupService
-    this.collection.clean()
+    this.appServices = {}
   }
 
   // 持久化保存当前App
-  async persistanceCurrentApp () {
-    const { appService, backupService } = this
-    const existed = await this.collection.findOne({ id: appService.currentAppId })
+  async persistanceApp (id, name) {
+    const existed = await this.collection.findOne({ id })
 
     if (!existed) {
       await this.collection.insert({
-        id: appService.currentAppId,
-        name: appService.currentAppName
+        id,
+        name
       })
     } else {
       await this.collection.update({
-        id: appService.currentAppId
+        id
       }, {
-        name: appService.currentAppName
+        name
       })
     }
-    const zipBlob = await backupService.getAppBlob()
-    await this.store.setItem(appService.currentAppId, zipBlob)
+  }
+
+  async setCurrentApp (id, appService) {
+    window.localStorage.setItem('ridge-current-app-id', id)
+    this.appServices[id] = appService
+  }
+
+  async getCurrentAppId () {
+    return window.localStorage.getItem('ridge-current-app-id')
+  }
+
+  getAppService (id) {
+    if (!this.appServices[id]) {
+      this.appServices[id] = new ApplicationService(id)
+    }
+    return this.appServices[id]
   }
 
   async removeApp (id) {
     if (id == null) return
-    if (this.appService.getCurrentAppId() === id) {
-      await this.appService.clear()
-    }
     await this.collection.remove({
       id
     })
@@ -55,10 +62,9 @@ export default class LocalRepoService {
   async getApp (id) {
     const existed = await this.collection.findOne({ id })
     if (existed) {
-      return {
-        ...existed,
-        blob: await this.store.getItem(id)
-      }
+      return existed
+    } else {
+      return null
     }
   }
 

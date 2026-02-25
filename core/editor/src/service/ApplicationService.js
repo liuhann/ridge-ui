@@ -3,14 +3,14 @@ import debug from 'debug'
 import once from 'lodash/once.js'
 // import LowCollection from './LowCollection.js'
 import Localforge from 'localforage'
-import { blobToDataUrl, dataURLtoBlob, dataURLToString, stringToBlob, stringToDataUrl, saveAs } from '../utils/blob.js'
+import { blobToDataUrl, dataURLtoBlob, dataURLToString, stringToDataUrl, saveAs } from '../utils/blob.js'
 import { getFileTree, eachNode, filterTree, mapTree } from '../panels/files/buildFileTree.js'
 import { APP_PACKAGE_JSON, PAGE_JSON_TEMPLATE } from '../utils/template.js'
 import axios from 'axios'
 import { basename, dirname, extname, formateDate, nanoid } from '../utils/string.js'
 import { getByMimeType } from '../utils/mimeTypes.js'
 import helloZipApp from '../ridge-app-hello-1.0.0.zip'
-import JSZip, { version } from 'jszip'
+import JSZip from 'jszip'
 
 const trace = debug('ridge:app-service')
 
@@ -18,24 +18,11 @@ const trace = debug('ridge:app-service')
  * 应用管理服务，用于创建、修改、查询应用下资源（包括页面、图片、音视频、组件包等）
  */
 export default class ApplicationService {
-  constructor () {
-    this.collection = new NeCollection('ridge.app.db')
-    this.store = Localforge.createInstance({ name: 'ridge-store' })
+  constructor (appId) {
+    this.collection = new NeCollection('ridge.app.' + appId)
+    this.store = Localforge.createInstance({ name: 'ridge-store-' + appId })
     this.dataUrls = {}
     this.fileTree = null
-  }
-
-  async getCurrentAppId () {
-    return await this.store.getItem('current-app-id')
-  }
-
-  setCurrentAppId (id) {
-    this.currentAppId = id
-    if (id) {
-      this.store.setItem('current-app-id', id)
-    } else {
-      this.store.removeItem('current-app-id')
-    }
   }
 
   getFileTree () {
@@ -59,10 +46,7 @@ export default class ApplicationService {
     }
   }
 
-  async getAppFileTree () {
-    if (!this.fileTree) {
-      await this.updateAppFileTree()
-    }
+  getAppFileTree () {
     return this.fileTree
   }
 
@@ -571,13 +555,12 @@ export default class ApplicationService {
         await this.ensureDir(filePath)
       }
     }
-    this.setCurrentAppId(nanoid(16))
   }
 
   /**
    * 导入单个文件(zipEntry)到当前应用
-   * @param {*} filePath 
-   * @param {*} zipObject 
+   * @param {*} filePath
+   * @param {*} zipObject
    */
   async importZipEntryFile (filePath, zipObject) {
     const dirNode = await this.ensureDir(dirname(filePath))

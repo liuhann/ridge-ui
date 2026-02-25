@@ -11,7 +11,7 @@ import { ReactComposite } from 'ridgejs'
 
 import './editor.less'
 import PreviewMenuBar from './panels/menu/PreviewMenuBar.jsx'
-import LayoutLeft from './LayoutLeft.jsx'
+import AppFileList from './panels/files/AppFileList.jsx'
 
 // 公用错误提示方法
 globalThis.msgerror = msg => {
@@ -154,7 +154,6 @@ class Editor extends React.Component {
     } = this
 
     const {
-      isLight,
       isPreview,
       collapseLeft,
       pageOpened,
@@ -170,12 +169,13 @@ class Editor extends React.Component {
             display: isPreview ? 'none' : ''
           }}
         >
-          <LayoutLeft
-            risizeWidth={leftReisizeWidth}
-            isLight={isLight} toggleLight={lt => {
-              this.setIsLight(lt)
+          <div
+            style={{
+              width: leftReisizeWidth + 'px'
             }}
-          />
+          >
+            <AppFileList />
+          </div>
           {!collapseLeft &&
             <div
               className='left-resizer' onMouseDown={e => {

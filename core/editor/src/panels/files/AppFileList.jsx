@@ -28,7 +28,6 @@ const { Text, Paragraph } = Typography
 const ACCEPT_FILES = '.svg,.png,.jpg,.json,.css,.js,.md,.webp,.zip,.gif'
 
 const AppFileList = () => {
-  const ref = useRef()
   const [state, setState] = useState({
     dialgeCreateFileType: '',
     dialogCreateShow: false,
@@ -42,14 +41,12 @@ const AppFileList = () => {
   })
   const currentAppName = appStore((state) => state.currentAppName)
 
-  const [showRootList, setShowRootList] = useState(false)
-
   const [currentSelected, setCurrentSelected] = useState(null)
   const [currentSelectedTime, setCurrentSelectedTime] = useState(0)
   const [currentRename, setCurrentRename] = useState(null)
 
   const currentAppFilesTree = appStore((state) => state.currentAppFilesTree)
-  const persistanceCurrentApp = appStore((state) => state.persistanceCurrentApp)
+  const setCurrentAppName = appStore((state) => state.setCurrentAppName)
   const initAppStore = appStore((state) => state.initAppStore)
   const createFolder = appStore((state) => state.createFolder)
   const fileRename = appStore((state) => state.fileRename)
@@ -60,9 +57,6 @@ const AppFileList = () => {
   // 挂载时初始化
   useEffect(() => {
     initAppStore()
-    if (!currentAppName) {
-      setShowRootList(true)
-    }
   }, [])
 
   // 原有类方法 -> 函数式内部函数
@@ -548,8 +542,7 @@ const AppFileList = () => {
   }
 
   const onRootListClick = () => {
-    setShowRootList(true)
-    persistanceCurrentApp()
+    setCurrentAppName('')
   }
 
   const onNodeSelect = async node => {
@@ -578,10 +571,10 @@ const AppFileList = () => {
           }}
         >
           <Breadcrumb.Item onClick={onRootListClick} icon={<ProiconsHome />}>全部应用</Breadcrumb.Item>
-          <Breadcrumb.Item>{currentAppName}</Breadcrumb.Item>
+          {currentAppName && <Breadcrumb.Item>{currentAppName}</Breadcrumb.Item>}
         </Breadcrumb>
-        {RenderCreateDropDown()}
-        {RenderShareDropDown()}
+        {currentAppName && RenderCreateDropDown()}
+        {currentAppName && RenderShareDropDown()}
       </div>
       <DialogCreate
         show={dialogCreateShow}
@@ -593,7 +586,7 @@ const AppFileList = () => {
           setState(prev => ({ ...prev, dialogCreateShow: false }))
         }}
       />
-      {!showRootList &&
+      {currentAppName &&
         <Tree
           className='file-tree'
           showFilteredOnly
@@ -625,9 +618,7 @@ const AppFileList = () => {
             // setState(prev => ({ ...prev, selectedNodeKey: key }))
           }}
         />}
-      {!showRootList && <div className='tree-loading'><Spin size='middle' /></div>}
-
-      {showRootList && <AppListPanel></AppListPanel>}
+      {!currentAppName && <AppListPanel />}
       {RenderAppImportDialog()}
     </>
   )

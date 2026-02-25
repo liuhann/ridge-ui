@@ -3,6 +3,7 @@ import camelCase from 'lodash/camelCase'
 import trim from 'lodash/trim'
 import dayjs from 'dayjs'
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 10)
+const alphabetid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10)
 
 const formateDate = (mill, format) => {
   const m = mill || new Date().getTime()
@@ -37,5 +38,6 @@ export {
   camelCase,
   trim,
   formateDate,
-  nanoid
+  nanoid,
+  alphabetid
 }

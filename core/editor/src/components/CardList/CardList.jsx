@@ -1,39 +1,32 @@
 import React, { useState } from 'react'
-import { List, Card } from '@douyinfe/semi-ui'
 import './style.less'
-const { Meta } = Card
 // 文件列表组件
 const CardList = ({
   onItemClick,
   list = []
 }) => {
+  const [currentKey, setCurrentKey] = useState(list[0].key)
   return (
-    <List
-      className='semi-card-list'
-      grid={{
-        gutter: [4, 4],
-        span: 8
-      }}
-      dataSource={list}
-      renderItem={file => {
+    <div className='card-list-t'>
+      {list && list.map((item, index) => {
         return (
-          <List.Item key={file.name}>
-            <Card
-              headerLine={false} cover={
-                <img
-                  alt='example'
-                  src={file.cover}
-                />
-            }
-            >
-              <Meta
-                description='全面、易用、优质'
-              />
-            </Card>
-          </List.Item>
+          <div
+            onClick={() => {
+              setCurrentKey(item.key)
+              onItemClick(item.key)
+            }}
+            className={'card' + (currentKey === item.key ? ' selected' : '')} key={index}
+          >
+            <div className='top'>
+              {item.cover}
+            </div>
+            <div className='bottom'>
+              {item.label}
+            </div>
+          </div>
         )
-      }}
-    />
+      })}
+    </div>
   )
 }
 

@@ -20,11 +20,13 @@ const AppListPanel = () => {
           }}
         >新增应用
         </Button>
-        <Button theme='outline' type='tertiary'>导入应用</Button>
       </div>
       <CreateAppDialog
         visible={createDialogVisible} onConfirm={name => {
 
+        }}
+        onCancel={() => {
+          setCreateDialogVisible(false)
         }}
       />
       <FileList
