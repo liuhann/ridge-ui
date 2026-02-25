@@ -4,12 +4,14 @@ import { Button, Modal } from '@douyinfe/semi-ui'
 import { FileList } from '../../components/FileList/FileList.jsx'
 import CreateAppDialog from './CreateAppDialog.jsx'
 import appStore from '../../store/app.store.js'
+import selectZipFile from '../../utils/selectFileUpload.js'
 
 const AppListPanel = () => {
   const [createDialogVisible, setCreateDialogVisible] = useState(false)
   const appList = appStore((state) => state.appList)
   const openApp = appStore((state) => state.openApp)
   const removeApp = appStore((state) => state.removeApp)
+  const importAppFile = appStore((state) => state.importAppFile)
 
   return (
     <div className='app-list-panel'>
@@ -23,7 +25,12 @@ const AppListPanel = () => {
       </div>
       <CreateAppDialog
         visible={createDialogVisible} onConfirm={name => {
-
+          setCreateDialogVisible(false)
+          if (name === 'import') {
+            selectZipFile(async file => {
+              await importAppFile(file)
+            })
+          }
         }}
         onCancel={() => {
           setCreateDialogVisible(false)

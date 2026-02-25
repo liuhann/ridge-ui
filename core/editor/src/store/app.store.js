@@ -35,6 +35,20 @@ const useStore = create((set, get) => ({
     })
   },
 
+  importAppFile: async file => {
+    const newAppId = alphabetid(6)
+    const appService = new ApplicationService(newAppId)
+    await appService.importAppArchive(file)
+
+    await localRepoService.persistanceApp(newAppId, (await appService.getAppPackageJSON()).description)
+
+    const appList = await localRepoService.getLocalAppList()
+    set({
+      loadingAppFiles: true,
+      appList
+    })
+  },
+
   setCurrentAppName: name => {
     set({
       currentAppName: name

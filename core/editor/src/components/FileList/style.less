@@ -1,12 +1,24 @@
-.semi-file-list {
-    .semi-col {
+.app-file-list {
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 6px;
+    .file {
+        position: relative;
+        flex: auto;
+        border: 1px solid var(--semi-color-border);
+        border-radius: 4px;
+        min-width: 100px; /* 强制最小宽度 */
+        max-width: calc((100% - 24px) / 3); /* 3个均分（扣除2个gap） */
+
         &:hover {
-            background-color: var(--semi-color-secondary-light-default);
+            background-color:var( --semi-color-fill-0);
             cursor: pointer;
             .more-button {
                 display: inline;
             }
         }
+
         .semi-list-item {
             padding: 16px 0 8px 0;   
         }
@@ -14,11 +26,19 @@
             font-size: 24px;
         }
         .semi-space {
+            padding: 4px;
             width: 100%;
         }
-
         .more-button {
             display: none;
+        }
+    }
+
+    .content-box {
+        i.bi {
+            margin-top: 10px;
+            font-size: 30px;
+            color: var(--semi-color-text-1);
         }
     }
 }

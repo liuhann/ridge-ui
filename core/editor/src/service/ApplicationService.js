@@ -19,6 +19,7 @@ const trace = debug('ridge:app-service')
  */
 export default class ApplicationService {
   constructor (appId) {
+    this.appId = appId
     this.collection = new NeCollection('ridge.app.' + appId)
     this.store = Localforge.createInstance({ name: 'ridge-store-' + appId })
     this.dataUrls = {}
@@ -538,7 +539,7 @@ export default class ApplicationService {
       return false
     }
 
-    await this.coll.clean()
+    await this.collection.clean()
     await this.store.clear()
     const fileMap = []
     zip.forEach(async (filePath, zipObject) => {
@@ -554,6 +555,38 @@ export default class ApplicationService {
       } else {
         await this.ensureDir(filePath)
       }
+    }
+
+    await this.updateAppFileTree()
+    this.appPackageJSONObject = await this.getAppPackageJSON()
+
+    if (!this.appPackageJSONObject) {
+      await this.updateAppPackageJSON({
+        name: 'ridge-' + this.appId,
+        version: '1.0.0',
+        description: '未命名应用'
+      })
+    }
+    this.appPackageJSONObject = await this.getAppPackageJSON()
+  }
+
+  async getAppPackageJSON () {
+    const jsonContent = await this.getFileContentByPath('/package.json')
+    if (jsonContent) {
+      try {
+        return JSON.parse(jsonContent)
+      } catch (e) {
+      }
+    }
+    return null
+  }
+
+  async updateAppPackageJSON (packageJSONObject) {
+    const file = await this.getFileByPath('/package.json')
+    if (!file) {
+      await this.createFile(-1, 'package.json', new File([JSON.stringify(packageJSONObject, null, 2), 'package.json']), 'text/json')
+    } else {
+      await this.updateFileContent(file.id, JSON.stringify(packageJSONObject, null, 2))
     }
   }
 
