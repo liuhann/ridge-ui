@@ -4,6 +4,7 @@ import { isAncestor } from '../utils/isAncestor.js'
 import Mousetrap from 'mousetrap'
 // import html2canvas from 'html2canvas'
 
+import EditorComposite from './EditorComposite.js'
 import debug from 'debug'
 import { fitRectIntoBounds } from '../utils/rectUtils'
 
@@ -20,10 +21,12 @@ export default class WorkSpaceControl {
   init ({
     workspaceEl,
     viewPortEl,
+    editorStore,
     context
   }) {
     this.workspaceEl = workspaceEl
     this.viewPortEl = viewPortEl
+    this.editorStore = editorStore
     this.context = context
     this.zoom = 1
     this.selectorDropableTarget = ['.ridge-container', '.ridge-droppable']
@@ -712,7 +715,7 @@ export default class WorkSpaceControl {
    * @param {*} disableClickThrough 选择后是否可以直接选择当前节点的下级节点, 从面板发起的选择一般不允许向下选择
    */
   selectElements (elements, disableClickThrough) {
-    const { context } = this
+    const { editorStore } = this
     this.disableClickThrough = disableClickThrough
 
     // 去除之前选中状态
@@ -739,11 +742,15 @@ export default class WorkSpaceControl {
         el.style.width = el.offsetWidth + 'px'
         el.ridgeNode.config.style.width = el.offsetWidth
       }
-      context.onElementSelected(this.selected[0].ridgeNode)
+
+      editorStore.getState().selectElement(this.selected[0].ridgeNode)
+      // context.onElementSelected(this.selected[0].ridgeNode)
     } else if (elements.length === 1 && elements[0].ridgeNode) {
-      context.onElementSelected(elements[0].ridgeNode)
+      editorStore.getState().selectElement(elements[0].ridgeNode)
+      // context.onElementSelected(elements[0].ridgeNode)
     } else if (this.selected.length === 0) {
-      context.onPageSelected()
+      editorStore.getState().selectPage()
+      // context.onPageSelected()
       this.selected = []
       this.moveable.target = null
     }
@@ -1035,5 +1042,21 @@ export default class WorkSpaceControl {
       context.services?.menuBar?.setZoom(targetZoom)
       this.setZoom(targetZoom)
     }
+  }
+
+  async loadPage (pageContent) {
+    const editorComposite = new EditorComposite({
+      config: pageContent,
+      context: this.context
+    })
+    editorComposite.firstPaint(this.viewPortEl)
+    await editorComposite.mount()
+
+    if (!this.enabled) {
+      this.enable()
+    }
+    this.selectElements([])
+    this.currentComposite = editorComposite
+    return editorComposite
   }
 }

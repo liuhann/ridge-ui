@@ -264,7 +264,7 @@ const AppFileList = () => {
   const onOpenClicked = (node) => {
     if (currentRename && currentRename.key === node.key) return
     if (node.type !== 'directory') {
-      context.openFile(node.key)
+      openFile(node.key)
     }
   }
 

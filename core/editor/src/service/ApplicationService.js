@@ -571,10 +571,14 @@ export default class ApplicationService {
   }
 
   async getAppPackageJSON () {
+    if (this.appPackageJSONObject) {
+      return this.appPackageJSONObject
+    }
     const jsonContent = await this.getFileContentByPath('/package.json')
     if (jsonContent) {
       try {
-        return JSON.parse(jsonContent)
+        this.appPackageJSONObject = JSON.parse(jsonContent)
+        return this.appPackageJSONObject
       } catch (e) {
       }
     }
@@ -588,6 +592,7 @@ export default class ApplicationService {
     } else {
       await this.updateFileContent(file.id, JSON.stringify(packageJSONObject, null, 2))
     }
+    this.appPackageJSONObject = packageJSONObject
   }
 
   /**

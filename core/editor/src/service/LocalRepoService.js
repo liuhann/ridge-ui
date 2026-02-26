@@ -6,6 +6,7 @@ export default class LocalRepoService {
     this.collection = new NeCollection('ridge.repo.db')
     this.currentAppId = null
     this.appServices = {}
+    this.currentAppId = window.localStorage.getItem('ridge-current-app-id')
   }
 
   // 持久化保存当前App
@@ -28,11 +29,19 @@ export default class LocalRepoService {
 
   async setCurrentApp (id, appService) {
     window.localStorage.setItem('ridge-current-app-id', id)
+    this.currentAppId = id
     this.appServices[id] = appService
   }
 
   async getCurrentAppId () {
-    return window.localStorage.getItem('ridge-current-app-id')
+    return this.currentAppId
+  }
+
+  getCurrentAppService () {
+    if (this.currentAppId) {
+      return this.getAppService(this.currentAppId)
+    }
+    return null
   }
 
   getAppService (id) {
@@ -47,6 +56,7 @@ export default class LocalRepoService {
     await this.collection.remove({
       id
     })
+    delete this.appServices[id]
   }
 
   async renameApp (id, newName) {

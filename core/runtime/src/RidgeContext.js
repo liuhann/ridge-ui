@@ -10,7 +10,7 @@ window.createDebug = createDebug
 
 // createDebug.enable('ridge:context')
 
-const VERSION = '1.4.0'
+const VERSION = '1.5.0'
 
 /**
  * The Ridge Platform Runtime

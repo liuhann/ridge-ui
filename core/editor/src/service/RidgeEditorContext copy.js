@@ -2,12 +2,15 @@
 /* global localStorage */
 import Debug from 'debug'
 import RidgeContext, { Element, Composite } from 'ridgejs'
+import ApplicationService from './ApplicationService.js'
+import NpmService from './NpmService.js'
 import WorkSpaceControl from '../workspace/WorkspaceControl.js'
 import { cloneDeep, isEqual } from 'lodash'
 
 import { getNodeListConfig } from '../workspace/editorUtils.js'
 import EditorComposite from '../workspace/EditorComposite.js'
 import { ensureLeading } from '../utils/string.js'
+import DistributionService from './DistributionService.js'
 // import PreviewComposite from '../workspace/PreviewComposite.js'
 
 // import { appService } from '../store/app.store.js'
@@ -25,29 +28,30 @@ const baseUrl = NPM_CDN_SERVER
  * connect each part and manage state for editor
  **/
 class RidgeEditorContext extends RidgeContext {
-  constructor () {
-    super({ baseUrl: '/npm', loadPropControl: true })
-    window.ridge = this
+  constructor ({ baseUrl, loadPropControl }) {
+    super({ baseUrl, loadPropControl })
+    this.baseUrl = '/npm'
     // Register For Panel
 
-    // this.theme = localStorage.getItem('ridge-theme') || '@douyinfe/semi-ui/dist/css/semi.min.css'
-    // this.isLight = localStorage.getItem('ridge-is-light') || true
+    this.theme = localStorage.getItem('ridge-theme') || '@douyinfe/semi-ui/dist/css/semi.min.css'
+    this.isLight = localStorage.getItem('ridge-is-light') || true
 
     // this.services.appService = appService
-    // this.services.distributeService = new DistributionService(this)
-    // this.services.npmService = new NpmService()
+    this.services.distributeService = new DistributionService(this)
+    this.services.npmService = new NpmService()
+    window.ridge = this
 
     // 存放配置性数据例如类样式列表等，供配置过程使用
-    // this.pluginData = []
+    this.pluginData = []
 
-    // this.setTheme(this.theme)
+    this.setTheme(this.theme)
 
     // 保存工作区间打开过的页面列表
-    // this.openedFileContentMap = new Map()
+    this.openedFileContentMap = new Map()
 
     // 页面位置map
-    // this.pageTransformMap = new Map()
-    // this.checkInterval = setInterval(this.checkModification.bind(this), 2000)
+    this.pageTransformMap = new Map()
+    this.checkInterval = setInterval(this.checkModification.bind(this), 2000)
   }
 
   setTheme (url) {
@@ -697,6 +701,74 @@ class RidgeEditorContext extends RidgeContext {
         els.push(element.el)
       }
       this.workspaceControl.selectElements(els)
+    }
+  }
+
+  // 发布当前的页面
+  distributeCurrentPage () {
+    // this.services.appService
+
+    if (this.currentOpenPageId) {
+      this.services.distributeService.distributePage(this.currentOpenPageId)
+    }
+  }
+
+  async distributeApp () {
+    this.services.distributeService.distributeApp()
+  }
+
+  alignComponents (direction) {
+    if (Array.isArray(this.workspaceControl.moveable.target)) {
+      const nodes = this.workspaceControl.moveable.target.map(el => el.ridgeNode)
+      if (nodes && nodes.length > 1) {
+        switch (direction) {
+          case 'top':
+            for (let i = 1; i < nodes.length; i++) {
+              const element = nodes[i]
+              element.updateStyleConfig({
+                y: nodes[0].config.style.y
+              })
+            }
+            break
+          case 'bottom':
+            for (let i = 1; i < nodes.length; i++) {
+              nodes[i].updateStyleConfig({
+                y: nodes[0].config.style.y + nodes[0].config.style.height - nodes[i].config.style.height
+              })
+            }
+            break
+          case 'left':
+            for (let i = 1; i < nodes.length; i++) {
+              nodes[i].updateStyleConfig({
+                x: nodes[0].config.style.x
+              })
+            }
+            break
+          case 'right':
+            for (let i = 1; i < nodes.length; i++) {
+              nodes[i].updateStyleConfig({
+                x: nodes[0].config.style.x + nodes[0].config.style.width - nodes[i].config.style.width
+              })
+            }
+            break
+          case 'hcenter':
+            for (let i = 1; i < nodes.length; i++) {
+              nodes[i].updateStyleConfig({
+                y: nodes[0].config.style.y + nodes[0].config.style.height / 2 - nodes[i].config.style.height / 2
+              })
+            }
+            break
+          case 'vcenter':
+            for (let i = 1; i < nodes.length; i++) {
+              nodes[i].updateStyleConfig({
+                x: nodes[0].config.style.x + nodes[0].config.style.width / 2 - nodes[i].config.style.width / 2
+              })
+            }
+            break
+          default:
+            break
+        }
+      }
     }
   }
 }

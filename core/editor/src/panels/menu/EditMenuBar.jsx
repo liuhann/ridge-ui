@@ -1,6 +1,5 @@
 import React from 'react'
 import { Button, Divider, Badge, Space, ButtonGroup, Modal, Dropdown, InputNumber, Tooltip, Tabs, TabPane, Popover } from '@douyinfe/semi-ui'
-import { ReactComposite } from 'ridgejs'
 import context from '../../service/RidgeEditorContext.js'
 import './style.less'
 

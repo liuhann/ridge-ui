@@ -1,6 +1,7 @@
 import React, { useRef, useState, forwardRef, useImperativeHandle } from 'react'
 import { SideSheet, Spin, Tabs, TabPane, Modal, Toast } from '@douyinfe/semi-ui'
-import context from '../../service/RidgeEditorContext.js'
+import editorStore from '../../store/editor.store.js'
+// import context from '../../service/RidgeEditorContext.js'
 
 const config = {
   // eslint configuration
