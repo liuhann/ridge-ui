@@ -27,7 +27,6 @@ const basename = (path, ext) => {
 }
 const extname = path => {
   return path.split('.').pop().toLowerCase()
-  // path.substring(path.lastIndexOf('.'))
 }
 
 export {

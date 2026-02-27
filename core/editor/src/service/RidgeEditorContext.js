@@ -576,7 +576,10 @@ class RidgeEditorContext extends RidgeContext {
     if (packageName != null) { // 包含包名说明来自外部
       return super.loadComposite(packageName, path)
     } else if (path != null) {
-      return localRepoService.getCurrentAppService().getPageContentByPath(path)
+      const file = localRepoService.getCurrentAppService().getFileByPath(path)
+      if (file.json) {
+        return file.json
+      }
     }
   }
 

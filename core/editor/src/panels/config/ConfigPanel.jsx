@@ -154,6 +154,7 @@ const ConfigPanel = () => {
   const [nodePropFields, setNodePropFields] = useState([]) // 当前节点属性
   const [nodeEventFields, setNodeEventFields] = useState([]) // 当前节点事件
 
+  const editorComposite = editorStore(state => state.editorComposite)
   const currentEditNodeId = editorStore(state => state.currentEditNodeId)
   const updateElementConfig = editorStore(state => state.updateElementConfig)
   const updatePageConfig = editorStore(state => state.updatePageConfig)
@@ -164,8 +165,6 @@ const ConfigPanel = () => {
     const nodeEventFields = []
 
     nodePropFields.push(...COMPONENT_BASIC_FIELDS)
-
-    const editorComposite = editorStore().editorComposite
 
     const element = editorComposite.getNode(currentEditNodeId)
 
@@ -179,99 +178,99 @@ const ConfigPanel = () => {
         nodePropFields.push({
           type: 'divider'
         })
+      } else {
+        nodePropFields.push(...COMPONENT_ROOT_FIELDS)
+        if (element.componentDefinition) {
+          if (element.componentDefinition.hideable !== false) { // 定义 hideable = false时，不显示隐藏选项
+            nodePropFields.push(FIELD_VISIBLE)
+          }
+          if (element.componentDefinition.fullScreenable === true && element.getParent() === element.editorComposite) { // 定义 fullScreenable = true 时，组件可以全屏， 用于一些容器
+            nodePropFields.push(FIELD_FULL_SCREEN)
+          }
+        }
       }
-    } else {
-      nodePropFields.push(...COMPONENT_ROOT_FIELDS)
+
+      // 能加载到节点定义
       if (element.componentDefinition) {
-        if (element.componentDefinition.hideable !== false) { // 定义 hideable = false时，不显示隐藏选项
-          nodePropFields.push(FIELD_VISIBLE)
+        for (const prop of element.componentDefinition.props ?? []) {
+          if (!prop.name) continue
+          const field = {
+            componentName: element.componentDefinition.name,
+            packageName: element.componentDefinition.packageName
+          }
+          if (prop.connect) {
+            Object.assign(field, prop, {
+              field: 'props.' + prop.name,
+              fieldEx: 'propEx.' + prop.name
+            })
+          } else {
+            Object.assign(field, prop, {
+              field: 'props.' + prop.name
+            })
+          }
+          nodePropFields.push(field)
         }
-        if (element.componentDefinition.fullScreenable === true && element.getParent() === element.editorComposite) { // 定义 fullScreenable = true 时，组件可以全屏， 用于一些容器
-          nodePropFields.push(FIELD_FULL_SCREEN)
+
+        for (const event of element.componentDefinition.events ?? []) {
+          const control = {
+            label: event.label,
+            type: 'function',
+            control: 'event',
+            field: 'events.' + event.name
+          }
+          nodeEventFields.push(control)
+        }
+
+        if (element.componentDefinition.componentPath === 'ridge-container/composite' && element.el.composite && element.el.composite.config) {
+          // 获取Compsite定义属性，同时如果原为connect，这里也增加connect
+          nodePropFields.push(...getCompositePropertiesDef(element.el.composite).map(p => {
+            const [, name] = p.field.split('.')
+            // if (p.connect) {
+            // }
+            p.fieldEx = 'propEx.' + name
+            p.field = 'props.' + name
+            return p
+          }))
+          nodeEventFields.push(...getCompositeEventsDef(element.el.composite))
         }
       }
-    }
+      this.componentPropFormApi.reset()
+      setNodePropFields(nodePropFields)
+      setNodeEventFields(nodePropFields)
 
-    // 能加载到节点定义
-    if (element.componentDefinition) {
-      for (const prop of element.componentDefinition.props ?? []) {
-        if (!prop.name) continue
-        const field = {
-          componentName: element.componentDefinition.name,
-          packageName: element.componentDefinition.packageName
-        }
-        if (prop.connect) {
-          Object.assign(field, prop, {
-            field: 'props.' + prop.name,
-            fieldEx: 'propEx.' + prop.name
-          })
-        } else {
-          Object.assign(field, prop, {
-            field: 'props.' + prop.name
-          })
-        }
-        nodePropFields.push(field)
+      for (const key of ['title', 'props', 'propEx', 'style', 'styleEx', 'id', 'visible', 'full']) {
+        this.componentPropFormApi.setValue(key, element.config[key], {
+          notNotify: true
+        })
       }
-
-      for (const event of element.componentDefinition.events ?? []) {
-        const control = {
-          label: event.label,
-          type: 'function',
-          control: 'event',
-          field: 'events.' + event.name
-        }
-        nodeEventFields.push(control)
-      }
-
-      if (element.componentDefinition.componentPath === 'ridge-container/composite' && element.el.composite && element.el.composite.config) {
-        // 获取Compsite定义属性，同时如果原为connect，这里也增加connect
-        nodePropFields.push(...getCompositePropertiesDef(element.el.composite).map(p => {
-          const [, name] = p.field.split('.')
-          // if (p.connect) {
-          // }
-          p.fieldEx = 'propEx.' + name
-          p.field = 'props.' + name
-          return p
-        }))
-        nodeEventFields.push(...getCompositeEventsDef(element.el.composite))
-      }
-    }
-    this.componentPropFormApi.reset()
-    setNodePropFields(nodePropFields)
-    setNodeEventFields(nodePropFields)
-
-    for (const key of ['title', 'props', 'propEx', 'style', 'styleEx', 'id', 'visible', 'full']) {
-      this.componentPropFormApi.setValue(key, element.config[key], {
+      this.componentEventFormApi.setValue('events', element.config.events, {
         notNotify: true
       })
     }
-    this.componentEventFormApi.setValue('events', element.config.events, {
-      notNotify: true
-    })
   }
 
   const updatePageFields = () => {
-    const editorComposite = editorStore().editorComposite
     setPagePropFields([...PAGE_FIELDS, ...getCompositePropertiesDef(editorComposite)])
     setPageEventFields([...PAGE_EVNETS, ...getCompositeEventsDef(editorComposite)])
 
     for (const key of ['classList', 'style', 'properties', 'fontFiles', 'jsFiles', 'name', 'events']) {
-      pagePropFormApi.setValue(key, editorComposite.config[key], {
+      pagePropFormApi.current.setValue(key, editorComposite.config[key], {
         notNotify: true
       })
     }
-    pageEventFormApi.setValue('events', editorComposite.config.events, {
+    pageEventFormApi.current.setValue('events', editorComposite.config.events, {
       notNotify: true
     })
   }
 
   useEffect(() => {
+    if (!editorComposite) return
     if (currentEditNodeId) { // 选中节点
       updateElementFields(currentEditNodeId)
     } else {
       updatePageFields()
     }
-  }, [currentEditNodeId])
+  }, [currentEditNodeId, editorComposite])
 
   const basicPropsAPI = (formApi) => {
     componentPropFormApi.current = formApi

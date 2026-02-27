@@ -57,26 +57,25 @@ export default class ApplicationService {
     const files = await this.getFiles()
     this.fileTree = getFileTree(files)
 
-    await this.updateFileBlobUrls(files)
+    await this.updateFileContents(files)
   }
 
   // 更新工作区间图片资源信息
-  async updateFileBlobUrls (files) {
+  async updateFileContents (files) {
     for (const file of files) {
-      if (file.type === 'page') { // 页面内容缓存
-        const dataUrl = await this.store.getItem(file.key)
-        if (dataUrl) {
-          file.textContent = await dataURLToString(dataUrl)
-        }
-      } else if (file.mimeType) {
+      if (file.mimeType) {
         if (file.mimeType.indexOf('image') > -1) {
-          const dataUrl = await this.store.getItem(file.key)
-          if (dataUrl) {
-            file.url = dataUrl
-          }
-        } else if (file.mimeType.indexOf('text') > -1) {
-          const dataUrl = await this.store.getItem(file.key)
+          file.url = await this.store.getItem(file.id)
+        }
+
+        if (file.mimeType.indexOf('text') > -1) {
+          const dataUrl = await this.store.getItem(file.id)
           file.textContent = await dataURLToString(dataUrl)
+          if (file.mimeType.indexOf('json') > -1) {
+            try {
+              file.json = JSON.parse(file.textContent)
+            } catch (e) {}
+          }
         }
       }
     }
@@ -103,37 +102,6 @@ export default class ApplicationService {
   }
 
   /**
-   * 增加组合组件（页面）
-   * @param {*} parentId
-   * @param {*} name
-   * @param {*} content
-   */
-  async createComposite (parentId, name, composite) {
-    trace('createComposite', parentId, name)
-    const one = await this.collection.findOne({
-      parentId,
-      name
-    })
-    if (one) {
-      throw new Error('File existed', name)
-    }
-
-    const id = nanoid(10)
-    const pageContent = composite ?? PAGE_JSON_TEMPLATE
-
-    const pageObject = {
-      id,
-      name,
-      type: 'page',
-      parent: parentId,
-      mimeType: 'text/json'
-    }
-    await this.store.setItem(id, pageContent)
-    await this.collection.insert(pageObject)
-    return pageObject
-  }
-
-  /**
    * 新增文件
    * @param {*} file
    * @param {*} dir
@@ -151,57 +119,39 @@ export default class ApplicationService {
 
     const id = nanoid(10)
     const dataUrl = await blobToDataUrl(blob, mimeType)
-    let isComposite = false
-    if (blob.type === 'application/json') {
-      const jsonString = await dataURLToString(dataUrl)
-      try {
-        const jsonContent = JSON.parse(jsonString)
-        if (jsonContent.elements && jsonContent.children) {
-          isComposite = true
-          this.createComposite(parentId, jsonContent.name, jsonContent)
-        }
-      } catch (e) {}
+    await this.store.setItem(id, dataUrl)
+    let mtype = blob.type || mimeType
+    if (!mtype) {
+      mtype = getByMimeType(extname(name))
     }
 
-    if (!isComposite) {
-      await this.store.setItem(id, dataUrl)
-
-      let mtype = blob.type || mimeType
-
-      if (!mtype) {
-        mtype = getByMimeType(extname(name))
-      }
-
-      return await this.collection.insert({
-        id,
-        mimeType: mtype,
-        size: blob.size,
-        name,
-        parent: parentId
-      })
-    }
+    return await this.collection.insert({
+      id,
+      mimeType: mtype,
+      size: blob.size,
+      name,
+      parent: parentId
+    })
   }
 
   /**
-   * 更新文本类文件内容
+   * 更新文本类文件内容 （只有问题才可能被更新）
    * @param {*} key
    * @param {*} content
    * @param {*} mimeType
    */
-  async updateFileContent (key, content, mimeType) {
+  async updateFileContent (key, content) {
     trace('updateFileContent', key, content)
     const file = this.filterFiles(file => file.id === key)[0]
     if (file) {
       file.textContent = content
       await this.store.setItem(key, await stringToDataUrl(content, file.mimeType))
+      if (file.mimeType === 'text/json') {
+        try {
+          file.json = JSON.parse(content)
+        } catch (e) {}
+      }
     }
-  }
-
-  /**
-     * 保存页面配置
-     */
-  async savePageContent (id, content) {
-    await this.store.setItem(id, content)
   }
 
   /**
@@ -396,26 +346,6 @@ export default class ApplicationService {
     return currentFile
   }
 
-  async getRecentPage () {
-    // 首先更新页面目录数据
-    const pages = await this.collection.find({
-      parent: -1,
-      type: 'page'
-    }, {
-      sort: {
-        name: 1
-      }
-    })
-    if (pages.length === 0) {
-      return this.createPage(-1)
-    } else {
-      return {
-        ...pages[0],
-        ...(await this.store.getItem(pages[0].id))
-      }
-    }
-  }
-
   /**
    * 根据文件获取文件所在路径
    */
@@ -481,10 +411,6 @@ export default class ApplicationService {
     }
   }
 
-  getBlobUrl () {
-
-  }
-
   async getFileContentByPath (filePath) {
     const file = this.getFileByPath(filePath)
     if (file) {
@@ -494,16 +420,31 @@ export default class ApplicationService {
     }
   }
 
-  async exportFileArchive (id) {
-    await this.backUpService.exportFileArchive(id)
-  }
-
-  async getAppFileBlob () {
-    return this.backUpService.getAppBlob()
+  /**
+   * 递归将目录压缩到zip包中
+   * @param {*} zip
+   * @param {*} files
+   */
+  async zipFolder (zip, files) {
+    for (const file of files) {
+      if (file.type === 'directory') {
+        const zipFolder = zip.folder(file.name)
+        await this.zipFolder(zipFolder, file.children)
+      } else {
+        const dataUrl = await this.store.getItem(file.id)
+        zip.file(file.name, await dataURLtoBlob(dataUrl))
+      }
+    }
   }
 
   async exportAppArchive () {
-    await this.backUpService.exportAppArchive()
+    const zip = new JSZip()
+    const files = await this.getFiles()
+    this.fileTree = getFileTree(files)
+
+    await this.zipFolder(zip, this.fileTree)
+    const blob = await zip.generateAsync({ type: 'blob' })
+    return blob
   }
 
   async exportPage (id) {
@@ -511,27 +452,9 @@ export default class ApplicationService {
       id
     })
     const content = await this.store.getItem(id)
-
-    if (content) {
-      if (document.type === 'page') {
-        saveAs(new Blob([JSON.stringify(content)]), document.name + '.json')
-      } else {
-        saveAs(await dataURLtoBlob(content), document.name)
-      }
+    if (document && content) {
+      saveAs(await dataURLtoBlob(content), document.name)
     }
-  }
-
-  async getAppPackageBlob () {
-    return this.backUpService.getAppBlob()
-  }
-
-  async reset () {
-    await this.backupCurrentApp()
-    await this.collection.clean()
-    await this.store.clear()
-
-    window.location.reload()
-    // location.href = location.href
   }
 
   /**
@@ -615,20 +538,12 @@ export default class ApplicationService {
     const parentId = dirNode ? dirNode.id : -1
     const filename = basename(zipObject.name)
     const ext = extname(zipObject.name)
-    if (filePath.endsWith('.json')) { // 对json文件判断是否为图纸，是图纸则导入
-      const jsonObject = JSON.parse(await zipObject.async('text'))
-      if (jsonObject.elements) {
-        await this.createComposite(parentId, basename(filename, '.json'), jsonObject)
-      } else {
-        await this.createFile(parentId, filename, new File([JSON.stringify(jsonObject, null, 2)], filename), 'text/json')
-      }
-    } else {
-      // 其他类型文件，例如图片、脚本
-      const mimeType = getByMimeType(ext)
-      await this.createFile(parentId, filename, new File([await zipObject.async('blob')], filename, {
-        type: mimeType
-      }), getByMimeType(ext))
-    }
+
+    // 其他类型文件，例如图片、脚本
+    const mimeType = getByMimeType(ext)
+    await this.createFile(parentId, filename, new File([await zipObject.async('blob')], filename, {
+      type: mimeType
+    }), mimeType)
   }
 
   async importHelloArchive () {
@@ -637,41 +552,7 @@ export default class ApplicationService {
     await this.importAppArchive(buffer)
   }
 
-  async backupCurrentApp () {
-    await this.backUpService.backup()
-  }
-
   async importFromNpmRegistry (packageName, version) {
-    await this.backupCurrentApp()
     return await this.backUpService.importFromNpmRegistry(packageName, version)
-  }
-
-  async importFromRidgeCloud (path) {
-    await this.backupCurrentApp()
-    return await this.backUpService.importFromRidgeCloud(path)
-  }
-
-  async backUpAppArchive (tag) {
-    await this.backUpService.createHistory(this.collection, tag)
-  }
-
-  async recoverBackUpAppArchive (id) {
-    await this.backUpService.recover(id)
-  }
-
-  async getAllBackups () {
-    return await this.backUpService.listAllHistory()
-  }
-
-  async removeBackup (id) {
-    return await this.backUpService.deleteHistory(id)
-  }
-
-  async exportArchive () {
-    this.backUpService.exportColl(this.collection)
-  }
-
-  async archive () {
-
   }
 }
