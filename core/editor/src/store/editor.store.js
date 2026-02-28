@@ -12,6 +12,12 @@ const editorStore = create((set, get) => ({
   imagePreviewSrc: '',
 
   currentEditNodeId: '',
+  currentEditNodeRect: {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+  },
 
   editorComposite: null,
   openedFileContentMap: new Map(),
@@ -41,11 +47,16 @@ const editorStore = create((set, get) => ({
 
   },
 
+  updateNodeRect: (rect) => {
+    set({
+      currentEditNodeRect: rect
+    })
+  },
   openFile: async id => {
     const appService = localRepoService.getCurrentAppService()
 
     if (appService) {
-      const file = await appService.getFile(id)
+      const file = await appService.getFileById(id)
       if (file) {
         if (file.type === 'page') {
           get().openPage(file)
@@ -74,7 +85,7 @@ const editorStore = create((set, get) => ({
     })
     openedFileContentMap.set(page.id, page.content)
 
-    const editorComposite = await workspaceControl.loadPage(cloneDeep(page.content))
+    const editorComposite = await workspaceControl.loadPage(cloneDeep(page.json))
     const transform = pageTransformMap.get(page.id)
     if (transform) {
       workspaceControl.setTransform(transform)

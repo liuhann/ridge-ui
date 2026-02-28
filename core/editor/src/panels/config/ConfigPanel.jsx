@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Tabs, TabPane } from '@douyinfe/semi-ui'
 import ObjectForm from '../../form/ObjectForm.jsx'
-import { ThemeContext } from '../movable/MoveablePanel.jsx'
 import debug from 'debug'
 
 import editorStore from '../../store/editor.store.js'
@@ -13,8 +12,7 @@ const COMPONENT_BASIC_FIELDS = [{
   label: '名称',
   control: 'string',
   field: 'title'
-}
-]
+}]
 
 const COMPONENT_ROOT_FIELDS = [
   {
@@ -158,6 +156,7 @@ const ConfigPanel = () => {
   const currentEditNodeId = editorStore(state => state.currentEditNodeId)
   const updateElementConfig = editorStore(state => state.updateElementConfig)
   const updatePageConfig = editorStore(state => state.updatePageConfig)
+  const currentEditNodeRect = editorStore(state => state.currentEditNodeRect)
 
   const updateElementFields = currentEditNodeId => {
     // 节点基本样式 （title/visible)
@@ -234,16 +233,16 @@ const ConfigPanel = () => {
           nodeEventFields.push(...getCompositeEventsDef(element.el.composite))
         }
       }
-      this.componentPropFormApi.reset()
+      componentPropFormApi.current.reset()
       setNodePropFields(nodePropFields)
       setNodeEventFields(nodePropFields)
 
       for (const key of ['title', 'props', 'propEx', 'style', 'styleEx', 'id', 'visible', 'full']) {
-        this.componentPropFormApi.setValue(key, element.config[key], {
+        componentPropFormApi.current.setValue(key, element.config[key], {
           notNotify: true
         })
       }
-      this.componentEventFormApi.setValue('events', element.config.events, {
+      componentEventFormApi.current.setValue('events', element.config.events, {
         notNotify: true
       })
     }
@@ -272,6 +271,15 @@ const ConfigPanel = () => {
     }
   }, [currentEditNodeId, editorComposite])
 
+  useEffect(() => {
+    if (currentEditNodeId) {
+      console.log('update Rect', currentEditNodeRect)
+      componentPropFormApi.current.setValue('style', currentEditNodeRect, {
+        notNotify: true
+      })
+    }
+  }, [currentEditNodeRect])
+
   const basicPropsAPI = (formApi) => {
     componentPropFormApi.current = formApi
   }
@@ -292,23 +300,18 @@ const ConfigPanel = () => {
   const componentPropValueChange = (values, field) => {
     if (values.id === this.componentView.config.id) {
       updateElementConfig(values)
-      // context.updateComponentConfig(this.componentView, values, field)
     }
   }
 
   const componentEventValueChange = (values, field) => {
     updateElementConfig(values)
-    // context.updateComponentConfig(this.componentView, values)
   }
   const pageEventValueChange = (values, field) => {
     updatePageConfig(values)
-    // context.editorComposite.updatePageConfig(values)
-    // context.updateComponentConfig(this.componentView, values)
   }
 
   const pagePropValueChange = (values, field) => {
     updatePageConfig(values)
-    // context.editorComposite.updatePageConfig(values)
   }
 
   return (
@@ -361,53 +364,3 @@ const ConfigPanel = () => {
 }
 
 export default ConfigPanel
-class ComponentPanel extends React.Component {
-  constructor (props) {
-    super(props)
-    this.ref = React.createRef()
-    this.componentPropFormApi = null
-    this.componentEventFormApi = null
-    this.pagePropFormApi = null
-
-    context.services.configPanel = this
-
-    this.state = {
-      configPage: true,
-      pagePropsFields: [], // 页面属性
-      pageEventFields: [], // 页面事件
-      nodePropFields: [], // 当前节点属性
-      nodeEventFields: [] // 当前节点事件
-    }
-  }
-
-  static contextType = ThemeContext
-
-  componentDidMount () {
-    // this.initEvents()
-  }
-
-  /**
-   * 组件选择后、更新为组件配置面板
-   **/
-  componentSelected (componentView) {
-
-  }
-
-  updateComponentConfig (view) {
-    if (view === this.componentView) {
-
-    }
-  }
-
-  updatePageConfigFields () {
-
-  }
-
-  nodeRectChange (el) {
-    this.styleChange(el)
-  }
-
-  render () {
-
-  }
-}

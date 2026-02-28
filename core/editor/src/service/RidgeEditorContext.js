@@ -10,6 +10,7 @@ import EditorComposite from '../workspace/EditorComposite.js'
 import { ensureLeading } from '../utils/string.js'
 
 import { localRepoService } from '../store/app.store.js'
+import { removeUrlProtocol } from 'ridgejs/src/utils/string.js'
 // import PreviewComposite from '../workspace/PreviewComposite.js'
 
 // import { appService } from '../store/app.store.js'
@@ -576,8 +577,8 @@ class RidgeEditorContext extends RidgeContext {
     if (packageName != null) { // 包含包名说明来自外部
       return super.loadComposite(packageName, path)
     } else if (path != null) {
-      const file = localRepoService.getCurrentAppService().getFileByPath(path)
-      if (file.json) {
+      const file = localRepoService.getCurrentAppService().getFileByPath(removeUrlProtocol(path) + '.json')
+      if (file && file.json) {
         return file.json
       }
     }
@@ -654,8 +655,7 @@ class RidgeEditorContext extends RidgeContext {
    */
   getBlobUrl (url, packageName) {
     if (url.startsWith('composite://') && packageName == null) {
-      const protocolPath = url.substring('composite://'.length)
-      return localRepoService.getCurrentAppService().getBlobUrl(ensureLeading(protocolPath))
+      return localRepoService.getCurrentAppService().getDataUrl(removeUrlProtocol(url))
     } else {
       return super.getBlobUrl(url, packageName)
     }

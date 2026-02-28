@@ -24,6 +24,8 @@ import './file-list.less'
 import appStore from '../../store/app.store.js'
 import editorStore from '../../store/editor.store.js'
 import AppListPanel from '../apps/AppListPanel.jsx'
+import { filename } from 'ridgejs/src/utils/string.js'
+import { basename, extname } from '../../utils/string.js'
 const { Text, Paragraph } = Typography
 
 const ACCEPT_FILES = '.svg,.png,.jpg,.json,.css,.js,.md,.webp,.zip,.gif'
@@ -62,22 +64,7 @@ const AppFileList = () => {
     initAppStore()
   }, [])
 
-  // 原有类方法 -> 函数式内部函数
-  const loadAndUpdateFileTree = async () => {
-    const { appService } = context.services
-    await appService.init()
-    await appService.updateAppFileTree()
-    const appTreeData = await appService.getAppFileTree()
-    const appJSONObject = await appService.getPackageJSONObject()
-    rebuildTreeIcons(appTreeData)
-    setState(prev => ({
-      ...prev,
-      appJSONObject,
-      treeData: appTreeData
-    }))
-  }
-
-  const rebuildTreeIcons = (treeData) => {
+  const getAppTreeData = (treeData) => {
     const fileTree = mapTree(treeData, file => {
       if (file.mimeType) {
         if (file.mimeType === 'application/font-woff') {
@@ -90,6 +77,12 @@ const AppFileList = () => {
           file.icon = <i className='bi bi-file-earmark' />
         }
       }
+      file.label = file.name
+
+      if (file.type === 'page') {
+        file.label = basename(file.name, '.json')
+      }
+
       if (file.label.endsWith('.svg')) {
         file.icon = FILE_IMAGE
       }
@@ -112,7 +105,7 @@ const AppFileList = () => {
       return {
         path: file.parentPath + '/' + file.name,
         icon: file.icon,
-        label: file.name,
+        label: file.label,
         id: file.id,
         key: file.id
       }
@@ -264,8 +257,6 @@ const AppFileList = () => {
   const onOpenClicked = (node) => {
     if (currentRename && currentRename.key === node.key) return
     if (node.type !== 'directory') {
-
-      
       openFile(node.key)
     }
   }
@@ -598,7 +589,7 @@ const AppFileList = () => {
           filterTreeNode
           draggable
           renderLabel={renderFullLabel}
-          treeData={rebuildTreeIcons(currentAppFilesTree)}
+          treeData={getAppTreeData(currentAppFilesTree)}
           onDragStart={(target) => {
             if (target.node && target.node.type === 'page') {
               context.draggingComposite = target.node

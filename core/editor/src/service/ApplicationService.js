@@ -55,9 +55,8 @@ export default class ApplicationService {
   async updateAppFileTree () {
     trace('Update File Tree')
     const files = await this.getFiles()
-    this.fileTree = getFileTree(files)
-
     await this.updateFileContents(files)
+    this.fileTree = getFileTree(files)
   }
 
   // 更新工作区间图片资源信息
@@ -71,9 +70,13 @@ export default class ApplicationService {
         if (file.mimeType.indexOf('text') > -1) {
           const dataUrl = await this.store.getItem(file.id)
           file.textContent = await dataURLToString(dataUrl)
-          if (file.mimeType.indexOf('json') > -1) {
+          if (file.mimeType === 'text/json') {
             try {
               file.json = JSON.parse(file.textContent)
+
+              if (file.json.version && file.json.elements) {
+                file.type = 'page'
+              }
             } catch (e) {}
           }
         }
@@ -301,25 +304,9 @@ export default class ApplicationService {
     return files
   }
 
-  // 根据id或者path获取文件
-  async getFile (id) {
-    trace('getFile', id)
-    let file = await this.collection.findOne({ id })
-
-    if (!file) {
-      file = this.getFileByPath(id)
-    } else {
-      if (file.type !== 'directory') {
-        file.content = await this.store.getItem(file.id)
-        // 读取文本类型的内容写入 file.textContent
-        if (file.mimeType && file.mimeType.startsWith('text') && typeof file.content === 'string' && file.content.startsWith('data:')) {
-          const textContent = await (dataURLToString(file.content))
-          trace('textContent', textContent)
-          file.textContent = textContent
-        }
-      }
-      return file
-    }
+  // 根据id获取文件
+  async getFileById (id) {
+    return this.filterFiles(file => file.id === id)[0]
   }
 
   /**
@@ -346,30 +333,6 @@ export default class ApplicationService {
     return currentFile
   }
 
-  /**
-   * 根据文件获取文件所在路径
-   */
-  async getFilePath (file) {
-    if (file.parent && file.parent !== -1) {
-      const parentFile = await this.getFile(file.parent)
-      return (await this.getFilePath(parentFile)) + '/' + file.name
-    } else {
-      return file.name
-    }
-  }
-
-  async getByMimeType (mime) {
-    const files = await this.collection.find({
-      mimeType: new RegExp(mime)
-    })
-    for (const file of files) {
-      if (file.type === 'file') {
-        file.src = await this.store.getItem(file.id)
-      }
-    }
-    return files
-  }
-
   async isParent (parent, child) {
     let lop = await this.getFile(child)
     while (lop.parent !== -1) {
@@ -389,15 +352,17 @@ export default class ApplicationService {
   }
 
   getDataUrl (path) {
+    let file = null
     if (path.startsWith('/')) {
-      const file = this.getFileByPath(path)
-      if (file) {
-        return this.dataUrls[file.id]
-      } else {
-        return null
-      }
+      file = this.getFileByPath(path)
     } else {
-      return this.dataUrls[path]
+      file = this.getFileById(path)
+    }
+
+    if (file) {
+      return file.url
+    } else {
+      return null
     }
   }
 

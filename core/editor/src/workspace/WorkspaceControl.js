@@ -278,12 +278,8 @@ export default class WorkSpaceControl {
       const matched = transform.match(/[0-9.]+/g)
       style.x = drag.translate[0]
       style.y = drag.translate[1]
-      if (delta[0]) {
-        style.width = Math.round(width)
-      }
-      if (delta[1]) {
-        style.height = Math.round(height)
-      }
+      style.width = Math.round(width)
+      style.height = Math.round(height)
       // const tbc = target.getBoundingClientRect()
       // console.log('resize', style, target.style.width, target.style.height)
 
@@ -294,6 +290,7 @@ export default class WorkSpaceControl {
       //   style.width = target.clientWidth
       // }
       target.ridgeNode.updateStyleConfig(style)
+      this.editorStore.getState().updateNodeRect(style)
     })
 
     this.moveable.on('resizeEnd', ({

@@ -45,6 +45,25 @@ const ensureLeading = (str, slash = '/') => {
   return str.startsWith(slash) ? str : (slash + str)
 }
 
+/**
+ * 移除 URL 中的协议部分（如 https://、ridge:// 等）
+ * @param {string} url - 待处理的 URL 字符串
+ * @returns {string} 移除协议后的字符串，若输入非字符串或无协议则返回原内容
+ */
+const removeUrlProtocol = (url) => {
+  // 校验输入类型，非字符串直接返回
+  if (typeof url !== 'string') {
+    return url
+  }
+
+  // 正则匹配任意协议头（xxx://），并替换为空
+  // 正则说明：
+  // ^ - 匹配字符串开头
+  // [a-zA-Z0-9-]+ - 匹配协议名（字母、数字、短横线）
+  // :// - 匹配协议分隔符
+  return ensureLeading(url.replace(/^[a-zA-Z0-9-]+:\/\//, ''))
+}
+
 const convertToValidVariableName = str => {
   // 1. 移除所有非字母数字的字符，并用空字符串替换
   // 2. 确保变量名不以数字开头（如果以数字开头，前面添加下划线）
@@ -65,6 +84,7 @@ export {
   hashString,
   toCSSLength,
   generateUrlFontName,
+  removeUrlProtocol,
   ensureLeading,
   nanoid
 }
