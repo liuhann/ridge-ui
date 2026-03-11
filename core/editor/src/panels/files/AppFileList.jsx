@@ -53,6 +53,7 @@ const AppFileList = () => {
   const fileRename = appStore((state) => state.fileRename)
 
   const openFile = editorStore(state => state.openFile)
+  const openedPages = editorStore(state => state.openedPages)
 
   // 存储节点映射
   const nodeMap = useRef({})
@@ -549,15 +550,25 @@ const AppFileList = () => {
     setCurrentSelectedTime(new Date().getTime())
   }
 
+  const confirmExitToAppList = async () => {
+    if (openedPages.length) {
+      await Modal.confirm({
+        title: '离开应用', 
+        content: '确认离开应用并且关闭当前所有打开的页面'
+      })
+      await closeAllPages()
+    }
+    exitToAppList()
+  }
+
   // 渲染逻辑
   const { dialogCreateShow, dialogCreateTitle, dialogRenameShow, valueRename } = state
   return (
     <>
       <div className='file-actions panel-actions'>
         <Text>{currentAppName}</Text>
-        <Button theme='borderless' type='tertiary' icon={<i className='bi bi-box-arrow-right' />} />
-        {currentAppName && RenderCreateDropDown()}
-        {currentAppName && RenderShareDropDown()}
+        <Button onClick={confirmExitToAppList} theme='borderless' type='danger' icon={<i className='bi bi-box-arrow-right' />} />
+        {/* {currentAppName && RenderShareDropDown()} */}
       </div>
       <DialogCreate
         show={dialogCreateShow}

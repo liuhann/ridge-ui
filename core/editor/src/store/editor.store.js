@@ -4,6 +4,8 @@ import { localRepoService } from './app.store'
 import { cloneDeep } from 'ridgejs/src/utils/object'
 
 const editorStore = create((set, get) => ({
+
+  // 状态 驱动展示
   isPreview: false,
   currentOpenPageId: null,
   zoom: 100,
@@ -22,6 +24,7 @@ const editorStore = create((set, get) => ({
     height: 0
   },
 
+  // 非状态 作为服务
   editorComposite: null,
   openedFileContentMap: new Map(),
   pageTransformMap: new Map(),
@@ -90,19 +93,25 @@ const editorStore = create((set, get) => ({
     }
   },
 
+  // 打开页面
   openPage: async page => {
-    const { currentOpenPageId, closeCurrentPage, openedFileContentMap, pageTransformMap, workspaceControl, openedPages } = get()
+    const { currentOpenPageId, unmountWorkspace, closeCurrentPage, openedFileContentMap, pageTransformMap, workspaceControl, openedPages } = get()
     if (currentOpenPageId === page.id) {
       return
     }
 
+    // 关闭之前打开的页面 （非当前页面）
     if (currentOpenPageId) {
-      closeCurrentPage(true)
+      unmountWorkspace()
     }
 
-    openedFileContentMap.set(page.id, page.content)
+    let pageObject = cloneDeep(page.json)
+    if (openedPages.find(p => p.id === page.id) && openedFileContentMap.get(page.id)) { // 之前打开过
+      pageObject = openedFileContentMap.get(page.id)
+    }
 
-    const editorComposite = await workspaceControl.loadPage(cloneDeep(page.json))
+    const editorComposite = await workspaceControl.loadPage(pageObject)
+
     const transform = pageTransformMap.get(page.id)
     if (transform) {
       workspaceControl.setTransform(transform)
@@ -135,31 +144,70 @@ const editorStore = create((set, get) => ({
     }
   },
 
+  unmountWorkspace: () => {
+    const { editorComposite, workspaceControl, openedFileContentMap, pageTransformMap, currentOpenPageId } = get()
+
+    if (editorComposite) {
+      // 缓存当前图纸
+      openedFileContentMap.set(currentOpenPageId, editorComposite.exportPageJSON())
+      pageTransformMap.set(currentOpenPageId, workspaceControl.getTransform())
+      editorComposite.unmount()
+    }
+    workspaceControl.disable()
+
+    set({
+      editorComposite: null
+    })
+  },
+
+  // 关闭打开的页面
   closeCurrentPage: (keep) => {
-    const { currentOpenPageId, openedFileContentMap, editorComposite, pageTransformMap, setPageOpened, workspaceControl } = get()
+    const { currentOpenPageId, openedFileContentMap, editorComposite, pageTransformMap, setPageOpened, workspaceControl, openedPages, closePage } = get()
+
+    if (editorComposite) {
+      editorComposite.unmount()
+    }
+    workspaceControl.disable()
+
     if (keep) {
       openedFileContentMap.set(currentOpenPageId, editorComposite.exportPageJSON())
       pageTransformMap.set(currentOpenPageId, workspaceControl.getTransform())
     } else {
-      openedFileContentMap.delete(currentOpenPageId)
-    }
-    if (editorComposite) {
-      editorComposite.unmount()
+      closePage(currentOpenPageId)
     }
 
     set({
       currentOpenPageId: null,
       editorComposite: null
     })
-    workspaceControl.disable()
 
     if (openedFileContentMap.length === 0) {
       setPageOpened(false)
     }
   },
 
+  // 关闭所有页面
+  closeAllPages: () => {
+    get().closeCurrentPage(false)
+
+    const { openedFileContentMap, openedPages } = get()
+
+    for (const page of openedPages) {
+      openedFileContentMap.delete(page.id)
+    }
+    set({
+      openedPages: []
+    })
+  },
+
+  // 关闭页面
   closePage: (id) => {
-    
+    const { openedFileContentMap, openedPages } = get()
+
+    openedFileContentMap.delete(id)
+    set({
+      openedPages: openedPages.filter(p => p.id !== id)
+    })
   },
 
   openCode: async file => {

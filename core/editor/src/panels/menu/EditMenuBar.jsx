@@ -13,16 +13,19 @@ const EditorMenuBar = () => {
 
   const zoom = editorStore(state => state.zoom)
   const zoomChange = editorStore(state => state.zoomChange)
+  const closePage = editorStore(state => state.closePage)
 
   const onTabClose = async tabKey => {
     if (unsavedPages.indexOf(tabKey) > -1) {
-      Modal.confirm({
+      await Modal.confirm({
         title: '确认',
         content: '当前页面尚未保存，关闭将丢失所有改动，是否确认',
         onOk: () => {
-
+          closePage(tabKey)
         }
       })
+    } else {
+      closePage(tabKey)
     }
   }
 
