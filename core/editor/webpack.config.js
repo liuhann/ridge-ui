@@ -1,5 +1,9 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
 const path = require('path')
+const isProduction = process.env.NODE_ENV === 'production'
+const styleLoader = isProduction ? MiniCssExtractPlugin.loader : 'style-loader'
 
 module.exports = {
   entry: './src/load.js',
@@ -67,9 +71,30 @@ module.exports = {
       },
       {
         test: /\.less$/i,
+        exclude: [/node_modules/, /\.module\.less$/], // 排除已匹配的 module 文件
         use: [
-          'style-loader',
+          styleLoader,
           'css-loader',
+          'less-loader'
+        ]
+      },
+      {
+        test: /\.module\.less$/, // 匹配带 module 后缀的 Less 文件
+        exclude: /node_modules/,
+        use: [
+          styleLoader,
+          {
+            loader: 'css-loader',
+            options: {
+              modules: {
+                // 自定义类名格式（开发环境易调试）
+                localIdentName: isProduction
+                  ? '[hash:base64:8]'
+                  : '[name]__[local]--[hash:base64:5]'
+              },
+              importLoaders: 1
+            }
+          },
           'less-loader'
         ]
       }

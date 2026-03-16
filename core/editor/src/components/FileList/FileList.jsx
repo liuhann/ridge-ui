@@ -6,9 +6,9 @@ import './style.less'
 // 按文件类型匹配图标
 const getFileIcon = (fileType) => {
   const iconMap = {
-    default: <IconFolderStroked size='extra-large' style={{ color: 'var(--semi-color-tertiary)' }} />
+    folder: <i class='bi bi-folder2' />
   }
-  return iconMap[fileType] || iconMap.default
+  return iconMap[fileType] || iconMap.folder
 }
 
 // 文件列表组件
@@ -24,16 +24,10 @@ const FileList = ({
   ]
 }) => {
   return (
-    <List
-      className='semi-file-list'
-      grid={{
-        gutter: [4, 4],
-        span: 8
-      }}
-      dataSource={fileData}
-      renderItem={file => {
+    <div className='app-file-list'>
+      {fileData && fileData.map((file, index) => {
         return (
-          <List.Item key={file.id}>
+          <div key={index} className='file'>
             <div
               className='more-button' style={{ position: 'absolute', top: 4, right: 4 }} onDoubleClick={() => {
                 onItemClick && onItemClick(file)
@@ -51,21 +45,21 @@ const FileList = ({
                   }
                 })}
               >
-                <Button size='small' theme='borderless' type='tertiary' icon={<IconMoreStroked />} />
+                <Button size='small' theme='borderless' type='tertiary' icon={<i class='bi bi-three-dots-vertical' />} />
               </Dropdown>
             </div>
 
             {/* 文件图标和名称 */}
-            <Space vertical align='center'>
+            <Space className='content-box' vertical align='center'>
               {getFileIcon(file.type)}
               <Typography.Text ellipsis style={{ width: '100%', textAlign: 'center', marginTop: 0 }}>
                 {file.name}
               </Typography.Text>
             </Space>
-          </List.Item>
+          </div>
         )
-      }}
-    />
+      })}
+    </div>
   )
 }
 

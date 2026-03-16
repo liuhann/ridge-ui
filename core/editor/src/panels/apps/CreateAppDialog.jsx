@@ -1,36 +1,36 @@
 import React, { useState } from 'react'
 import { Button, Modal, Input } from '@douyinfe/semi-ui'
 import CardList from '../../components/CardList/CardList.jsx'
-import BytesizeFolder from '../../icons/ProiconsFolder.svg'
 
 const CreateAppDialog = ({
   visible,
+  onCancel,
   onConfirm
 }) => {
-  const [appName, setAppName] = useState('未命名应用')
-  const handleOk = () => {
-    onConfirm && onConfirm(appName, 'empty')
+  const handleCancel = () => {
+    onCancel()
   }
   return (
-    <Modal title='新增应用' visible={visible} onOk={handleOk} width={1078}>
-      <div>
-        <div className='new-name'>
-          <div className='form-label'>应用名称</div>
-          <Input
-            style={{
-              width: '260px'
-            }}
-            value={appName} onChange={val => {
-              setAppName(val)
-            }}
-          />
-        </div>
-        <div className='section'>应用模板</div>
-        <CardList list={[{
-          cover: BytesizeFolder,
-          name: 'empty'
-        }]}
+    <Modal footer={false} className='new-app-dialog' title='新增应用' visible={visible} width={860} height='80%' onCancel={handleCancel}>
+      <div className='section'>
+        <CardList
+          onItemClick={key => {
+            onConfirm && onConfirm(key)
+          }}
+          list={[{
+            cover: <i className='bi bi-plus-lg' />,
+            key: 'empty',
+            label: '空白应用'
+          }, {
+            cover: <i class='bi bi-box-arrow-in-up' />,
+            key: 'import',
+            label: '导入应用文件'
+          }]}
         />
+      </div>
+
+      <div className='section'>
+        <div>从模板新增</div>
       </div>
     </Modal>
   )

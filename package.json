@@ -28,6 +28,6 @@
     "last 1 firefox version"
   ],
   "dependencies": {
-    "@ladle/react": "^5.1.1"
+    "mini-css-extract-plugin": "^2.10.0"
   }
 }

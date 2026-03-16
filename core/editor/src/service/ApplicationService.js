@@ -3,14 +3,14 @@ import debug from 'debug'
 import once from 'lodash/once.js'
 // import LowCollection from './LowCollection.js'
 import Localforge from 'localforage'
-import { blobToDataUrl, dataURLtoBlob, dataURLToString, stringToBlob, stringToDataUrl, saveAs } from '../utils/blob.js'
+import { blobToDataUrl, dataURLtoBlob, dataURLToString, stringToDataUrl, saveAs } from '../utils/blob.js'
 import { getFileTree, eachNode, filterTree, mapTree } from '../panels/files/buildFileTree.js'
 import { APP_PACKAGE_JSON, PAGE_JSON_TEMPLATE } from '../utils/template.js'
 import axios from 'axios'
 import { basename, dirname, extname, formateDate, nanoid } from '../utils/string.js'
 import { getByMimeType } from '../utils/mimeTypes.js'
 import helloZipApp from '../ridge-app-hello-1.0.0.zip'
-import JSZip, { version } from 'jszip'
+import JSZip from 'jszip'
 
 const trace = debug('ridge:app-service')
 
@@ -18,10 +18,12 @@ const trace = debug('ridge:app-service')
  * 应用管理服务，用于创建、修改、查询应用下资源（包括页面、图片、音视频、组件包等）
  */
 export default class ApplicationService {
-  constructor () {
-    this.collection = new NeCollection('ridge.app.db')
-    this.store = Localforge.createInstance({ name: 'ridge-store' })
+  constructor (appId) {
+    this.appId = appId
+    this.collection = new NeCollection('ridge.app.' + appId)
+    this.store = Localforge.createInstance({ name: 'ridge-store-' + appId })
     this.dataUrls = {}
+    this.dataUrlByPath = new Map()
     this.fileTree = null
   }
 
@@ -37,44 +39,44 @@ export default class ApplicationService {
     return filterTree(this.fileTree, filter)
   }
 
-  getFileByPath (path) {
-    const filtered = filterTree(this.fileTree, f => f.path === path)
-    if (filtered.length > 0) {
-      return filtered[0]
-    } else {
+  getFile (id) {
+    if (id == null) {
       return null
     }
-  }
-
-  async getAppFileTree () {
-    if (!this.fileTree) {
-      await this.updateAppFileTree()
-    }
-    return this.fileTree
+    const filtered = filterTree(this.fileTree, f => (f.path === id || f.id === id))
+    return filtered[0]
   }
 
   async updateAppFileTree () {
     trace('Update File Tree')
     const files = await this.getFiles()
-    this.updateFileBlobUrls(files)
+    await this.cacheLoacalFileContents(files)
     this.fileTree = getFileTree(files)
   }
 
-  // 更新工作区间所有文件类型的二进制
-  async updateFileBlobUrls (files) {
-    const updateUrls = {}
+  // 更新工作区间图片资源信息
+  async cacheLoacalFileContents (files) {
     for (const file of files) {
-      if (file.type !== 'page' && file.type !== 'directory') {
-        // 非页面和文件夹
-        if (this.dataUrls[file.id]) {
-          updateUrls[file.id] = this.dataUrls[file.id]
-        } else {
+      if (file.mimeType) {
+        if (file.mimeType.indexOf('image') > -1) {
+          file.url = await this.store.getItem(file.id)
+        }
+
+        if (file.mimeType.indexOf('text') > -1) {
           const dataUrl = await this.store.getItem(file.id)
-          updateUrls[file.id] = dataUrl
+          file.textContent = await dataURLToString(dataUrl)
+          if (file.mimeType === 'text/json') {
+            try {
+              file.json = JSON.parse(file.textContent)
+
+              if (file.json.version && file.json.elements) {
+                file.type = 'page'
+              }
+            } catch (e) {}
+          }
         }
       }
     }
-    this.dataUrls = updateUrls
   }
 
   async createDirectory (parent, name) {
@@ -98,37 +100,6 @@ export default class ApplicationService {
   }
 
   /**
-   * 增加组合组件（页面）
-   * @param {*} parentId
-   * @param {*} name
-   * @param {*} content
-   */
-  async createComposite (parentId, name, composite) {
-    trace('createComposite', parentId, name)
-    const one = await this.collection.findOne({
-      parentId,
-      name
-    })
-    if (one) {
-      throw new Error('File existed', name)
-    }
-
-    const id = nanoid(10)
-    const pageContent = composite ?? PAGE_JSON_TEMPLATE
-
-    const pageObject = {
-      id,
-      name,
-      type: 'page',
-      parent: parentId,
-      mimeType: 'text/json'
-    }
-    await this.store.setItem(id, pageContent)
-    await this.collection.insert(pageObject)
-    return pageObject
-  }
-
-  /**
    * 新增文件
    * @param {*} file
    * @param {*} dir
@@ -146,58 +117,39 @@ export default class ApplicationService {
 
     const id = nanoid(10)
     const dataUrl = await blobToDataUrl(blob, mimeType)
-    let isComposite = false
-    if (blob.type === 'application/json') {
-      const jsonString = await dataURLToString(dataUrl)
-      try {
-        const jsonContent = JSON.parse(jsonString)
-        if (jsonContent.elements && jsonContent.children) {
-          isComposite = true
-          this.createComposite(parentId, jsonContent.name, jsonContent)
-        }
-      } catch (e) {}
+    await this.store.setItem(id, dataUrl)
+    let mtype = blob.type || mimeType
+    if (!mtype) {
+      mtype = getByMimeType(extname(name))
     }
 
-    if (!isComposite) {
-      await this.store.setItem(id, dataUrl)
-
-      let mtype = blob.type || mimeType
-
-      if (!mtype) {
-        mtype = getByMimeType(extname(name))
-      }
-
-      return await this.collection.insert({
-        id,
-        mimeType: mtype,
-        size: blob.size,
-        name,
-        parent: parentId
-      })
-    }
+    return await this.collection.insert({
+      id,
+      mimeType: mtype,
+      size: blob.size,
+      name,
+      parent: parentId
+    })
   }
 
   /**
-   * 更新文本类文件内容
+   * 更新文本类文件内容 （只有问题才可能被更新）
    * @param {*} key
    * @param {*} content
    * @param {*} mimeType
    */
-  async updateFileContent (key, content, mimeType) {
+  async updateFileContent (key, content) {
     trace('updateFileContent', key, content)
-    const file = this.filterFiles(file => file.id === key)[0]
+    const file = this.getFile(key)
     if (file) {
       file.textContent = content
       await this.store.setItem(key, await stringToDataUrl(content, file.mimeType))
+      if (file.mimeType === 'text/json') {
+        try {
+          file.json = JSON.parse(content)
+        } catch (e) {}
+      }
     }
-  }
-
-  /**
-     * 保存页面配置
-     */
-  async savePageContent (id, content) {
-    // await this.collection.patch({ id }, {})
-    await this.store.setItem(id, content)
   }
 
   /**
@@ -231,12 +183,17 @@ export default class ApplicationService {
     return 1
   }
 
-  async checkNewNameValid (parentId, newName) {
-    const nameDuplicated = await this.collection.findOne({
-      parent: parentId,
-      name: newName
-    })
-    return nameDuplicated
+  checkNewNameValid (id, newName) {
+    const file = this.getFile(id)
+
+    if (file) {
+      const same = this.filterFiles(node => node.parent === file.parent && node.id !== id && node.name === newName)
+      if (same.length > 0) {
+        return false
+      } else {
+        return true
+      }
+    }
   }
 
   /**
@@ -347,27 +304,6 @@ export default class ApplicationService {
     return files
   }
 
-  // 根据id或者path获取文件
-  async getFile (id) {
-    trace('getFile', id)
-    let file = await this.collection.findOne({ id })
-
-    if (!file) {
-      file = this.getFileByPath(id)
-    } else {
-      if (file.type !== 'directory') {
-        file.content = await this.store.getItem(file.id)
-        // 读取文本类型的内容写入 file.textContent
-        if (file.mimeType && file.mimeType.startsWith('text') && typeof file.content === 'string' && file.content.startsWith('data:')) {
-          const textContent = await (dataURLToString(file.content))
-          trace('textContent', textContent)
-          file.textContent = textContent
-        }
-      }
-      return file
-    }
-  }
-
   /**
    * 确保当前目录存在
    * @param {*} filePath
@@ -392,50 +328,6 @@ export default class ApplicationService {
     return currentFile
   }
 
-  async getRecentPage () {
-    // 首先更新页面目录数据
-    const pages = await this.collection.find({
-      parent: -1,
-      type: 'page'
-    }, {
-      sort: {
-        name: 1
-      }
-    })
-    if (pages.length === 0) {
-      return this.createPage(-1)
-    } else {
-      return {
-        ...pages[0],
-        ...(await this.store.getItem(pages[0].id))
-      }
-    }
-  }
-
-  /**
-   * 根据文件获取文件所在路径
-   */
-  async getFilePath (file) {
-    if (file.parent && file.parent !== -1) {
-      const parentFile = await this.getFile(file.parent)
-      return (await this.getFilePath(parentFile)) + '/' + file.name
-    } else {
-      return file.name
-    }
-  }
-
-  async getByMimeType (mime) {
-    const files = await this.collection.find({
-      mimeType: new RegExp(mime)
-    })
-    for (const file of files) {
-      if (file.type === 'file') {
-        file.src = await this.store.getItem(file.id)
-      }
-    }
-    return files
-  }
-
   async isParent (parent, child) {
     let lop = await this.getFile(child)
     while (lop.parent !== -1) {
@@ -447,55 +339,41 @@ export default class ApplicationService {
     return false
   }
 
-  async updateDataUrl () {
-    const images = await this.getByMimeType('image')
-    for (const image of images) {
-      this.dataUrls[image.id] = image.dataUrl
-    }
-  }
+  getFileUrl (path) {
+    const file = this.getFile(path)
 
-  getDataUrl (path) {
-    if (path.startsWith('/')) {
-      const file = this.getFileByPath(path)
-      if (file) {
-        return this.dataUrls[file.id]
-      } else {
-        return null
-      }
-    } else {
-      return this.dataUrls[path]
-    }
-  }
-
-  async getFileContent (file) {
-    const dataUrl = await this.store.getItem(file.key)
-
-    if (file.mimeType && file.mimeType.indexOf('text') > -1) {
-      return await dataURLToString(dataUrl)
-    } else {
-      return await dataURLtoBlob(dataUrl)
-    }
-  }
-
-  async getFileContentByPath (filePath) {
-    const file = this.getFileByPath(filePath)
     if (file) {
-      return await this.getFileContent(file)
+      return file.url
     } else {
       return null
     }
   }
 
-  async exportFileArchive (id) {
-    await this.backUpService.exportFileArchive(id)
-  }
-
-  async getAppFileBlob () {
-    return this.backUpService.getAppBlob()
+  /**
+   * 递归将目录压缩到zip包中
+   * @param {*} zip
+   * @param {*} files
+   */
+  async zipFolder (zip, files) {
+    for (const file of files) {
+      if (file.type === 'directory') {
+        const zipFolder = zip.folder(file.name)
+        await this.zipFolder(zipFolder, file.children)
+      } else {
+        const dataUrl = await this.store.getItem(file.id)
+        zip.file(file.name, await dataURLtoBlob(dataUrl))
+      }
+    }
   }
 
   async exportAppArchive () {
-    await this.backUpService.exportAppArchive()
+    const zip = new JSZip()
+    const files = await this.getFiles()
+    this.fileTree = getFileTree(files)
+
+    await this.zipFolder(zip, this.fileTree)
+    const blob = await zip.generateAsync({ type: 'blob' })
+    return blob
   }
 
   async exportPage (id) {
@@ -503,27 +381,9 @@ export default class ApplicationService {
       id
     })
     const content = await this.store.getItem(id)
-
-    if (content) {
-      if (document.type === 'page') {
-        saveAs(new Blob([JSON.stringify(content)]), document.name + '.json')
-      } else {
-        saveAs(await dataURLtoBlob(content), document.name)
-      }
+    if (document && content) {
+      saveAs(await dataURLtoBlob(content), document.name)
     }
-  }
-
-  async getAppPackageBlob () {
-    return this.backUpService.getAppBlob()
-  }
-
-  async reset () {
-    await this.backupCurrentApp()
-    await this.collection.clean()
-    await this.store.clear()
-
-    window.location.reload()
-    // location.href = location.href
   }
 
   async createApp (name, tplName) {
@@ -567,7 +427,43 @@ export default class ApplicationService {
         await this.ensureDir(filePath)
       }
     }
-    this.setCurrentAppId(nanoid(16))
+
+    await this.updateAppFileTree()
+    this.appPackageJSONObject = await this.getAppPackageJSON()
+
+    if (!this.appPackageJSONObject) {
+      await this.updateAppPackageJSON({
+        name: 'ridge-' + this.appId,
+        version: '1.0.0',
+        description: '未命名应用'
+      })
+    }
+    this.appPackageJSONObject = await this.getAppPackageJSON()
+  }
+
+  async getAppPackageJSON () {
+    if (this.appPackageJSONObject) {
+      return this.appPackageJSONObject
+    }
+    const jsonContent = await this.getFileContentByPath('/package.json')
+    if (jsonContent) {
+      try {
+        this.appPackageJSONObject = JSON.parse(jsonContent)
+        return this.appPackageJSONObject
+      } catch (e) {
+      }
+    }
+    return null
+  }
+
+  async updateAppPackageJSON (packageJSONObject) {
+    const file = await this.getFileByPath('/package.json')
+    if (!file) {
+      await this.createFile(-1, 'package.json', new File([JSON.stringify(packageJSONObject, null, 2), 'package.json']), 'text/json')
+    } else {
+      await this.updateFileContent(file.id, JSON.stringify(packageJSONObject, null, 2))
+    }
+    this.appPackageJSONObject = packageJSONObject
   }
 
   /**
@@ -580,20 +476,12 @@ export default class ApplicationService {
     const parentId = dirNode ? dirNode.id : -1
     const filename = basename(zipObject.name)
     const ext = extname(zipObject.name)
-    if (filePath.endsWith('.json')) { // 对json文件判断是否为图纸，是图纸则导入
-      const jsonObject = JSON.parse(await zipObject.async('text'))
-      if (jsonObject.elements) {
-        await this.createComposite(parentId, basename(filename, '.json'), jsonObject)
-      } else {
-        await this.createFile(parentId, filename, new File([JSON.stringify(jsonObject, null, 2)], filename), 'text/json')
-      }
-    } else {
-      // 其他类型文件，例如图片、脚本
-      const mimeType = getByMimeType(ext)
-      await this.createFile(parentId, filename, new File([await zipObject.async('blob')], filename, {
-        type: mimeType
-      }), getByMimeType(ext))
-    }
+
+    // 其他类型文件，例如图片、脚本
+    const mimeType = getByMimeType(ext)
+    await this.createFile(parentId, filename, new File([await zipObject.async('blob')], filename, {
+      type: mimeType
+    }), mimeType)
   }
 
   async importHelloArchive () {
@@ -602,41 +490,7 @@ export default class ApplicationService {
     await this.importAppArchive(buffer)
   }
 
-  async backupCurrentApp () {
-    await this.backUpService.backup()
-  }
-
   async importFromNpmRegistry (packageName, version) {
-    await this.backupCurrentApp()
     return await this.backUpService.importFromNpmRegistry(packageName, version)
-  }
-
-  async importFromRidgeCloud (path) {
-    await this.backupCurrentApp()
-    return await this.backUpService.importFromRidgeCloud(path)
-  }
-
-  async backUpAppArchive (tag) {
-    await this.backUpService.createHistory(this.collection, tag)
-  }
-
-  async recoverBackUpAppArchive (id) {
-    await this.backUpService.recover(id)
-  }
-
-  async getAllBackups () {
-    return await this.backUpService.listAllHistory()
-  }
-
-  async removeBackup (id) {
-    return await this.backUpService.deleteHistory(id)
-  }
-
-  async exportArchive () {
-    this.backUpService.exportColl(this.collection)
-  }
-
-  async archive () {
-
   }
 }

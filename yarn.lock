@@ -4063,7 +4063,7 @@ ajv@^8.0.0, ajv@^8.8.2, ajv@^8.9.0, ajv@>=5.0.0:
     json-schema-traverse "^1.0.0"
     require-from-string "^2.0.2"
 
-"animate-weather-icon@file:C:\\work\\ridge\\components\\animate-weather":
+"animate-weather-icon@file:C:\\Work\\ridge\\components\\animate-weather":
   version "1.0.0"
   resolved "file:components/animate-weather"
   dependencies:
@@ -4439,17 +4439,6 @@ at-least-node@^1.0.0:
   resolved "https://registry.npmmirror.com/at-least-node/-/at-least-node-1.0.0.tgz"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-autoprefixer@^10.4.24:
-  version "10.4.24"
-  resolved "http://nexus.saas.hand-china.com/repository/hzero-npm-group/autoprefixer/-/autoprefixer-10.4.24.tgz"
-  integrity sha512-uHZg7N9ULTVbutaIsDRoUkoS8/h3bdsmVJYZ5l3wv8Cp/6UIIoRDm90hZ+BwxUj/hGBEzLxdHNSKuFpn8WOyZw==
-  dependencies:
-    browserslist "^4.28.1"
-    caniuse-lite "^1.0.30001766"
-    fraction.js "^5.3.4"
-    picocolors "^1.1.1"
-    postcss-value-parser "^4.2.0"
-
 available-typed-arrays@^1.0.7:
   version "1.0.7"
   resolved "https://registry.npmmirror.com/available-typed-arrays/-/available-typed-arrays-1.0.7.tgz"
@@ -4457,7 +4446,7 @@ available-typed-arrays@^1.0.7:
   dependencies:
     possible-typed-array-names "^1.0.0"
 
-"awesome-css-backgrounds@file:C:\\work\\ridge\\components\\backgrounds":
+"awesome-css-backgrounds@file:C:\\Work\\ridge\\components\\backgrounds":
   version "1.0.0"
   resolved "file:components/backgrounds"
   dependencies:
@@ -4727,7 +4716,7 @@ braces@^3.0.3, braces@~3.0.2:
   dependencies:
     fill-range "^7.1.1"
 
-browserslist@^4.24.0, browserslist@^4.24.3, browserslist@^4.28.1, "browserslist@>= 4.21.0":
+browserslist@^4.24.0, browserslist@^4.24.3, "browserslist@>= 4.21.0":
   version "4.28.1"
   resolved "http://nexus.saas.hand-china.com/repository/hzero-npm-group/browserslist/-/browserslist-4.28.1.tgz"
   integrity sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA==
@@ -4905,7 +4894,7 @@ camelcase@5.0.0:
   resolved "https://registry.npmmirror.com/camelcase/-/camelcase-5.0.0.tgz"
   integrity sha512-faqwZqnWxbxn+F1d399ygeamQNy3lPp/H9H6rNrqYh4FSVCtcY+3cub1MxA8o9mDd55mM8Aghuu/kuyYA6VTsA==
 
-caniuse-lite@^1.0.30001759, caniuse-lite@^1.0.30001766:
+caniuse-lite@^1.0.30001759:
   version "1.0.30001769"
   resolved "http://nexus.saas.hand-china.com/repository/hzero-npm-group/caniuse-lite/-/caniuse-lite-1.0.30001769.tgz"
   integrity sha512-BCfFL1sHijQlBGWBMuJyhZUhzo7wer5sVj9hqekB/7xn0Ypy+pER/edCYQm4exbXj4WiySGp40P8UuTh6w1srg==
@@ -5604,7 +5593,7 @@ cosmiconfig@^8.1.3:
     parse-json "^5.2.0"
     path-type "^4.0.0"
 
-cosmiconfig@^9.0.0, cosmiconfig@9.0.0:
+cosmiconfig@9.0.0:
   version "9.0.0"
   resolved "https://registry.npmmirror.com/cosmiconfig/-/cosmiconfig-9.0.0.tgz"
   integrity sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==
@@ -7391,11 +7380,6 @@ forwarded@0.2.0:
   resolved "https://registry.npmmirror.com/forwarded/-/forwarded-0.2.0.tgz"
   integrity sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==
 
-fraction.js@^5.3.4:
-  version "5.3.4"
-  resolved "http://nexus.saas.hand-china.com/repository/hzero-npm-group/fraction.js/-/fraction.js-5.3.4.tgz"
-  integrity sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==
-
 framework-utils@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmmirror.com/framework-utils/-/framework-utils-1.1.0.tgz"
@@ -9111,7 +9095,7 @@ jest-worker@^27.4.5:
     merge-stream "^2.0.0"
     supports-color "^8.0.0"
 
-jiti@^2.5.1, jiti@>=1.21.0:
+jiti@>=1.21.0:
   version "2.6.1"
   resolved "http://nexus.saas.hand-china.com/repository/hzero-npm-group/jiti/-/jiti-2.6.1.tgz"
   integrity sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==
@@ -10693,6 +10677,14 @@ min-indent@^1.0.0:
   resolved "https://registry.npmmirror.com/min-indent/-/min-indent-1.0.1.tgz"
   integrity sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==
 
+mini-css-extract-plugin@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.npmjs.org/mini-css-extract-plugin/-/mini-css-extract-plugin-2.10.0.tgz"
+  integrity sha512-540P2c5dYnJlyJxTaSloliZexv8rji6rY8FhQN+WF/82iHQfA23j/xtJx97L+mXOML27EqksSek/g4eK7jaL3g==
+  dependencies:
+    schema-utils "^4.0.0"
+    tapable "^2.2.1"
+
 mini-svg-data-uri@^1.2.3:
   version "1.4.4"
   resolved "https://registry.npmmirror.com/mini-svg-data-uri/-/mini-svg-data-uri-1.4.4.tgz"
@@ -10852,7 +10844,7 @@ modify-values@^1.0.1:
   resolved "https://registry.npmmirror.com/modify-values/-/modify-values-1.0.1.tgz"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
-"monitoring-x1@file:C:\\work\\ridge\\components\\monitoring-x1":
+"monitoring-x1@file:C:\\Work\\ridge\\components\\monitoring-x1":
   version "1.0.0"
   resolved "file:components/monitoring-x1"
   dependencies:
@@ -12008,15 +12000,6 @@ possible-typed-array-names@^1.0.0:
   resolved "https://registry.npmmirror.com/possible-typed-array-names/-/possible-typed-array-names-1.1.0.tgz"
   integrity sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==
 
-postcss-loader@^8.2.0:
-  version "8.2.0"
-  resolved "http://nexus.saas.hand-china.com/repository/hzero-npm-group/postcss-loader/-/postcss-loader-8.2.0.tgz"
-  integrity sha512-tHX+RkpsXVcc7st4dSdDGliI+r4aAQDuv+v3vFYHixb6YgjreG5AG4SEB0kDK8u2s6htqEEpKlkhSBUTvWKYnA==
-  dependencies:
-    cosmiconfig "^9.0.0"
-    jiti "^2.5.1"
-    semver "^7.6.2"
-
 postcss-modules-extract-imports@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmmirror.com/postcss-modules-extract-imports/-/postcss-modules-extract-imports-2.0.0.tgz"
@@ -12108,15 +12091,6 @@ postcss-value-parser@^4.1.0, postcss-value-parser@^4.2.0:
   resolved "https://registry.npmmirror.com/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz"
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
-"postcss@^7.0.0 || ^8.0.1", postcss@^8.1.0, postcss@^8.4.33, postcss@^8.5.3:
-  version "8.5.6"
-  resolved "https://registry.npmjs.org/postcss/-/postcss-8.5.6.tgz"
-  integrity sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==
-  dependencies:
-    nanoid "^3.3.11"
-    picocolors "^1.1.1"
-    source-map-js "^1.2.1"
-
 postcss@^7.0.14, postcss@^7.0.32, postcss@^7.0.5, postcss@^7.0.6:
   version "7.0.39"
   resolved "https://registry.npmmirror.com/postcss/-/postcss-7.0.39.tgz"
@@ -12124,6 +12098,15 @@ postcss@^7.0.14, postcss@^7.0.32, postcss@^7.0.5, postcss@^7.0.6:
   dependencies:
     picocolors "^0.2.1"
     source-map "^0.6.1"
+
+postcss@^8.1.0, postcss@^8.4.33, postcss@^8.5.3:
+  version "8.5.6"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-8.5.6.tgz"
+  integrity sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==
+  dependencies:
+    nanoid "^3.3.11"
+    picocolors "^1.1.1"
+    source-map-js "^1.2.1"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
@@ -13577,14 +13560,14 @@ reusify@^1.0.4:
   resolved "https://registry.npmmirror.com/reusify/-/reusify-1.0.4.tgz"
   integrity sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==
 
-"ridge-animatecss@file:C:\\work\\ridge\\components\\animate.css":
+"ridge-animatecss@file:C:\\Work\\ridge\\components\\animate.css":
   version "1.0.0"
   resolved "file:components/animate.css"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-antd@file:C:\\work\\ridge\\components\\antd":
+"ridge-antd@file:C:\\Work\\ridge\\components\\antd":
   version "1.0.0"
   resolved "file:components/antd"
   dependencies:
@@ -13593,14 +13576,14 @@ reusify@^1.0.4:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-atlassian@file:C:\\work\\ridge\\components\\atlassian":
+"ridge-atlassian@file:C:\\Work\\ridge\\components\\atlassian":
   version "1.0.0"
   resolved "file:components/atlassian"
   dependencies:
     "@atlaskit/button" "^20.2.5"
     "@atlaskit/tokens" "^2.0.2"
 
-ridge-boot@^1.0.0, "ridge-boot@file:C:\\work\\ridge\\server\\boot":
+ridge-boot@^1.0.0, "ridge-boot@file:C:\\Work\\ridge\\server\\boot":
   version "1.1.0"
   resolved "file:server/boot"
   dependencies:
@@ -13611,7 +13594,7 @@ ridge-boot@^1.0.0, "ridge-boot@file:C:\\work\\ridge\\server\\boot":
     koa "^2.15.2"
     querystring "^0.2.0"
 
-"ridge-bootstrap@file:C:\\work\\ridge\\components\\bootstrap":
+"ridge-bootstrap@file:C:\\Work\\ridge\\components\\bootstrap":
   version "1.2.2"
   resolved "file:components/bootstrap"
   dependencies:
@@ -13621,7 +13604,7 @@ ridge-boot@^1.0.0, "ridge-boot@file:C:\\work\\ridge\\server\\boot":
     react-bootstrap "^2.10.10"
     react-dom "^18.2.0"
 
-ridge-build@^1.1.0, "ridge-build@file:C:\\work\\ridge\\core\\tools":
+ridge-build@^1.1.0, "ridge-build@file:C:\\Work\\ridge\\core\\tools":
   version "1.2.0"
   resolved "file:core/tools"
   dependencies:
@@ -13648,19 +13631,19 @@ ridge-build@^1.1.0, "ridge-build@file:C:\\work\\ridge\\core\\tools":
     webpack-bundle-analyzer "^4.5.0"
     webpack-merge "^5.1.4"
 
-"ridge-cache@file:C:\\work\\ridge\\server\\cache":
+"ridge-cache@file:C:\\Work\\ridge\\server\\cache":
   version "1.0.0"
   resolved "file:server/cache"
 
-"ridge-chart-series@file:C:\\work\\ridge\\components\\charts-column-lines":
+"ridge-chart-series@file:C:\\Work\\ridge\\components\\charts-column-lines":
   version "1.2.1"
   resolved "file:components/charts-column-lines"
 
-"ridge-cloud-aliyun@file:C:\\work\\ridge\\server\\aliyun-oss":
+"ridge-cloud-aliyun@file:C:\\Work\\ridge\\server\\aliyun-oss":
   version "1.0.0"
   resolved "file:server/aliyun-oss"
 
-"ridge-cloud-server@file:C:\\work\\ridge\\server\\cloud":
+"ridge-cloud-server@file:C:\\Work\\ridge\\server\\cloud":
   version "1.0.0"
   resolved "file:server/cloud"
   dependencies:
@@ -13669,25 +13652,25 @@ ridge-build@^1.1.0, "ridge-build@file:C:\\work\\ridge\\core\\tools":
     ridge-http "^1.0.0"
     ridge-npm-service "^1.0.0"
 
-"ridge-cloud-storage@file:C:\\work\\ridge\\server\\app-storage":
+"ridge-cloud-storage@file:C:\\Work\\ridge\\server\\app-storage":
   version "1.0.0"
   resolved "file:server/app-storage"
   dependencies:
     semver "^7.6.3"
 
-"ridge-cloud-tools@file:C:\\work\\ridge\\server\\tools":
+"ridge-cloud-tools@file:C:\\Work\\ridge\\server\\tools":
   version "1.0.0"
   resolved "file:server/tools"
   dependencies:
     svg-captcha "^1.4.0"
 
-"ridge-cloud-user@file:C:\\work\\ridge\\server\\user":
+"ridge-cloud-user@file:C:\\Work\\ridge\\server\\user":
   version "1.0.0"
   resolved "file:server/user"
   dependencies:
     svg-captcha "^1.4.0"
 
-"ridge-codemirror@file:C:\\work\\ridge\\components\\codemirror":
+"ridge-codemirror@file:C:\\Work\\ridge\\components\\codemirror":
   version "1.0.0"
   resolved "file:components/codemirror"
   dependencies:
@@ -13700,7 +13683,7 @@ ridge-build@^1.1.0, "ridge-build@file:C:\\work\\ridge\\core\\tools":
     globals "^15.12.0"
     thememirror "^2.0.1"
 
-"ridge-community-server@file:C:\\work\\ridge\\server\\community":
+"ridge-community-server@file:C:\\Work\\ridge\\server\\community":
   version "1.1.0"
   resolved "file:server/community"
   dependencies:
@@ -13708,33 +13691,33 @@ ridge-build@^1.1.0, "ridge-build@file:C:\\work\\ridge\\core\\tools":
     ridge-http "^1.0.0"
     ridge-npm-service "^1.0.0"
 
-"ridge-container@file:C:\\work\\ridge\\components\\container":
+"ridge-container@file:C:\\Work\\ridge\\components\\container":
   version "1.2.0"
   resolved "file:components/container"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-cropperjs@file:C:\\work\\ridge\\components\\cropper":
+"ridge-cropperjs@file:C:\\Work\\ridge\\components\\cropper":
   version "1.0.0"
   resolved "file:components/cropper"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-dao@file:C:\\work\\ridge\\server\\dao":
+"ridge-dao@file:C:\\Work\\ridge\\server\\dao":
   version "1.1.2"
   resolved "file:server/dao"
   dependencies:
     lowdb "^7.0.1"
 
-"ridge-echarts@file:C:\\work\\ridge\\components\\echarts":
+"ridge-echarts@file:C:\\Work\\ridge\\components\\echarts":
   version "1.0.1"
   resolved "file:components/echarts"
   dependencies:
     echarts "^5.4.3"
 
-"ridge-editor@file:C:\\work\\ridge\\core\\editor":
+"ridge-editor@file:C:\\Work\\ridge\\core\\editor":
   version "1.2.0"
   resolved "file:core/editor"
   dependencies:
@@ -13764,11 +13747,11 @@ ridge-build@^1.1.0, "ridge-build@file:C:\\work\\ridge\\core\\tools":
     selecto "^1.26.3"
     zustand "^5.0.10"
 
-"ridge-effect-animejs@file:C:\\work\\ridge\\components\\animejs":
+"ridge-effect-animejs@file:C:\\Work\\ridge\\components\\animejs":
   version "1.0.0"
   resolved "file:components/animejs"
 
-"ridge-enterprise-server@file:C:\\work\\ridge\\server\\enterprise":
+"ridge-enterprise-server@file:C:\\Work\\ridge\\server\\enterprise":
   version "1.0.0"
   resolved "file:server/enterprise"
   dependencies:
@@ -13776,23 +13759,23 @@ ridge-build@^1.1.0, "ridge-build@file:C:\\work\\ridge\\core\\tools":
     ridge-http "^1.0.0"
     ridge-npm-service "^1.0.0"
 
-ridge-externals@^1.0.0, "ridge-externals@file:C:\\work\\ridge\\core\\externals":
+ridge-externals@^1.0.0, "ridge-externals@file:C:\\Work\\ridge\\core\\externals":
   version "1.0.0"
   resolved "file:core/externals"
 
-"ridge-flowbite@file:C:\\work\\ridge\\components\\flowbite":
+"ridge-flowbite@file:C:\\Work\\ridge\\components\\flowbite":
   version "1.0.0"
   resolved "file:components/flowbite"
 
-"ridge-highcharts-extra@file:C:\\work\\ridge\\components\\highcharts-extra":
+"ridge-highcharts-extra@file:C:\\Work\\ridge\\components\\highcharts-extra":
   version "1.0.1"
   resolved "file:components/highcharts-extra"
 
-"ridge-highcharts@file:C:\\work\\ridge\\components\\highcharts":
+"ridge-highcharts@file:C:\\Work\\ridge\\components\\highcharts":
   version "1.2.1"
   resolved "file:components/highcharts"
 
-ridge-http@^1.0.0, "ridge-http@file:C:\\work\\ridge\\server\\http":
+ridge-http@^1.0.0, "ridge-http@file:C:\\Work\\ridge\\server\\http":
   version "1.0.0"
   resolved "file:server/http"
   dependencies:
@@ -13811,7 +13794,7 @@ ridge-http@^1.0.0, "ridge-http@file:C:\\work\\ridge\\server\\http":
     koa-static "^5.0.0"
     koa2-ratelimit "^1.1.3"
 
-"ridge-json-tree@file:C:\\work\\ridge\\components\\json-tree":
+"ridge-json-tree@file:C:\\Work\\ridge\\components\\json-tree":
   version "1.0.0"
   resolved "file:components/json-tree"
   dependencies:
@@ -13820,14 +13803,14 @@ ridge-http@^1.0.0, "ridge-http@file:C:\\work\\ridge\\server\\http":
     react-dom "^18.2.0"
     react-json-tree "^0.20.0"
 
-"ridge-marked@file:C:\\work\\ridge\\components\\marked":
+"ridge-marked@file:C:\\Work\\ridge\\components\\marked":
   version "1.0.0"
   resolved "file:components/marked"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-material@file:C:\\work\\ridge\\components\\material":
+"ridge-material@file:C:\\Work\\ridge\\components\\material":
   version "1.2.0"
   resolved "file:components/material"
   dependencies:
@@ -13835,25 +13818,25 @@ ridge-http@^1.0.0, "ridge-http@file:C:\\work\\ridge\\server\\http":
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-modernize@file:C:\\work\\ridge\\components\\modernize":
+"ridge-modernize@file:C:\\Work\\ridge\\components\\modernize":
   version "1.0.0"
   resolved "file:components/modernize"
 
-"ridge-music-block@file:C:\\work\\ridge\\components\\music-block":
+"ridge-music-block@file:C:\\Work\\ridge\\components\\music-block":
   version "1.0.0"
   resolved "file:components/music-block"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-nedb@file:C:\\work\\ridge\\server\\nedb":
+"ridge-nedb@file:C:\\Work\\ridge\\server\\nedb":
   version "1.1.4"
   resolved "file:server/nedb"
   dependencies:
     glob "^7.2.0"
     nedb "^1.8.0"
 
-ridge-npm-service@^1.0.0, "ridge-npm-service@file:C:\\work\\ridge\\server\\npm-service":
+ridge-npm-service@^1.0.0, "ridge-npm-service@file:C:\\Work\\ridge\\server\\npm-service":
   version "1.0.0"
   resolved "file:server/npm-service"
   dependencies:
@@ -13865,20 +13848,20 @@ ridge-npm-service@^1.0.0, "ridge-npm-service@file:C:\\work\\ridge\\server\\npm-s
     object-hash "^3.0.0"
     tar "^6.1.11"
 
-"ridge-progress@file:C:\\work\\ridge\\components\\progress":
+"ridge-progress@file:C:\\Work\\ridge\\components\\progress":
   version "1.0.0"
   resolved "file:components/progress"
   dependencies:
     react "^18.2.0"
 
-"ridge-semantic@file:C:\\work\\ridge\\components\\semantic":
+"ridge-semantic@file:C:\\Work\\ridge\\components\\semantic":
   version "1.1.0"
   resolved "file:components/semantic"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-semi@file:C:\\work\\ridge\\components\\semi":
+"ridge-semi@file:C:\\Work\\ridge\\components\\semi":
   version "1.2.0"
   resolved "file:components/semi"
   dependencies:
@@ -13886,7 +13869,7 @@ ridge-npm-service@^1.0.0, "ridge-npm-service@file:C:\\work\\ridge\\server\\npm-s
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-sharp@file:C:\\work\\ridge\\server\\avif":
+"ridge-sharp@file:C:\\Work\\ridge\\server\\avif":
   version "1.0.0"
   resolved "file:server/avif"
   dependencies:
@@ -13894,7 +13877,7 @@ ridge-npm-service@^1.0.0, "ridge-npm-service@file:C:\\work\\ridge\\server\\npm-s
     readline "^1.3.0"
     sharp "^0.33.5"
 
-"ridge-swiper@file:C:\\work\\ridge\\components\\swiper":
+"ridge-swiper@file:C:\\Work\\ridge\\components\\swiper":
   version "1.0.0"
   resolved "file:components/swiper"
   dependencies:
@@ -13902,21 +13885,21 @@ ridge-npm-service@^1.0.0, "ridge-npm-service@file:C:\\work\\ridge\\server\\npm-s
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-tdesign@file:C:\\work\\ridge\\components\\tdesign":
+"ridge-tdesign@file:C:\\Work\\ridge\\components\\tdesign":
   version "1.0.0"
   resolved "file:components/tdesign"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-text@file:C:\\work\\ridge\\components\\text":
+"ridge-text@file:C:\\Work\\ridge\\components\\text":
   version "1.2.0"
   resolved "file:components/text"
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
 
-"ridge-toolbox@file:C:\\work\\ridge\\components\\toolbox":
+"ridge-toolbox@file:C:\\Work\\ridge\\components\\toolbox":
   version "1.2.0"
   resolved "file:components/toolbox"
   dependencies:
@@ -13954,7 +13937,7 @@ ridgejs-editor@^1.0.0:
     selecto "^1.26.3"
     zustand "^5.0.10"
 
-"ridgejs@file:C:\\work\\ridge\\core\\runtime":
+"ridgejs@file:C:\\Work\\ridge\\core\\runtime":
   version "1.1.7"
   resolved "file:core/runtime"
   dependencies:
@@ -14222,7 +14205,7 @@ scroll-into-view-if-needed@^3.1.0:
   dependencies:
     compute-scroll-into-view "^3.0.2"
 
-"search-yesicon@file:C:\\work\\ridge\\server\\search-yesicon":
+"search-yesicon@file:C:\\Work\\ridge\\server\\search-yesicon":
   version "1.0.0"
   resolved "file:server/search-yesicon"
 
@@ -14277,7 +14260,7 @@ semver@^6.3.1:
   resolved "https://registry.npmmirror.com/semver/-/semver-6.3.1.tgz"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
-semver@^7.0.0, semver@^7.1.1, semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.3, semver@^7.5.4, semver@^7.6.2, semver@^7.6.3:
+semver@^7.0.0, semver@^7.1.1, semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.3, semver@^7.5.4, semver@^7.6.3:
   version "7.7.1"
   resolved "https://registry.npmmirror.com/semver/-/semver-7.7.1.tgz"
   integrity sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==
@@ -15100,7 +15083,7 @@ tagged-tag@^1.0.0:
   resolved "https://registry.npmjs.org/tagged-tag/-/tagged-tag-1.0.0.tgz"
   integrity sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==
 
-tapable@^2.0.0, tapable@^2.1.1, tapable@^2.2.0:
+tapable@^2.0.0, tapable@^2.1.1, tapable@^2.2.0, tapable@^2.2.1:
   version "2.2.1"
   resolved "https://registry.npmmirror.com/tapable/-/tapable-2.2.1.tgz"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==

@@ -6,7 +6,7 @@
  "scripts": {
     "build": "webpack"
   },
-  "author": "ridgeui",
+  "author": "Liu Han",
   "license": "ISC",
   "dependencies": {
     "colorthief": "^2.6.0",

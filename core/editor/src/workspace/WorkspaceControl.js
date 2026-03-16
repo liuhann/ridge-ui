@@ -1,13 +1,12 @@
 import Selecto from 'selecto'
 import { createMoveable } from './moveable'
-import { isAncestor } from '../utils/isAncestor.js'
 import Mousetrap from 'mousetrap'
 // import html2canvas from 'html2canvas'
 
+import EditorComposite from './EditorComposite.js'
 import debug from 'debug'
 import { fitRectIntoBounds } from '../utils/rectUtils'
 
-import { getNodeListConfig } from './editorUtils.js'
 const RIDGE_ELEMENT = '.ridge-editor-element'
 
 const trace = debug('ridge:workspace')
@@ -20,10 +19,12 @@ export default class WorkSpaceControl {
   init ({
     workspaceEl,
     viewPortEl,
+    editorStore,
     context
   }) {
     this.workspaceEl = workspaceEl
     this.viewPortEl = viewPortEl
+    this.editorStore = editorStore
     this.context = context
     this.zoom = 1
     this.selectorDropableTarget = ['.ridge-container', '.ridge-droppable']
@@ -65,7 +66,7 @@ export default class WorkSpaceControl {
   }
 
   updateMovable () {
-    this.moveable.updateTarget()
+    this.moveable.updateRect()
   }
 
   fitByWidth () {
@@ -272,25 +273,13 @@ export default class WorkSpaceControl {
         return
       }
       const style = {}
-      const matched = transform.match(/[0-9.]+/g)
       style.x = drag.translate[0]
       style.y = drag.translate[1]
-      if (delta[0]) {
-        style.width = Math.round(width)
-      }
-      if (delta[1]) {
-        style.height = Math.round(height)
-      }
-      // const tbc = target.getBoundingClientRect()
-      // console.log('resize', style, target.style.width, target.style.height)
+      style.width = Math.round(width)
+      style.height = Math.round(height)
 
-      // if (Math.abs(style.height - target.clientHeight) > 10) {
-      //   style.height = target.clientHeight
-      // }
-      // if (Math.abs(style.width - target.clientWidth) > 10) {
-      //   style.width = target.clientWidth
-      // }
       target.ridgeNode.updateStyleConfig(style)
+      this.editorStore.getState().updateNodeRect(style)
     })
 
     this.moveable.on('resizeEnd', ({
@@ -712,7 +701,7 @@ export default class WorkSpaceControl {
    * @param {*} disableClickThrough 选择后是否可以直接选择当前节点的下级节点, 从面板发起的选择一般不允许向下选择
    */
   selectElements (elements, disableClickThrough) {
-    const { context } = this
+    const { editorStore } = this
     this.disableClickThrough = disableClickThrough
 
     // 去除之前选中状态
@@ -739,11 +728,15 @@ export default class WorkSpaceControl {
         el.style.width = el.offsetWidth + 'px'
         el.ridgeNode.config.style.width = el.offsetWidth
       }
-      context.onElementSelected(this.selected[0].ridgeNode)
+
+      editorStore.getState().selectElement(this.selected[0].ridgeNode)
+      // context.onElementSelected(this.selected[0].ridgeNode)
     } else if (elements.length === 1 && elements[0].ridgeNode) {
-      context.onElementSelected(elements[0].ridgeNode)
+      editorStore.getState().selectElement(elements[0].ridgeNode)
+      // context.onElementSelected(elements[0].ridgeNode)
     } else if (this.selected.length === 0) {
-      context.onPageSelected()
+      editorStore.getState().selectPage()
+      // context.onPageSelected()
       this.selected = []
       this.moveable.target = null
     }
@@ -1035,5 +1028,21 @@ export default class WorkSpaceControl {
       context.services?.menuBar?.setZoom(targetZoom)
       this.setZoom(targetZoom)
     }
+  }
+
+  async loadPage (pageContent) {
+    const editorComposite = new EditorComposite({
+      config: pageContent,
+      context: this.context
+    })
+    editorComposite.firstPaint(this.viewPortEl)
+    await editorComposite.mount()
+
+    if (!this.enabled) {
+      this.enable()
+    }
+    this.selectElements([])
+    this.currentComposite = editorComposite
+    return editorComposite
   }
 }

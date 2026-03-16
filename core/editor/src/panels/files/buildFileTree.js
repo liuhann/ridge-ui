@@ -60,20 +60,10 @@ export const mapTree = (treeData, map, parentPath = '/') => {
 
 export const buildFileTree = (file, dir, files, each) => {
   const treeNode = {
-    id: file.id,
-    key: file.id,
-    name: file.name,
-    label: file.name,
-    type: file.type,
-    path: (file.parent === -1) ? ('/' + file.name) : (dir.path + '/' + file.name),
-    parent: file.parent,
-    parentNode: dir,
-    raw: file,
-    value: file.id
+    ...file
   }
-  if (file.mimeType) {
-    treeNode.mimeType = file.mimeType
-  }
+  treeNode.path = (file.parent === -1) ? ('/' + file.name) : (dir.path + '/' + file.name)
+  treeNode.parentNode = dir
 
   if (treeNode.type === 'directory') {
     const children = files.filter(item => item.parent === file.id)

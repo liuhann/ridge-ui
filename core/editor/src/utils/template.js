@@ -4,11 +4,9 @@ const PAGE_JSON_TEMPLATE = {
   version: VERSION,
   style: Object.assign({
     width: 1290,
-    height: 960,
-    classNames: []
+    height: 960
   }),
   properties: {},
-  cssFiles: [],
   jsFiles: [],
   elements: []
 }
@@ -17,12 +15,7 @@ const APP_PACKAGE_JSON = {
   name: 'ridge-hello-app',
   version: '1.0.0',
   description: 'Hello Ridge应用',
-  keywords: ['ridge-webapp'],
-  ridgeType: 'app',
-  themes: {},
-  dependencies: {
-    'ridge-container': '1.0.0'
-  }
+  keywords: ['ridge-webapp']
 }
 
 const STORE_TEMPLATE = `

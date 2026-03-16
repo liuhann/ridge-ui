@@ -1,14 +1,12 @@
+import ApplicationService from './ApplicationService.js'
 import NeCollection from './NeCollection.js'
-import Localforge from 'localforage'
 
 export default class LocalRepoService {
-  constructor (appService, backupService) {
+  constructor () {
     this.collection = new NeCollection('ridge.repo.db')
-    this.store = Localforge.createInstance({ name: 'ridge-repo' })
-    this.appService = appService
-    this.collection.clean()
     this.currentAppId = null
-    this.currentAppName = null
+    this.appServices = {}
+    this.currentAppId = window.localStorage.getItem('ridge-current-app-id')
   }
   
 
@@ -32,36 +30,53 @@ export default class LocalRepoService {
   },
 
   // 持久化保存当前App
-  async persistanceCurrentApp () {
-    const { appService } = this
-    if (this.currentAppId) {
-      const existed = await this.collection.findOne({ id: this.currentAppId })
+  async persistanceApp (id, name) {
+    const existed = await this.collection.findOne({ id })
 
-      if (!existed) {
-        await this.collection.insert({
-          id: this.currentAppId,
-          name: this.currentAppName
-        })
-      } else {
-        await this.collection.update({
-          id: this.currentAppId
-        }, {
-          name: this.currentAppName
-        })
-      }
-      const zipBlob = await appService.getAppBlob()
-      await this.store.setItem(this.currentAppId, zipBlob)
+    if (!existed) {
+      await this.collection.insert({
+        id,
+        name
+      })
+    } else {
+      await this.collection.update({
+        id
+      }, {
+        name
+      })
     }
+  }
+
+  async setCurrentApp (id, appService) {
+    window.localStorage.setItem('ridge-current-app-id', id)
+    this.currentAppId = id
+    this.appServices[id] = appService
+  }
+
+  async getCurrentAppId () {
+    return this.currentAppId
+  }
+
+  getCurrentAppService () {
+    if (this.currentAppId) {
+      return this.getAppService(this.currentAppId)
+    }
+    return null
+  }
+
+  getAppService (id) {
+    if (!this.appServices[id]) {
+      this.appServices[id] = new ApplicationService(id)
+    }
+    return this.appServices[id]
   }
 
   async removeApp (id) {
     if (id == null) return
-    if (this.appService.getCurrentAppId() === id) {
-      await this.appService.clear()
-    }
     await this.collection.remove({
       id
     })
+    delete this.appServices[id]
   }
 
   async renameApp (id, newName) {
@@ -78,10 +93,9 @@ export default class LocalRepoService {
   async getApp (id) {
     const existed = await this.collection.findOne({ id })
     if (existed) {
-      return {
-        ...existed,
-        blob: await this.store.getItem(id)
-      }
+      return existed
+    } else {
+      return null
     }
   }
 

@@ -7,13 +7,13 @@ const CardList = ({
 }) => {
   const [currentKey, setCurrentKey] = useState(list[0].key)
   return (
-    <div className='card-list-t'>
+    <div className='card-list-preview'>
       {list && list.map((item, index) => {
         return (
           <div
             onClick={() => {
               setCurrentKey(item.key)
-              onItemClick && onItemClick(item.key)
+              onItemClick(item.key)
             }}
             className={'card' + (currentKey === item.key ? ' selected' : '')} key={index}
           >

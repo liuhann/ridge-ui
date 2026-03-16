@@ -1,10 +1,12 @@
 // src/store/useStore.js
 import { create } from 'zustand'
+import { alphabetid } from '../utils/string'
 import LocalRepoService from '../service/LocalRepoService'
 import ApplicationService from '../service/ApplicationService'
+import { stringToBlob } from '../utils/blob'
+import { trim, camelCase } from '../utils/string'
 
-const appService = new ApplicationService()
-const localRepoService = new LocalRepoService(appService)
+const localRepoService = new LocalRepoService()
 
 const useStore = create((set, get) => ({
   // 初始化状态
@@ -14,41 +16,47 @@ const useStore = create((set, get) => ({
   currentAppId: '',
   currentAppFilesTree: [],
 
-  backToAppList: async () => {
-    if (get().currentAppId) {
-      localRepoService.saveApp(get().currentAppId, get().currentAppName, await appService.getAppBlob())
-    }
-    set({
-      currentAppName: ''
-    })
-  },
-
-  persistanceCurrentApp: async () => {
-    await localRepoService.persistanceCurrentApp()
-  },
-
-  createApp: async (name, tplName) => {
-    const id = await appService.createApp(name, tplName)
-
-    await localRepoService.saveApp(id, name, await appService.getAppBlob())
-  },
-
   openApp: async id => {
     const appInfo = await localRepoService.getApp(id)
 
     if (appInfo) {
-      await appService.importAppArchive(appInfo.blob)
+      const appService = localRepoService.getAppService(id)
+      localRepoService.setCurrentApp(id, appService)
       await appService.updateAppFileTree()
       set({
-        currentAppName: appInfo.name,
         currentAppId: id,
-        currentAppFilesTree: appService.fileTree
+        currentAppName: appInfo.name,
+        currentAppFilesTree: appService.getFileTree()
       })
     }
   },
 
   removeApp: async id => {
     await localRepoService.removeApp(id)
+    const appList = await localRepoService.getLocalAppList()
+    set({
+      appList
+    })
+  },
+
+  importAppFile: async file => {
+    const newAppId = alphabetid(6)
+    const appService = new ApplicationService(newAppId)
+    await appService.importAppArchive(file)
+
+    await localRepoService.persistanceApp(newAppId, (await appService.getAppPackageJSON()).description)
+
+    const appList = await localRepoService.getLocalAppList()
+    set({
+      loadingAppFiles: true,
+      appList
+    })
+  },
+
+  setCurrentAppName: name => {
+    set({
+      currentAppName: name
+    })
   },
 
   initAppStore: async () => {
@@ -57,22 +65,29 @@ const useStore = create((set, get) => ({
       loadingAppFiles: true,
       appList
     })
-    if (appList.length === 0) {
-      // 创建一个默认应用
-      await backUpService.importHelloArchive()
-      await localRepoService.persistanceCurrentApp()
+    let appService = null
+    if (appList.length === 0) { // 无应用默认创建
+      const newAppId = alphabetid(6)
+      const newAppName = '未命名应用'
+      appService = new ApplicationService(alphabetid(6))
+      appService.importHelloArchive()
+      await localRepoService.persistanceApp(newAppId, newAppName)
+      localRepoService.setCurrentApp(newAppId, appService)
     }
-    const currentAppId = await appService.getCurrentAppId()
+    const currentAppId = await localRepoService.getCurrentAppId()
+
     if (currentAppId) {
       const appInfo = await localRepoService.getApp(currentAppId)
       set({
-        currentAppName: appInfo.name,
-        currentAppFilesTree: await appService.getAppFileTree(),
-        loadingAppFiles: false
+        currentAppName: appInfo.name
       })
-    } else {
-      // 没有应用打开
+      appService = localRepoService.getAppService(currentAppId)
     }
+
+    await appService.updateAppFileTree()
+    set({
+      currentAppFilesTree: appService.getFileTree()
+    })
   },
 
   updateAppList: async () => {
@@ -83,23 +98,55 @@ const useStore = create((set, get) => ({
   },
 
   createFolder: async (parentId, name) => {
+    const appService = localRepoService.getCurrentAppService()
     try {
       await appService.createDirectory(parentId, name)
-      await get().initAppStore()
+      await appService.updateAppFileTree()
       return true
     } catch (e) {
       return false
     }
   },
 
+  createFile: async (parentId, name, fileContent, mimeType) => {
+    const appService = localRepoService.getCurrentAppService()
+
+    await appService.createFile(parentId, name, stringToBlob(fileContent, mimeType))
+    set({
+      currentAppFilesTree: appService.getFileTree()
+    })
+  },
+
+  getFilePath: async (fileId) => {
+    const appService = localRepoService.getCurrentAppService()
+    const file = appService.getFile(fileId)
+    if (file) {
+      return file.path
+    }
+  },
+
+  checkNewNameValid: (id, newName) => {
+    const appService = localRepoService.getCurrentAppService()
+    return appService.checkNewNameValid(id, newName)
+  },
+
+  checkCreateNameValid: (pid, name) => {
+    const appService = localRepoService.getCurrentAppService()
+    return appService.filterFiles(file => file.parent === pid && camelCase(trim(name)) === camelCase(trim(file.name))).length === 0
+  },
+
   fileRename: async (fileId, name) => {
+    const appService = localRepoService.getCurrentAppService()
     const renamed = await appService.rename(fileId, name)
     if (renamed === 1) {
-      await get().initAppStore()
+      await appService.updateAppFileTree()
+      set({
+        currentAppFilesTree: appService.getFileTree()
+      })
     }
     return renamed
   }
 }))
 
-export { localRepoService, appService }
+export { localRepoService }
 export default useStore

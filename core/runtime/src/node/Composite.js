@@ -197,6 +197,7 @@ class Composite extends BaseNode {
       this.firstPaint()
     }
 
+    /*
     // 加载应用包定义，以便后续store读取，作为整体应用的配置来源
     if (!this.appPackageObject) {
       debug('Load PackageJSON', this.packageName, this.compositePath)
@@ -212,6 +213,7 @@ class Composite extends BaseNode {
         }
       }
     }
+    */
     await this.importJSFiles()
     await this.loadStore()
     this.updatePromotedElement()

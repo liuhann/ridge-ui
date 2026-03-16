@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
 import './app-list.less'
-import { Button, Modal } from '@douyinfe/semi-ui'
+import { Button, Modal, Typography } from '@douyinfe/semi-ui'
 import { FileList } from '../../components/FileList/FileList.jsx'
 import CreateAppDialog from './CreateAppDialog.jsx'
 import appStore from '../../store/app.store.js'
+import selectZipFile from '../../utils/selectFileUpload.js'
+
+const { Text } = Typography
 
 const AppListPanel = () => {
   const [createDialogVisible, setCreateDialogVisible] = useState(false)
@@ -11,23 +14,31 @@ const AppListPanel = () => {
   const openApp = appStore((state) => state.openApp)
 
   const removeApp = appStore((state) => state.removeApp)
-  const createApp = appStore((state) => state.createApp)
+  const importAppFile = appStore((state) => state.importAppFile)
 
   return (
-    <div className='app-list-panel'>
-      <div className='action-bar'>
+    <>
+      <div className='file-actions panel-actions'>
+        <Text>应用管理</Text>
         <Button
-          theme='outline' type='primary' onClick={() => {
+          theme='outline' type='primary'
+          onClick={() => {
             setCreateDialogVisible(true)
           }}
         >新增应用
         </Button>
-        <Button theme='outline' type='tertiary'>导入应用</Button>
       </div>
       <CreateAppDialog
-        visible={createDialogVisible} onConfirm={async (name, tplName) => {
+        visible={createDialogVisible} onConfirm={name => {
           setCreateDialogVisible(false)
-          await createApp(name, tplName)
+          if (name === 'import') {
+            selectZipFile(async file => {
+              await importAppFile(file)
+            })
+          }
+        }}
+        onCancel={() => {
+          setCreateDialogVisible(false)
         }}
       />
       <FileList
@@ -56,7 +67,8 @@ const AppListPanel = () => {
           }
         ]}
       />
-    </div>
+    </>
+
   )
 }
 

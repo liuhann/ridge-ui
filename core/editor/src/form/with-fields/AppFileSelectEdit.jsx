@@ -1,7 +1,8 @@
 import { withField, TreeSelect, Tree, TagInput, Popover, Icon, Tag } from '@douyinfe/semi-ui'
 import React, { useState } from 'react'
 
-import ridgeEditService from '../../service/RidgeEditorContext.js'
+import appStore from '../../store/app.store.js'
+import editorStore from '../../store/editor.store'
 
 // 资源文件地址选择, 支持从应用内和外部同时选择、单个或者多个。
 // 选择应用文件后会返回 composite:// 开头的路径
@@ -12,10 +13,11 @@ const AppFileSelectEdit = ({
   options
 }) => {
   const [visible, setVisible] = useState(false)
-  const { appService } = ridgeEditService.services
-  const treeData = appService.getUITreeData(node => {
-    return node.type === options.fileType || (node.mimeType && node.mimeType.indexOf(options.fileType) > -1)
-  })
+
+  const currentAppFilesTree = appStore(state => state.currentAppFilesTree)
+  const openFile = editorStore(state => state.openFile)
+
+  const treeData = currentAppFilesTree
 
   // 选择文件后，将 composite:// 开头的路径返回给上层
   const changeWithComposite = val => {
@@ -63,7 +65,7 @@ const AppFileSelectEdit = ({
         color='white'
         onClick={() => {
           if (item.startsWith('composite://')) {
-            ridgeEditService.openFile(item.substring(12))
+            openFile(item.substring(12))
           }
         }}
         onClose={onClose}

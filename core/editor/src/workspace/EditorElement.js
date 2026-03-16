@@ -3,6 +3,7 @@ import cloneDeep from 'lodash/cloneDeep.js'
 import unset from 'lodash/unset.js'
 import { nanoid } from '../utils/string'
 import context from '../service/RidgeEditorContext.js'
+
 /**
  * 编辑情况下的组件。 支持复制、更新、导出、创建等组件编辑动作
  */
@@ -174,6 +175,8 @@ export default class EditorElement extends Element {
     this.style = this.config.style
     // 更新位置配置时，同时也调用
     this.updateStyle()
+
+    // editorStore().updateElementConfig()
   }
 
   setStyleConfig (style) {

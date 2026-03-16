@@ -1,19 +1,18 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Tabs, TabPane } from '@douyinfe/semi-ui'
 import ObjectForm from '../../form/ObjectForm.jsx'
-import { ThemeContext } from '../movable/MoveablePanel.jsx'
 import debug from 'debug'
 
-import context from '../../service/RidgeEditorContext.js'
+import editorStore from '../../store/editor.store.js'
 import { getCompositePropertiesDef, getCompositeEventsDef } from '../../workspace/editorUtils.js'
+import { localRepoService } from '../../store/app.store.js'
 const trace = debug('editor:config-panel')
 
 const COMPONENT_BASIC_FIELDS = [{
   label: '名称',
   control: 'string',
   field: 'title'
-}
-]
+}]
 
 const COMPONENT_ROOT_FIELDS = [
   {
@@ -141,304 +140,230 @@ const PAGE_EVNETS = [{
   field: 'events.onMouseMove'
 }
 ]
-export default class ComponentPanel extends React.Component {
-  constructor (props) {
-    super(props)
-    this.ref = React.createRef()
-    this.componentPropFormApi = null
-    this.componentEventFormApi = null
-    this.pagePropFormApi = null
 
-    context.services.configPanel = this
+const ConfigPanel = () => {
+  const componentPropFormApi = useRef(null)
+  const componentEventFormApi = useRef(null)
+  const pagePropFormApi = useRef(null)
+  const pageEventFormApi = useRef(null)
 
-    this.state = {
-      configPage: true,
-      pagePropsFields: [], // 页面属性
-      pageEventFields: [], // 页面事件
-      nodePropFields: [], // 当前节点属性
-      nodeEventFields: [] // 当前节点事件
-    }
-  }
+  const [pagePropsFields, setPagePropFields] = useState([]) // 页面属性
+  const [pageEventFields, setPageEventFields] = useState([]) // 页面事件
+  const [nodePropFields, setNodePropFields] = useState([]) // 当前节点属性
+  const [nodeEventFields, setNodeEventFields] = useState([]) // 当前节点事件
 
-  static contextType = ThemeContext
+  const editorComposite = editorStore(state => state.editorComposite)
+  const currentEditNodeId = editorStore(state => state.currentEditNodeId)
+  const updateElementConfig = editorStore(state => state.updateElementConfig)
+  const updatePageConfig = editorStore(state => state.updatePageConfig)
+  const currentEditNodeRect = editorStore(state => state.currentEditNodeRect)
 
-  componentDidMount () {
-    // this.initEvents()
-  }
-
-  /**
-   * 组件选择后、更新为组件配置面板
-   **/
-  componentSelected (componentView) {
-    let view = componentView
-    if (componentView instanceof Node) {
-      view = componentView.view
-    }
-    this.componentView = view
-    trace('updatePanelConfig', view)
-
+  const updateElementFields = currentEditNodeId => {
     // 节点基本样式 （title/visible)
     const nodePropFields = []
+    const nodeEventFields = []
 
     nodePropFields.push(...COMPONENT_BASIC_FIELDS)
 
-    if (view.getParent() !== context.editorComposite && view.getParent().componentDefinition) {
-      // 放置到容器中，有容器赋予的样式配置的
-      if (view.getParent()) {
+    const element = editorComposite.getNode(currentEditNodeId)
+
+    if (element) {
+      if (element.getParent() && element.getParent() !== editorComposite && element.getParent().componentDefinition) {
         nodePropFields.push({
           type: 'divider',
-          label: '来自父-' + view.getParent().componentDefinition.title
+          label: '来自父-' + element.getParent().componentDefinition.title
         })
-        nodePropFields.push(...(view.getParent().componentDefinition?.childProps || []))
+        nodePropFields.push(...(element.getParent().componentDefinition?.childProps || []))
         nodePropFields.push({
           type: 'divider'
         })
-      }
-    } else {
-      nodePropFields.push(...COMPONENT_ROOT_FIELDS)
-
-      if (view.componentDefinition) {
-        if (view.componentDefinition.hideable !== false) { // 定义 hideable = false时，不显示隐藏选项
-          nodePropFields.push(FIELD_VISIBLE)
+      } else {
+        nodePropFields.push(...COMPONENT_ROOT_FIELDS)
+        if (element.componentDefinition) {
+          if (element.componentDefinition.hideable !== false) { // 定义 hideable = false时，不显示隐藏选项
+            nodePropFields.push(FIELD_VISIBLE)
+          }
+          if (element.componentDefinition.fullScreenable === true && element.getParent() === element.editorComposite) { // 定义 fullScreenable = true 时，组件可以全屏， 用于一些容器
+            nodePropFields.push(FIELD_FULL_SCREEN)
+          }
         }
-        if (view.componentDefinition.fullScreenable === true && view.getParent() === context.editorComposite) { // 定义 fullScreenable = true 时，组件可以全屏， 用于一些容器
-          nodePropFields.push(FIELD_FULL_SCREEN)
-        }
-      }
-    }
-
-    const nodeEventFields = []
-    // 能加载到节点定义
-    if (view.componentDefinition) {
-      for (const prop of view.componentDefinition.props ?? []) {
-        if (!prop.name) continue
-        const field = {
-          componentName: view.componentDefinition.name,
-          packageName: view.componentDefinition.packageName
-        }
-        if (prop.connect) {
-          Object.assign(field, prop, {
-            field: 'props.' + prop.name,
-            fieldEx: 'propEx.' + prop.name
-          })
-        } else {
-          Object.assign(field, prop, {
-            field: 'props.' + prop.name
-          })
-        }
-        nodePropFields.push(field)
       }
 
-      for (const event of view.componentDefinition.events ?? []) {
-        const control = {
-          label: event.label,
-          type: 'function',
-          control: 'event',
-          field: 'events.' + event.name
+      // 能加载到节点定义
+      if (element.componentDefinition) {
+        for (const prop of element.componentDefinition.props ?? []) {
+          if (!prop.name) continue
+          const field = {
+            componentName: element.componentDefinition.name,
+            packageName: element.componentDefinition.packageName
+          }
+          if (prop.connect) {
+            Object.assign(field, prop, {
+              field: 'props.' + prop.name,
+              fieldEx: 'propEx.' + prop.name
+            })
+          } else {
+            Object.assign(field, prop, {
+              field: 'props.' + prop.name
+            })
+          }
+          nodePropFields.push(field)
         }
-        nodeEventFields.push(control)
-      }
 
-      if (view.componentDefinition.componentPath === 'ridge-container/composite' && view.el.composite && view.el.composite.config) {
-        // 获取Compsite定义属性，同时如果原为connect，这里也增加connect
-        nodePropFields.push(...getCompositePropertiesDef(view.el.composite).map(p => {
-          const [, name] = p.field.split('.')
-          // if (p.connect) {
-          // }
-          p.fieldEx = 'propEx.' + name
-          p.field = 'props.' + name
-          return p
-        }))
-        nodeEventFields.push(...getCompositeEventsDef(view.el.composite))
-      }
-    }
-    this.componentPropFormApi.reset()
-    this.setState({
-      configPage: false,
-      nodePropFields,
-      nodeEventFields
-    }, () => {
-      this.updateComponentConfig(view)
-      this.componentEventFormApi.setValue('events', view.config.events, {
-        notNotify: true
-      })
-    })
-  }
+        for (const event of element.componentDefinition.events ?? []) {
+          const control = {
+            label: event.label,
+            type: 'function',
+            control: 'event',
+            field: 'events.' + event.name
+          }
+          nodeEventFields.push(control)
+        }
 
-  updateComponentConfig (view) {
-    if (view === this.componentView) {
+        if (element.componentDefinition.componentPath === 'ridge-container/composite' && element.el.composite && element.el.composite.config) {
+          // 获取Compsite定义属性，同时如果原为connect，这里也增加connect
+          nodePropFields.push(...getCompositePropertiesDef(element.el.composite).map(p => {
+            const [, name] = p.field.split('.')
+            // if (p.connect) {
+            // }
+            p.fieldEx = 'propEx.' + name
+            p.field = 'props.' + name
+            return p
+          }))
+          nodeEventFields.push(...getCompositeEventsDef(element.el.composite))
+        }
+      }
+      componentPropFormApi.current.reset()
+      setNodePropFields(nodePropFields)
+      setNodeEventFields(nodePropFields)
+
       for (const key of ['title', 'props', 'propEx', 'style', 'styleEx', 'id', 'visible', 'full']) {
-        this.componentPropFormApi.setValue(key, view.config[key], {
+        componentPropFormApi.current.setValue(key, element.config[key], {
           notNotify: true
         })
       }
+      componentEventFormApi.current.setValue('events', element.config.events, {
+        notNotify: true
+      })
     }
   }
 
-  updatePageConfigFields () {
-    const { editorComposite } = context
-    const { appService } = context.services
-    this.setState({
-      configPage: true,
-      pagePropsFields: [...PAGE_FIELDS,
-        /*
-        {
-          field: 'jsFiles',
-          label: '脚本库',
-          control: 'select',
-          placeholder: '请选择脚本文件',
-          optionList: appService.filterFiles(node => node.mimeType === 'text/javascript').map(file => {
-            return {
-              value: 'composite://' + file.path,
-              label: file.path
-            }
-          }),
-          required: false,
-          allowCreate: true,
-          filter: true,
-          multiple: true
-        },
-        */
-        /* {        field: 'style.classNames',
-        label: '样式库',
-        control: 'select',
-        placeholder: '请选择样式',
-        optionList: editorComposite.classNames.map(c => {
-          return {
-            label: c.label,
-            value: c.className
-          }
-        }),
-        required: false,
-        multiple: true
-      } */
-        // 附加内部store的属性暴露
-        ...getCompositePropertiesDef(context.editorComposite)],
-      pageEventFields: [...PAGE_EVNETS, ...getCompositeEventsDef(context.editorComposite)]
-    }, () => {
-      const { classList, style, jsFiles, fontFiles, name, properties, events } = editorComposite.config
+  const updatePageFields = () => {
+    setPagePropFields([...PAGE_FIELDS, ...getCompositePropertiesDef(editorComposite)])
+    setPageEventFields([...PAGE_EVNETS, ...getCompositeEventsDef(editorComposite)])
 
-      this.pagePropFormApi.setValue('classList', classList, {
+    for (const key of ['classList', 'style', 'properties', 'fontFiles', 'jsFiles', 'name', 'events']) {
+      pagePropFormApi.current.setValue(key, editorComposite.config[key], {
         notNotify: true
       })
-      this.pagePropFormApi.setValue('style', style, {
-        notNotify: true
-      })
-      this.pagePropFormApi.setValue('properties', properties, {
-        notNotify: true
-      })
-      this.pagePropFormApi.setValue('fontFiles', fontFiles, {
-        notNotify: true
-      })
-      this.pagePropFormApi.setValue('jsFiles', jsFiles, {
-        notNotify: true
-      })
-      this.pagePropFormApi.setValue('name', name, {
-        notNotify: true
-      })
-      this.pageEventFormApi.setValue('events', events, {
-        notNotify: true
-      })
+    }
+    pageEventFormApi.current.setValue('events', editorComposite.config.events, {
+      notNotify: true
     })
   }
 
-  nodeRectChange (el) {
-    this.styleChange(el)
+  useEffect(() => {
+    if (!editorComposite) return
+    if (currentEditNodeId) { // 选中节点
+      updateElementFields(currentEditNodeId)
+    } else {
+      updatePageFields()
+    }
+  }, [currentEditNodeId, editorComposite])
+
+  useEffect(() => {
+    if (currentEditNodeId) {
+      componentPropFormApi.current.setValue('style', currentEditNodeRect, {
+        notNotify: true
+      })
+    }
+  }, [currentEditNodeRect])
+
+  const basicPropsAPI = (formApi) => {
+    componentPropFormApi.current = formApi
   }
 
-  render () {
-    const {
-      nodePropFields,
-      nodeEventFields,
-      pagePropsFields,
-      pageEventFields,
-      configPage
-    } = this.state
-    const basicStylesAPI = formApi => {
-      this.componentStyleFormApi = formApi
-    }
-
-    // 回写styleApi句柄以便直接操作基础form
-    const basicPropsAPI = (formApi) => {
-      this.componentPropFormApi = formApi
-    }
-
-    const eventPropsAPI = (formApi) => {
-      this.componentEventFormApi = formApi
-    }
-    // 回写styleApi句柄以便直接操作基础form
-    const cbPagePropFormApi = (formApi) => {
-      this.pagePropFormApi = formApi
-    }
-
-    const pageEventPropsAPI = formApi => {
-      this.pageEventFormApi = formApi
-    }
-
-    // 组件属性表单项修改  组件样式和属性变动
-    const componentPropValueChange = (values, field) => {
-      if (values.id === this.componentView.config.id) {
-        context.updateComponentConfig(this.componentView, values, field)
-      }
-    }
-
-    const componentEventValueChange = (values, field) => {
-      context.updateComponentConfig(this.componentView, values)
-    }
-    const pageEventValueChange = (values, field) => {
-      context.editorComposite.updatePageConfig(values)
-      // context.updateComponentConfig(this.componentView, values)
-    }
-
-    const pagePropValueChange = (values, field) => {
-      context.editorComposite.updatePageConfig(values)
-    }
-
-    return (
-      <div className='config-panel'>
-        <Tabs
-          className='on-title'
-          type='card'
-          style={{
-            display: configPage ? 'none' : 'block'
-          }}
-        >
-          {/* 组件属性配置 */}
-          <TabPane tab='属性' itemKey='props'>
-            <ObjectForm
-              fields={nodePropFields}
-              getFormApi={basicPropsAPI} onValueChange={componentPropValueChange}
-            />
-          </TabPane>
-          <TabPane tab='交互' itemKey='interact'>
-            <ObjectForm
-              fields={nodeEventFields}
-              getFormApi={eventPropsAPI} onValueChange={componentEventValueChange}
-            />
-          </TabPane>
-        </Tabs>
-        <Tabs
-          type='card'
-          className='on-title'
-          style={{
-            display: configPage ? 'block' : 'none'
-          }}
-        >
-          {/* 页面属性配置 */}
-          <TabPane tab='基础' itemKey='style'>
-            <ObjectForm
-              fields={pagePropsFields}
-              getFormApi={cbPagePropFormApi} onValueChange={pagePropValueChange}
-            />
-          </TabPane>
-          <TabPane tab='交互' itemKey='interact'>
-            <ObjectForm
-              fields={pageEventFields}
-              getFormApi={pageEventPropsAPI} onValueChange={pageEventValueChange}
-            />
-          </TabPane>
-        </Tabs>
-      </div>
-    )
+  const eventPropsAPI = (formApi) => {
+    componentEventFormApi.current = formApi
   }
+  // 回写styleApi句柄以便直接操作基础form
+  const cbPagePropFormApi = (formApi) => {
+    pagePropFormApi.current = formApi
+  }
+
+  const pageEventPropsAPI = formApi => {
+    pageEventFormApi.current = formApi
+  }
+
+  // 组件属性表单项修改  组件样式和属性变动
+  const componentPropValueChange = (values, field) => {
+    console.log('currentEditNodeId', currentEditNodeId, values, field)
+    if (currentEditNodeId === values.id) {
+      updateElementConfig(values, field)
+    }
+    // if (values.id === this.componentView.config.id) {
+    //   updateElementConfig(values)
+    // }
+  }
+
+  const componentEventValueChange = (values, field) => {
+    updateElementConfig(values)
+  }
+  const pageEventValueChange = (values, field) => {
+    updatePageConfig(values)
+  }
+
+  const pagePropValueChange = (values, field) => {
+    updatePageConfig(values)
+  }
+
+  return (
+    <div className='config-panel'>
+      <Tabs
+        className='on-title'
+        type='card'
+        style={{
+          display: currentEditNodeId ? 'block' : 'none'
+        }}
+      >
+        {/* 组件属性配置 */}
+        <TabPane tab='属性' itemKey='props'>
+          <ObjectForm
+            fields={nodePropFields}
+            getFormApi={basicPropsAPI} onValueChange={componentPropValueChange}
+          />
+        </TabPane>
+        <TabPane tab='交互' itemKey='interact'>
+          <ObjectForm
+            fields={nodeEventFields}
+            getFormApi={eventPropsAPI} onValueChange={componentEventValueChange}
+          />
+        </TabPane>
+      </Tabs>
+
+      <Tabs
+        type='card'
+        className='on-title'
+        style={{
+          display: currentEditNodeId ? 'none' : 'block'
+        }}
+      >
+        {/* 页面属性配置 */}
+        <TabPane tab='基础' itemKey='style'>
+          <ObjectForm
+            fields={pagePropsFields}
+            getFormApi={cbPagePropFormApi} onValueChange={pagePropValueChange}
+          />
+        </TabPane>
+        <TabPane tab='交互' itemKey='interact'>
+          <ObjectForm
+            fields={pageEventFields}
+            getFormApi={pageEventPropsAPI} onValueChange={pageEventValueChange}
+          />
+        </TabPane>
+      </Tabs>
+    </div>
+  )
 }
+
+export default ConfigPanel
