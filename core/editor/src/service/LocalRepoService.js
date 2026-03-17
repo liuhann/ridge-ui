@@ -6,6 +6,9 @@ export default class LocalRepoService {
     this.collection = new NeCollection('ridge.repo.db')
     this.appServices = {}
     this.currentAppId = window.localStorage.getItem('ridge-current-app-id')
+    if (this.currentAppId === 'null') {
+      this.currentAppId = null
+    }
   }
 
   importedHello () {
@@ -53,7 +56,9 @@ export default class LocalRepoService {
   async setCurrentApp (id, appService) {
     window.localStorage.setItem('ridge-current-app-id', id)
     this.currentAppId = id
-    this.appServices[id] = appService
+    if (appService) {
+      this.appServices[id] = appService
+    }
   }
 
   async getCurrentAppId () {

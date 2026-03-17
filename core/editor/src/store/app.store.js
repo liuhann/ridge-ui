@@ -5,6 +5,7 @@ import LocalRepoService from '../service/LocalRepoService'
 import ApplicationService from '../service/ApplicationService'
 import { stringToBlob } from '../utils/blob'
 import { trim, camelCase } from '../utils/string'
+import helloZipApp from '../ridge-app-hello-1.0.0.zip'
 
 const localRepoService = new LocalRepoService()
 
@@ -59,6 +60,13 @@ const useStore = create((set, get) => ({
     })
   },
 
+  exitToAppList: () => {
+    localRepoService.setCurrentApp(null)
+    set({
+      currentAppName: null
+    })
+  },
+
   initAppStore: async () => {
     const { importAppFile } = get()
 
@@ -70,10 +78,8 @@ const useStore = create((set, get) => ({
 
     if (appList.length === 0) { // 无应用默认创建
       if (!localRepoService.importedHello()) {
-        let appService = null
-        await importAppFile()
-        appService.importHelloArchive()
-        await localRepoService.persistanceApp(newAppId, (await appService.getAppPackageJSON()).description)
+        await importAppFile(helloZipApp)
+        window.localStorage.setItem('ridge-imported-hello', true)
       }
     }
     const currentAppId = await localRepoService.getCurrentAppId()
@@ -83,13 +89,12 @@ const useStore = create((set, get) => ({
       set({
         currentAppName: appInfo.name
       })
-      appService = localRepoService.getAppService(currentAppId)
+      const appService = localRepoService.getAppService(currentAppId)
+      await appService.updateAppFileTree()
+      set({
+        currentAppFilesTree: appService.getFileTree()
+      })
     }
-
-    await appService.updateAppFileTree()
-    set({
-      currentAppFilesTree: appService.getFileTree()
-    })
   },
 
   updateAppList: async () => {

@@ -31,7 +31,7 @@ const AppFileList = () => {
   const currentAppName = appStore((state) => state.currentAppName)
 
   const currentAppFilesTree = appStore((state) => state.currentAppFilesTree)
-  const createFolder = appStore((state) => state.createFolder)
+  const exitToAppList = appStore((state) => state.exitToAppList)
   const fileRename = appStore((state) => state.fileRename)
 
   const openFile = editorStore(state => state.openFile)

@@ -1,15 +1,10 @@
 import NeCollection from './NeCollection.js'
 import debug from 'debug'
-import once from 'lodash/once.js'
-// import LowCollection from './LowCollection.js'
 import Localforge from 'localforage'
 import { blobToDataUrl, dataURLtoBlob, dataURLToString, stringToDataUrl, saveAs } from '../utils/blob.js'
-import { getFileTree, eachNode, filterTree, mapTree } from '../panels/files/buildFileTree.js'
-import { APP_PACKAGE_JSON, PAGE_JSON_TEMPLATE } from '../utils/template.js'
-import axios from 'axios'
-import { basename, dirname, extname, formateDate, nanoid } from '../utils/string.js'
+import { getFileTree, filterTree, mapTree } from '../panels/files/buildFileTree.js'
+import { basename, dirname, extname, nanoid } from '../utils/string.js'
 import { getByMimeType } from '../utils/mimeTypes.js'
-import helloZipApp from '../ridge-app-hello-1.0.0.zip'
 import JSZip from 'jszip'
 
 const trace = debug('ridge:app-service')
@@ -69,7 +64,7 @@ export default class ApplicationService {
             try {
               file.json = JSON.parse(file.textContent)
 
-              if (file.json.version && file.json.elements) {
+              if (file.json.version && file.json.elements) { // 页面类型处理
                 file.type = 'page'
               }
             } catch (e) {}
@@ -284,17 +279,6 @@ export default class ApplicationService {
     await this.updateFileContent(file.key, JSON.stringify(packageObject, null, 2))
   }
 
-  async publishApp (isPublishToNpm) {
-    const appBlob = await this.getAppPackageBlob()
-    const formData = new FormData()
-    formData.append('file', appBlob)
-    const publicAppResult = await axios.post(`/api/npm/publish?npm=${!!isPublishToNpm}`, formData)
-    return {
-      message: publicAppResult.data.msg,
-      type: publicAppResult.data.code !== 200 ? 'error' : 'success'
-    }
-  }
-
   async getFiles (filter) {
     const query = {}
     if (filter) {
@@ -386,15 +370,6 @@ export default class ApplicationService {
     }
   }
 
-  async createApp (name, tplName) {
-    if (tplName !== 'empty') {
-    } else {
-      await this.importHelloArchive()
-    }
-
-    return this.getCurrentAppId()
-  }
-
   /**
      * 导入应用的存档
      * @param {*} file 选择的文件
@@ -427,7 +402,6 @@ export default class ApplicationService {
         await this.ensureDir(filePath)
       }
     }
-
     await this.updateAppFileTree()
     this.appPackageJSONObject = await this.getAppPackageJSON()
 
@@ -445,10 +419,11 @@ export default class ApplicationService {
     if (this.appPackageJSONObject) {
       return this.appPackageJSONObject
     }
-    const jsonContent = await this.getFileContentByPath('/package.json')
-    if (jsonContent) {
+    const jsonFile = this.getFile('/package.json')
+
+    if (jsonFile) {
       try {
-        this.appPackageJSONObject = JSON.parse(jsonContent)
+        this.appPackageJSONObject = jsonFile.json
         return this.appPackageJSONObject
       } catch (e) {
       }
@@ -457,7 +432,7 @@ export default class ApplicationService {
   }
 
   async updateAppPackageJSON (packageJSONObject) {
-    const file = await this.getFileByPath('/package.json')
+    const file = await this.getFile('/package.json')
     if (!file) {
       await this.createFile(-1, 'package.json', new File([JSON.stringify(packageJSONObject, null, 2), 'package.json']), 'text/json')
     } else {
@@ -482,12 +457,6 @@ export default class ApplicationService {
     await this.createFile(parentId, filename, new File([await zipObject.async('blob')], filename, {
       type: mimeType
     }), mimeType)
-  }
-
-  async importHelloArchive () {
-    const response = await fetch(helloZipApp)
-    const buffer = await response.arrayBuffer()
-    await this.importAppArchive(buffer)
   }
 
   async importFromNpmRegistry (packageName, version) {
