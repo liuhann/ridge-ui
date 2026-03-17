@@ -60,19 +60,21 @@ const useStore = create((set, get) => ({
   },
 
   initAppStore: async () => {
+    const { importAppFile } = get()
+
     const appList = await localRepoService.getLocalAppList()
     set({
       loadingAppFiles: true,
       appList
     })
-    let appService = null
+
     if (appList.length === 0) { // 无应用默认创建
-      const newAppId = alphabetid(6)
-      const newAppName = '未命名应用'
-      appService = new ApplicationService(alphabetid(6))
-      appService.importHelloArchive()
-      await localRepoService.persistanceApp(newAppId, newAppName)
-      localRepoService.setCurrentApp(newAppId, appService)
+      if (!localRepoService.importedHello()) {
+        let appService = null
+        await importAppFile()
+        appService.importHelloArchive()
+        await localRepoService.persistanceApp(newAppId, (await appService.getAppPackageJSON()).description)
+      }
     }
     const currentAppId = await localRepoService.getCurrentAppId()
 

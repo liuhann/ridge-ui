@@ -4,9 +4,13 @@ import NeCollection from './NeCollection.js'
 export default class LocalRepoService {
   constructor () {
     this.collection = new NeCollection('ridge.repo.db')
-    this.currentAppId = null
     this.appServices = {}
     this.currentAppId = window.localStorage.getItem('ridge-current-app-id')
+  }
+
+  importedHello () {
+    const imported = window.localStorage.getItem('ridge-imported-hello')
+    return imported != null
   }
 
   // 保存App内容
