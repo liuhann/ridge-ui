@@ -7,11 +7,9 @@ const editorStore = create((set, get) => ({
   // 状态 驱动展示
   isPreview: false,
   currentOpenPageId: null,
-  lastOpenPageId: null,
   zoom: 100,
   openedPages: [],
   unsavedPages: [],
-  pageOpened: false,
 
   collapseLeft: false,
   imagePreviewVisible: false,
@@ -165,10 +163,13 @@ const editorStore = create((set, get) => ({
 
   // 关闭所有页面
   closeAllPages: async () => {
-    const { openedFileContentMap, unmountWorkspace } = get()
+    const { openedFileContentMap, unmountWorkspace, pageTransformMap } = get()
     unmountWorkspace()
     openedFileContentMap.clear()
+    pageTransformMap.clear()
     set({
+      currentOpenPageId: null,
+      unsavedPages: [],
       openedPages: []
     })
   },

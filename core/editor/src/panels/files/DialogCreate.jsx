@@ -18,7 +18,7 @@ export default ({
   close
 }) => {
   const checkCreateNameValid = appStore(state => state.checkCreateNameValid)
-  const createFolder = appStore(state => state.createPage)
+  const createFolder = appStore(state => state.createFolder)
   const createFile = appStore(state => state.createFile)
 
   const [nameValid, setNameValid] = useState(true)
@@ -93,7 +93,7 @@ export default ({
           validateStatus={nameValid ? '' : 'error'}
           label='名称' onChange={val => {
             setValue(val)
-            setNameValid(checkCreateNameValid(parentId, val + '.json'))
+            setNameValid(checkCreateNameValid(parentId, val))
           }}
         />
       </Form>

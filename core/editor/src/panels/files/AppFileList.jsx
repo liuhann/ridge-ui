@@ -7,7 +7,6 @@ import DialogCreate from './DialogCreate.jsx'
 import { stringToBlob } from '../../utils/blob.js'
 import { GravityUiAbbrZip } from '../../icons/GravityUiAbbrZip.jsx'
 import { FILE_MARKDOWN } from '../../icons/icons.js'
-import { STORE_TEMPLATE } from '../../utils/template.js'
 import './file-list.less'
 
 import appStore from '../../store/app.store.js'
@@ -19,10 +18,8 @@ const ACCEPT_FILES = '.svg,.png,.jpg,.json,.css,.js,.md,.webp,.zip,.gif'
 const AppFileList = () => {
   const [dialgeCreateFileType, setDialogCreateFileType] = useState('')
   const [dialogCreateShow, setDialogCreateShow] = useState(false)
-  const [dialogCreateTitle, setDialogCreateTitle] = useState('')
 
   const [currentSelected, setCurrentSelected] = useState(null)
-  const [currentSelectedTime, setCurrentSelectedTime] = useState(0)
   const [currentRename, setCurrentRename] = useState(null)
 
   const currentAppName = appStore((state) => state.currentAppName)
@@ -48,28 +45,27 @@ const AppFileList = () => {
         } else if (file.mimeType.indexOf('audio') > -1) {
           file.icon = (<i className='bi bi-file-earmark-music' />)
         } else if (file.mimeType.indexOf('image') > -1) {
-          file.icon = <i className='bi bi-file-earmark-image' />
+          file.icon = <i class='bi bi-image' />
         } else {
           file.icon = <i className='bi bi-file-earmark' />
         }
       }
       file.label = file.name
 
-      if (file.type === 'page') {
-        // file.label = basename(file.name, '.json')
-      }
-
       if (file.label.endsWith('.md')) {
-        file.icon = FILE_MARKDOWN
+        file.icon = <i className='bi bi-file-earmark-arrow-down' />
       }
       if (file.label.endsWith('.js')) {
-        file.icon = <i className='bi bi-file-earmark-code' />
+        file.icon = <i class='bi bi-code-slash' />
       }
       if (file.label.endsWith('.json')) {
-        file.icon = <i className='bi bi-filetype-json' />
+        file.icon = <i class='bi bi-braces' />
       }
       if (file.type === 'page') {
         file.icon = <i className='bi bi-file-earmark-richtext' />
+      }
+      if (file.type === 'page') {
+        file.icon = <i class='bi bi-box-seam' />
       }
       if (file.type === 'directory') {
         file.icon = <i className='bi bi-folder2' />
@@ -242,25 +238,45 @@ const AppFileList = () => {
       >删除
       </Dropdown.Item>
     )
+    MORE_MENUS.push(
+      <Dropdown.Item
+        key='rename'
+        icon={<i className='bi bi-trash3' />}
+        onClick={() => {
+          setCurrentRename({
+            key: data.key,
+            value: label
+          })
+        }}
+      >重命名
+      </Dropdown.Item>
+    )
     return (
       <div className={'tree-label' + ((currentSelected && currentSelected.key === data.key) ? ' opened' : '')}>
-        {currentRename && currentRename.key === data.key &&
-          <Input
-            size='small'
-            suffix={<i onClick={confirmFileRename} className='bi bi-check2' />}
-            onKeyPress={async ({ key }) => {
-              if (key === 'Enter') {
-                confirmFileRename()
-              }
-            }}
-            value={currentRename.value} onChange={val => {
-              setCurrentRename({
-                ...currentRename,
-                value: val
-              })
-            }}
-          />}
-        <Text
+        {(currentRename && currentRename.key === data.key)
+          ? <Input
+              size='small'
+              suffix={<i onClick={confirmFileRename} className='bi bi-check2' />}
+              onKeyPress={async ({ key }) => {
+                if (key === 'Enter') {
+                  confirmFileRename()
+                }
+              }}
+              value={currentRename.value} onChange={val => {
+                setCurrentRename({
+                  ...currentRename,
+                  value: val
+                })
+              }}
+            />
+          : <Dropdown
+              className='app-files-dropdown'
+              trigger='contextMenu'
+              clickToHide
+              render={<Dropdown.Menu>{MORE_MENUS}</Dropdown.Menu>}
+            > <Text>{label}</Text>
+          </Dropdown>}
+        {/* <Text
           onClick={() => {
             const now = new Date().getTime()
             if (currentSelected && currentSelected.key === data.key && currentSelectedTime && now - currentSelectedTime > 1000 && now - currentSelectedTime < 3000) {
@@ -271,15 +287,7 @@ const AppFileList = () => {
             }
           }} ellipsis={{ showTooltip: true }} style={{ width: 'calc(100% - 48px)' }} className='label-content'
         >{label}
-        </Text>
-        <Dropdown
-          className='app-files-dropdown'
-          trigger='click'
-          clickToHide
-          render={<Dropdown.Menu>{MORE_MENUS}</Dropdown.Menu>}
-        >
-          <Button className='more-button' size='small' theme='borderless' type='tertiary' icon={<i className='bi bi-three-dots-vertical' />} />
-        </Dropdown>
+        </Text> */}
       </div>
     )
   }
@@ -339,7 +347,6 @@ const AppFileList = () => {
       confirmFileRename()
     }
     setCurrentSelected(node)
-    setCurrentSelectedTime(new Date().getTime())
   }
 
   const confirmExitToAppList = async () => {

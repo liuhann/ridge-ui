@@ -100,10 +100,12 @@ const useStore = create((set, get) => ({
   },
 
   createFolder: async (parentId, name) => {
-    const appService = localRepoService.getCurrentAppService()
+    const { appService } = get()
     try {
       await appService.createDirectory(parentId, name)
-      await appService.updateAppFileTree()
+      set({
+        currentAppFilesTree: appService.getFileTree()
+      })
       return true
     } catch (e) {
       return false
