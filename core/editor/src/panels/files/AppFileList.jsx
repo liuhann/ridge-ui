@@ -5,8 +5,6 @@ import context from '../../service/RidgeEditorContext.js'
 import { mapTree } from './buildFileTree.js'
 import DialogCreate from './DialogCreate.jsx'
 import { stringToBlob } from '../../utils/blob.js'
-import { GravityUiAbbrZip } from '../../icons/GravityUiAbbrZip.jsx'
-import { FILE_MARKDOWN } from '../../icons/icons.js'
 import './file-list.less'
 
 import appStore from '../../store/app.store.js'
@@ -20,17 +18,21 @@ const AppFileList = () => {
   const [dialogCreateShow, setDialogCreateShow] = useState(false)
 
   const [currentSelected, setCurrentSelected] = useState(null)
+  const [currentDir, setCurrentDir] = useState('/')
+  const [currentDirId, setCurrentDirId] = useState(-1)
   const [currentRename, setCurrentRename] = useState(null)
 
   const currentAppName = appStore((state) => state.currentAppName)
 
   const currentAppFilesTree = appStore((state) => state.currentAppFilesTree)
   const exitToAppList = appStore((state) => state.exitToAppList)
-  const fileRename = appStore((state) => state.fileRename)
+  const renameFile = appStore((state) => state.renameFile)
+  const uploadFile = appStore((state) => state.uploadFile)
+  const moveFile = appStore((state) => state.moveFile)
+  const openFile = editorStore(state => state.openFile)
   const deleteFile = appStore((state) => state.deleteFile)
 
   const currentOpenPageId = editorStore(state => state.currentOpenPageId)
-  const openFile = editorStore(state => state.openFile)
   const openedPages = editorStore(state => state.openedPages)
   const closeAllPages = editorStore(state => state.closeAllPages)
 
@@ -72,7 +74,6 @@ const AppFileList = () => {
       }
 
       return {
-        path: file.parentPath + '/' + file.name,
         raw: file,
         icon: file.icon,
         label: file.label,
@@ -80,21 +81,16 @@ const AppFileList = () => {
         key: file.id
       }
     })
-    return fileTree
-  }
-
-  const getCurrentParentId = () => {
-    const { selectedNodeKey } = state
-    if (selectedNodeKey) {
-      const node = nodeMap.current[selectedNodeKey]
-      if (node.type === 'directory') {
-        return node.key
-      } else {
-        return node.parent
-      }
-    } else {
-      return -1
-    }
+    return [{
+      id: -1,
+      key: -1,
+      label: currentAppName,
+      raw: {
+        path: '/',
+        id: -1
+      },
+      children: fileTree
+    }]
   }
 
   const showCreateDialog = (fileType) => {
@@ -103,27 +99,16 @@ const AppFileList = () => {
   }
 
   const onFileUpload = async (files) => {
-    const { appService } = context.services
-    const errors = []
     for (const file of files) {
-      try {
-        if (file.name.endsWith('.zip')) {
-          await appService.backUpService.importFolderArchive(file, getCurrentPath())
-        } else {
-          const result = await appService.createFile(getCurrentParentId(), file.name, file)
-        }
-      } catch (e) {
-        errors.push(file)
+      const result = await uploadFile(currentSelected, file)
+      if (result) {
+        Toast.success('文件上传完成')
+      } else {
+        Toast.warning({
+          content: '文件添加错误：存在相同名称文件',
+          duration: 3
+        })
       }
-    }
-    await loadAndUpdateFileTree()
-    if (errors.length) {
-      Toast.warning({
-        content: '文件添加错误：存在相同名称文件',
-        duration: 3
-      })
-    } else {
-      Toast.success('文件上传完成')
     }
   }
 
@@ -157,29 +142,23 @@ const AppFileList = () => {
     let parentId = -1
 
     if (dropToGap === false) { // 放置于node内
-      if (node.type === 'directory') {
+      if (node.children) {
         parentId = node.key
       } else {
-        parentId = node.parent
+        parentId = node.raw.parent
       }
     } else {
-      parentId = node.parent
+      parentId = node.raw.parent
     }
-    const { appService } = context.services
-    const moveResult = await appService.move(dragNode.key, parentId)
-    if (moveResult) {
-      await loadAndUpdateFileTree()
-    } else {
+
+    const movedResult = await moveFile(dragNode.key, parentId)
+
+    if (!movedResult) {
       Toast.warning({
         content: '目录移动错误：存在同名的文件',
         duration: 3
       })
     }
-  }
-
-  const onUploadAppArchive = async (file) => {
-    const { appService } = context.services
-    await appService.importAppArchive(file)
   }
 
   const onFileExportClick = (data) => {
@@ -188,7 +167,7 @@ const AppFileList = () => {
   }
 
   const confirmFileRename = async () => {
-    const result = await fileRename(currentRename.key, currentRename.value)
+    const result = await renameFile(currentRename.key, currentRename.value)
     if (result === -1) {
       Toast.error('文件名称冲突')
     } else {
@@ -196,18 +175,37 @@ const AppFileList = () => {
     }
   }
 
+  const CREATE_MENUS = [
+    <Dropdown.Item key='page' icon={<i className='bi bi-file-earmark-plus' />} onClick={() => showCreateDialog('page')}>创建页面</Dropdown.Item>,
+    <Dropdown.Item key='folder' icon={<i className='bi bi-folder-plus' />} onClick={() => showCreateDialog('folder')}>创建目录</Dropdown.Item>,
+    <Dropdown.Item key='js' icon={<i className='bi bi-clipboard-plus' />} onClick={() => showCreateDialog('js')}>创建脚本库</Dropdown.Item>,
+    <Dropdown.Item key='upload' icon={<i class='bi bi-upload' />}>
+      <Upload
+        action='none'
+        multiple showUploadList={false} uploadTrigger='custom' onFileChange={files => {
+          onFileUpload(files)
+        }} accept={ACCEPT_FILES}
+      >
+        上传文件
+      </Upload>
+    </Dropdown.Item>]
+
   const renderFullLabel = (label, data) => {
     const MORE_MENUS = []
 
-    MORE_MENUS.push(
-      <Dropdown.Item
-        key='open'
-        icon={<i className='bi bi-pencil-square' />} onClick={() => {
-          onOpenClicked(data)
-        }}
-      >打开
-      </Dropdown.Item>
-    )
+    if (data.children) { // 位于根
+      MORE_MENUS.push(...CREATE_MENUS)
+    } else {
+      MORE_MENUS.push(
+        <Dropdown.Item
+          key='open'
+          icon={<i className='bi bi-pencil-square' />} onClick={() => {
+            onOpenClicked(data)
+          }}
+        >打开
+        </Dropdown.Item>
+      )
+    }
     MORE_MENUS.push(
       <Dropdown.Item
         key='copy'
@@ -272,10 +270,11 @@ const AppFileList = () => {
           : <Dropdown
               className='app-files-dropdown'
               trigger='contextMenu'
+              position='bottomRight'
               clickToHide
               render={<Dropdown.Menu>{MORE_MENUS}</Dropdown.Menu>}
             > <Text>{label}</Text>
-            </Dropdown>}
+          </Dropdown>}
         {/* <Text
           onClick={() => {
             const now = new Date().getTime()
@@ -318,23 +317,11 @@ const AppFileList = () => {
         position='bottomLeft'
         render={
           <Dropdown.Menu className='app-files-dropdown'>
-            <Dropdown.Item icon={<i className='bi bi-file-earmark-plus' />} onClick={() => showCreateDialog('page')}>创建页面</Dropdown.Item>
-            <Dropdown.Item icon={<i className='bi bi-folder-plus' />} onClick={() => showCreateDialog('folder')}>创建目录</Dropdown.Item>
-            <Dropdown.Item icon={<i className='bi bi-clipboard-plus' />} onClick={() => showCreateDialog('js')}>创建脚本库</Dropdown.Item>
-            <Dropdown.Item icon={<i class='bi bi-upload' />}>
-              <Upload
-                action='none'
-                multiple showUploadList={false} uploadTrigger='custom' onFileChange={files => {
-                  onFileUpload(files)
-                }} accept={ACCEPT_FILES}
-              >
-                上传文件
-              </Upload>
-            </Dropdown.Item>
+            {CREATE_MENUS}
           </Dropdown.Menu>
         }
       >
-        <Button theme='borderless' type='tertiary' icon={<i className='bi bi-plus-lg' style={{ color: 'var(--semi-color-text-0)' }} />} />
+        <Button theme='outline' type='primary' icon={<i className='bi bi-plus-lg' style={{ color: 'var(--semi-color-text-0)' }} />} >创建</Button>
       </Dropdown>
     )
   }
@@ -345,6 +332,15 @@ const AppFileList = () => {
     }
     if (currentRename && currentRename.key !== node.key) {
       confirmFileRename()
+    }
+    if (Array.isArray(node.children)) {
+      setCurrentDir(node.raw.path)
+      setCurrentDirId(node.raw.id)
+    } else {
+      if (node.raw.parent) {
+        setCurrentDir(node.raw.parentPath)
+        setCurrentDirId(node.raw.parent)
+      }
     }
     setCurrentSelected(node)
   }
@@ -369,24 +365,24 @@ const AppFileList = () => {
     <>
       <div className='file-actions'>
         <div className='app-name-exit'>
-          <Text>{currentAppName}</Text>
+          <Text>应用文件</Text>
           <Button type='danger' onClick={confirmExitToAppList} theme='borderless' icon={<i className='bi bi-box-arrow-right' />} />
         </div>
-        {RenderCreateDropDown()}
         {/* {currentAppName && RenderShareDropDown()} */}
       </div>
       <DialogCreate
         show={dialogCreateShow}
         type={dialgeCreateFileType}
-        currentSelected={currentSelected}
+        parentPath={currentDir}
+        parentId={currentDirId}
         close={() => {
           setDialogCreateShow(false)
         }}
       />
+      {RenderCreateDropDown()}
       <Tree
         className='file-tree'
         showFilteredOnly
-        directory
         draggable
         renderLabel={renderFullLabel}
         treeData={getAppTreeData(currentAppFilesTree)}
@@ -403,15 +399,14 @@ const AppFileList = () => {
         onDoubleClick={(ev, node) => {
           onOpenClicked(node)
         }}
-        onChangeWithObject
+        onContextMenu={(e, node) => {
+          onNodeSelect(node)
+        }}
         onSelect={(key, selected, node) => {
           onNodeSelect(node)
         }}
         onClick={() => {
           console.log('clicked')
-        }}
-        onChange={(node) => {
-          // setState(prev => ({ ...prev, selectedNodeKey: key }))
         }}
       />
     </>

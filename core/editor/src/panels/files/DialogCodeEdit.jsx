@@ -238,23 +238,30 @@ export default forwardRef((props, pref) => {
       }}
       onCancel={onClose}
     >
-      {hasOpenFile &&
-        <Spin
-          tip='正在下载代码编辑模块, 请稍候..' spinning={loading} style={{
-            height: '100%',
-            width: '100%'
+      <Spin
+        tip='正在下载代码编辑模块, 请稍候..' spinning={loading} style={{
+          height: '100%',
+          width: '100%'
+        }}
+      >
+        <Tabs type='card' collapsible activeKey={currentTab} onTabClose={onTabClose} onChange={onChange}>
+          {tabs.map(tab => (
+            <TabPane closable tab={renderTab(tab)} itemKey={tab.id} key={tab.id} />
+          ))}
+        </Tabs>
+        <div
+          style={{
+            visibility: hasOpenFile ? 'visible' : 'hidden'
           }}
-        >
-          <Tabs type='card' collapsible activeKey={currentTab} onTabClose={onTabClose} onChange={onChange}>
-            {tabs.map(tab => (
-              <TabPane closable tab={renderTab(tab)} itemKey={tab.id} key={tab.id} />
-            ))}
-          </Tabs>
-          <div
-            className='code-editor-container' ref={ref}
-          />
-        </Spin>}
-      {!hasOpenFile && <div className='no-open-script-file'>暂无打开的脚本文件</div>}
+          className='code-editor-container' ref={ref}
+        />
+        <div
+          style={{
+            visibility: hasOpenFile ? 'hidden' : 'visible'
+          }} className='no-open-script-file'
+        >暂无打开的脚本文件
+        </div>
+      </Spin>
     </SideSheet>
   )
 })

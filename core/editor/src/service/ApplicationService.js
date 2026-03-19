@@ -131,7 +131,7 @@ export default class ApplicationService {
       parent: parentId
     })
 
-    this.updateAppFileTree()
+    await this.updateAppFileTree()
     return inserted
   }
 
@@ -214,7 +214,7 @@ export default class ApplicationService {
       await this.collection.patch({ id }, {
         parent: newParent
       })
-      await this.updateAppFileTree(true)
+      await this.updateAppFileTree()
       return true
     } else {
       return false

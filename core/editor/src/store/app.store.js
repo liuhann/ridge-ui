@@ -1,6 +1,6 @@
 // src/store/useStore.js
 import { create } from 'zustand'
-import { alphabetid , trim, camelCase } from '../utils/string'
+import { alphabetid, trim, camelCase } from '../utils/string'
 import LocalRepoService from '../service/LocalRepoService'
 import ApplicationService from '../service/ApplicationService'
 import { stringToBlob } from '../utils/blob'
@@ -112,6 +112,15 @@ const useStore = create((set, get) => ({
     }
   },
 
+  uploadFile: async (parentId, file) => {
+    const appService = localRepoService.getCurrentAppService()
+    await appService.createFile(parentId, file.name, file)
+
+    set({
+      currentAppFilesTree: appService.getFileTree()
+    })
+  },
+
   createFile: async (parentId, name, fileContent, mimeType) => {
     const appService = localRepoService.getCurrentAppService()
 
@@ -148,7 +157,7 @@ const useStore = create((set, get) => ({
     return appService.filterFiles(file => file.parent === pid && camelCase(trim(name)) === camelCase(trim(file.name))).length === 0
   },
 
-  fileRename: async (fileId, name) => {
+  renameFile: async (fileId, name) => {
     const appService = localRepoService.getCurrentAppService()
     const renamed = await appService.rename(fileId, name)
     if (renamed === 1) {
@@ -158,6 +167,17 @@ const useStore = create((set, get) => ({
       })
     }
     return renamed
+  },
+
+  moveFile: async (fileId, parentId) => {
+    const appService = localRepoService.getCurrentAppService()
+    const moved = await appService.move(fileId, parentId)
+    if (moved) {
+      set({
+        currentAppFilesTree: appService.getFileTree()
+      })
+    }
+    return moved
   }
 }))
 

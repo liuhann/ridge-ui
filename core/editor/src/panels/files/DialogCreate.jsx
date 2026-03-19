@@ -14,7 +14,8 @@ const TITLES = {
 export default ({
   show,
   type,
-  currentSelected,
+  parentPath,
+  parentId,
   close
 }) => {
   const checkCreateNameValid = appStore(state => state.checkCreateNameValid)
@@ -23,21 +24,6 @@ export default ({
 
   const [nameValid, setNameValid] = useState(true)
   const [value, setValue] = useState('')
-
-  let parentPath = '/'
-  let parentId = -1
-
-  if (currentSelected) {
-    if (currentSelected.children) {
-      parentPath = currentSelected.raw.path
-      parentId = currentSelected.id
-    } else {
-      if (currentSelected.raw.parentNode) {
-        parentPath = currentSelected.raw.parentNode.path
-        parentId = currentSelected.raw.parentNode.id
-      }
-    }
-  }
 
   const onCreateConfirm = async () => {
     try {
