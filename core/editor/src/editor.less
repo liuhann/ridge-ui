@@ -171,6 +171,7 @@ html, body {
 slot {
   position: relative;
 }
+
 .code-editor-container {
   .cm-editor {
     .cm-scroller {
@@ -255,6 +256,14 @@ slot {
 }
 
 .code-edit-sheet {
+  .code-edit-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .flex-1 {
+    flex: 1;
+  }
   .code-editor-container {
     border: 1px solid var(--semi-color-border);
     overflow: auto;

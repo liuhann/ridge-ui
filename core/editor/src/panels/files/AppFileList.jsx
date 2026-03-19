@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 
-import { Button, Tree, Dropdown, Typography, Toast, Upload, Spin, Modal, Space, Divider, Breadcrumb, Input } from '@douyinfe/semi-ui'
+import { Button, Tree, Dropdown, Typography, Toast, Upload, Modal, Input } from '@douyinfe/semi-ui'
 import context from '../../service/RidgeEditorContext.js'
 import { mapTree } from './buildFileTree.js'
 import DialogCreate from './DialogCreate.jsx'
-import { stringToBlob } from '../../utils/blob.js'
 import './file-list.less'
 
 import appStore from '../../store/app.store.js'
 import editorStore from '../../store/editor.store.js'
-const { Text, Paragraph } = Typography
+const { Text } = Typography
 
 const ACCEPT_FILES = '.svg,.png,.jpg,.json,.css,.js,.md,.webp,.zip,.gif'
 
@@ -32,12 +31,8 @@ const AppFileList = () => {
   const openFile = editorStore(state => state.openFile)
   const deleteFile = appStore((state) => state.deleteFile)
 
-  const currentOpenPageId = editorStore(state => state.currentOpenPageId)
   const openedPages = editorStore(state => state.openedPages)
   const closeAllPages = editorStore(state => state.closeAllPages)
-
-  // 存储节点映射
-  const nodeMap = useRef({})
 
   const getAppTreeData = (treeData) => {
     const fileTree = mapTree(treeData, file => {
@@ -64,10 +59,7 @@ const AppFileList = () => {
         file.icon = <i class='bi bi-braces' />
       }
       if (file.type === 'page') {
-        file.icon = <i className='bi bi-file-earmark-richtext' />
-      }
-      if (file.type === 'page') {
-        file.icon = <i class='bi bi-box-seam' />
+        file.icon = <i class='bi bi-layout-text-window-reverse' />
       }
       if (file.type === 'directory') {
         file.icon = <i className='bi bi-folder2' />
@@ -125,9 +117,6 @@ const AppFileList = () => {
   }
 
   const onCopyClicked = async (node) => {
-    const { appService } = context.services
-    await appService.copy(node.key)
-    loadAndUpdateFileTree()
     Toast.success('文件复制完成')
   }
 
@@ -267,14 +256,18 @@ const AppFileList = () => {
                 })
               }}
             />
-          : <Dropdown
+          : <>
+            <Text>{label}</Text>
+            <Dropdown
               className='app-files-dropdown'
-              trigger='contextMenu'
+              trigger='click'
               position='bottomRight'
               clickToHide
               render={<Dropdown.Menu>{MORE_MENUS}</Dropdown.Menu>}
-            > <Text>{label}</Text>
-          </Dropdown>}
+            >
+              <i className='more-button bi bi-three-dots-vertical' />
+            </Dropdown>
+            </>}
         {/* <Text
           onClick={() => {
             const now = new Date().getTime()
@@ -292,22 +285,6 @@ const AppFileList = () => {
   }
 
   const RenderCreateDropDown = () => {
-    // return (
-    //   <div className='file-btns'>
-    //     <Button size='small' theme='borderless' type='tertiary' icon={<i class='bi bi-file-earmark-plus' />} onClick={() => showCreateDialog('page')} />
-    //     <Button size='small' theme='borderless' type='tertiary' icon={<i className='bi bi-folder-plus' />} onClick={() => showCreateDialog('folder')} />
-    //     <Button size='small' theme='borderless' type='tertiary' icon={<i class='bi bi-clipboard-plus' />} onClick={() => showCreateDialog('js')} />
-    //     <Upload
-    //       action='none'
-    //       multiple showUploadList={false} uploadTrigger='custom' onFileChange={files => {
-    //         onFileUpload(files)
-    //       }} accept={ACCEPT_FILES}
-    //     >
-    //       <Button size='small' theme='borderless' type='tertiary' icon={<i class='bi bi-upload' />} />
-    //     </Upload>
-
-    //   </div>
-    // )
     return (
       <Dropdown
         trigger='click'
@@ -321,7 +298,13 @@ const AppFileList = () => {
           </Dropdown.Menu>
         }
       >
-        <Button theme='outline' type='primary' icon={<i className='bi bi-plus-lg' style={{ color: 'var(--semi-color-text-0)' }} />} >创建</Button>
+        <Button
+          style={{
+            marginLeft: '12px',
+            marginTop: '6px'
+          }} colorful theme='outline' type='primary' icon={<i className='bi bi-plus-lg' />}
+        >创建
+        </Button>
       </Dropdown>
     )
   }

@@ -4,9 +4,9 @@ import { Breadcrumb } from '@douyinfe/semi-ui'
 
 import ProiconsHome from './icons/ProiconsHome.svg'
 
-import AppListPanel from './panels/apps/AppListPanel.jsx'
-import AppFileList from './panels/files/AppFileList.jsx'
-import appStore from './store/app.store.js'
+import AppListPanel from './apps/AppListPanel.jsx'
+import AppFileList from './files/AppFileList.jsx'
+import appStore from '../store/app.store.js'
 
 const THEMES = [{
   label: '默认',
