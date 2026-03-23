@@ -1,11 +1,13 @@
 import ValtioStore from '../store/ValtioStore'
 import Element from './Element'
 import BaseNode from './BaseNode'
+
 import { STORE, PROP } from '../utils/contants.js'
 import { cloneDeep } from '../utils/object.js'
 import Debug from 'debug'
 import { handleClassListPropValue } from '../utils/pseudo'
-import { generateUrlFontName, toCSSLength } from '../utils/string'
+import { generateUrlFontName, toCSSLength, addJsonSuffix, hasUrlProtocol, removeUrlProtocol, cleanMultiSlash } from '../utils/string'
+import { loadRemoteJsModule } from '../utils/load.js'
 const debug = Debug('ridge:composite')
 
 /**
@@ -14,30 +16,26 @@ const debug = Debug('ridge:composite')
 class Composite extends BaseNode {
   constructor ({
     id,
-    packageName,
-    compositePath,
+    appName,
+    path,
     properties,
     config,
-    appPackageObject,
-    context
+    loader
   }) {
     super()
     this.id = id
-    this.config = cloneDeep(config)
-    this.compositePath = compositePath
-    this.context = context
-    this.appPackageObject = appPackageObject
-    this.loader = context.loader
-    this.packageName = packageName
-    this.properties = properties || config.properties
+    this.path = path
+    this.loader = loader
+    this.appName = appName
+    this.config = config
+    this.properties = properties || this.comfig?.properties || {}
     this.CLASS_LIST = ['ridge-composite']
     this.dataReady = true // 数据层加载完成
-    this._hoveredElements = []
   }
 
   // 加载页面配置  运行时调用
   async loadConfig () {
-    this.config = cloneDeep(await this.context.loadComposite(this.packageName, this.compositePath))
+    this.config = cloneDeep(await this.loader.loadJSON(addJsonSuffix(`${this.appName}/${this.path}`)))
 
     if (this.config == null || !this.config.elements) {
       this.config = null
@@ -46,12 +44,13 @@ class Composite extends BaseNode {
 
   // 首屏渲染，决定绘制时即计算，前提：必须加载页面配置文件， 尽最大可能绘制所有可用内容
   firstPaint (el) {
-    debug('Composite FP', el, this.config.compositePath, this.config)
+    debug('Page firstPaint', el, this.appName, this.path)
+    this.firstPainted = false
     if (el) {
       this.el = el
     }
+    // 存储之前的类列表
     this.initialClassList = Array.from(this.el.classList)
-    this.firstPainted = true
     this.updateStyle()
     this.initializeNodes()
     // 检测是否位于循环之中，避免上层组件已经是自身
@@ -71,9 +70,10 @@ class Composite extends BaseNode {
         //  this.childrenPromises.push(element.mount(div))
       }
     }
+    this.firstPainted = true
   }
 
-  // 根据配置初始化所有节点对象
+  // 根据配置初始化所有节点对象、绘制根节点
   initializeNodes () {
     this.nodes = {}
     // 创建每个组件实例
@@ -90,9 +90,8 @@ class Composite extends BaseNode {
    * @param {Element} el DOM 根元素
    */
   async initialize () {
-    debug(this.packageName, this.compositePath, 'initialize start')
     if (!this.config) {
-      this.config = await this.context.loadComposite(this.packageName, this.compositePath)
+      await this.loadConfig()
     }
 
     if (!this.config) {
@@ -291,16 +290,9 @@ class Composite extends BaseNode {
         this.el.style.height = '100%'
       }
 
-      // if (!this.config.style.widthFix && !this.config.style.heightFix) {
-      //   this.el.style.overflow = 'hidden'
-      // }
-      // const { classList = [] } = this.config.style
-      const classList = handleClassListPropValue(this.config.classList, this)
+      // const classList = handleClassListPropValue(this.config.classList, this)
 
-      this.el.className = [...this.initialClassList, 'ridge-composite', ...this.CLASS_LIST, ...classList].join(' ')
-      // for (const className of classList) {
-      //   this.el.classList.add(className)
-      // }
+      this.el.className = [...this.initialClassList, 'ridge-composite', ...this.CLASS_LIST].join(' ')
     }
   }
 
@@ -334,14 +326,23 @@ class Composite extends BaseNode {
     return []
   }
 
+  async loadJSModule (jsPath) {
+    if (hasUrlProtocol(jsPath)) {
+      const jsPathInApp = removeUrlProtocol(jsPath)
+      return await loadRemoteJsModule(cleanMultiSlash(`${this.appName}/${jsPathInApp}`))
+    } else {
+      return await loadRemoteJsModule(jsPath)
+    }
+  }
+
   // 导入页面脚本文件
   async importJSFiles () {
     const { jsFiles } = this.config
-    debug('Load importJSFiles', this.packageName, this.compositePath, jsFiles)
+    debug('Load importJSFiles', this.appName, this.path, jsFiles)
     const jsModules = []
     for (const filePath of jsFiles ?? []) {
       try {
-        const JsModule = await this.context.loadModule(this.packageName, filePath)
+        const JsModule = await this.loadJSModule(filePath)
         if (JsModule) {
           const JSStoreModule = JsModule
           JSStoreModule.filePath = filePath

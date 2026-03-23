@@ -51,7 +51,7 @@ export default {
   },
 
   async setup () {
-      this.appService = this.composite.context.services.appService
+      // this.appService = this.composite.context.services.appService
   },
 
   destory () {

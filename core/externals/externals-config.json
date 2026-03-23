@@ -1,0 +1,73 @@
+{
+  "cdnBaseUrl": "/npm",
+  "dependencyExternals": [
+    {
+      "module": "react",
+      "root": "React",
+      "dist": "react@18.3.1/umd/react.production.min.js"
+    },
+    {
+      "module": "react-dom",
+      "dependencies": ["react"],
+      "root": "ReactDOM",
+      "dist": "react-dom@18.3.1/umd/react-dom.production.min.js"
+    },
+    {
+      "module": "lodash",
+      "root": "_",
+      "dist": "lodash@4.17.21/lodash.min.js"
+    },
+    {
+      "module": "moment",
+      "root": "moment",
+      "dist": "moment@2.30.1/moment.min.js"
+    }
+  ],
+  "packageExternals": [
+    {
+      "module": "antd",
+      "root": "Antd",
+      "dependencies": ["react", "react-dom"],
+      "dist": {
+        "js": "antd@5.12.8/dist/antd.min.js",
+        "css": "antd@5.12.8/dist/antd.min.css"
+      }
+    },
+    {
+      "module": "@douyinfe/semi-ui",
+      "root": "SemiUI",
+      "dependencies": ["react", "react-dom"],
+      "dist": {
+        "js": "@douyinfe/semi-ui@2.61.0/dist/umd/semi-ui.min.js",
+        "css": "@douyinfe/semi-ui@2.61.0/dist/css/semi.min.css"
+      }
+    },
+    {
+      "module": "ridge-container",
+      "root": "RidgeContainer",
+      "dependencies": ["react"],
+      "dist": {
+        "js": "ridge-container@1.2.0/dist/ridge-container.umd.js",
+        "css": "ridge-container@1.2.0/dist/ridge-container.css"
+      }
+    },
+    {
+      "module": "@arco-design/web-react",
+      "root": "ArcoDesign",
+      "dependencies": ["react", "react-dom"],
+      "dist": {
+        "js": "@arco-design/web-react@2.52.0/dist/arco.min.js",
+        "css": "@arco-design/web-react@2.52.0/dist/arco.min.css"
+      }
+    },
+    {
+      "module": "element-react",
+      "root": "Element",
+      "dependencies": ["react", "react-dom"],
+      "dist": {
+        "js": "element-react@1.4.34/dist/index.js",
+        "css": "element-react@1.4.34/dist/theme-default/index.css"
+      }
+    }
+  ]
+}

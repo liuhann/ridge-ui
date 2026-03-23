@@ -101,11 +101,8 @@ class Element extends BaseNode {
    */
   async load (includeChildren) {
     if (!this.componentDefinition) {
-      if (this.config.packageName && this.config.path) {
-        // LTS情况
-
-      } else if (this.config.path) {
-        this.componentDefinition = await this.composite.context.loader.loadComponent(this.config.path)
+      if (this.config.path) {
+        this.componentDefinition = await this.composite.loader.loadComponent(this.config.path)
       }
     }
     if (!this.componentDefinition) {

@@ -13,7 +13,6 @@ import { ReactComposite } from 'ridgejs'
 
 import './editor.less'
 import './panels/common.less'
-import PreviewMenuBar from './panels/menu/PreviewMenuBar.jsx'
 import AppFileList from './panels/files/AppFileList.jsx'
 import AppListPanel from './panels/apps/AppListPanel.jsx'
 import ridgeEditorContext from './service/RidgeEditorContext.js'
@@ -155,7 +154,6 @@ const Editor = () => {
           display: isPreview ? '' : 'none'
         }}
       >
-        <PreviewMenuBar />
         <div className='preview-container'>
           <div className='preview-view-port' />
         </div>

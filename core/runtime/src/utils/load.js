@@ -1,8 +1,10 @@
-import { convertToValidVariableName, generateUrlFontName } from './string'
+import { convertToValidVariableName, generateUrlFontName, addStringPrefix } from './string'
 import { resolve } from './path'
+import debug from 'debug'
 import memoize from 'lodash/memoize'
 
-const showError = window.showError || function () {}
+const trace = window.trace || debug('ridge:load')
+
 const obj = {}
 const handler = {
   set: function (target, property, value) {
@@ -14,6 +16,23 @@ const handler = {
   // 获取拦截器，当访问对象属性时触发
   get: function (target, property) {
     return target[property]
+  }
+}
+
+/**
+ * 组件定义（js及其依赖）加载服务类
+ * @class
+ */
+
+const loadJSON = async (url) => {
+  const response = await window.fetch(url, {
+    mode: 'cors',
+    credentials: 'include'
+  })
+  if (response.ok) {
+    return await response.json()
+  } else {
+    return null
   }
 }
 
@@ -137,7 +156,7 @@ const cleanImports = sourceCode => {
  * 加载远程模块，并返回模块结果
  */
 const loadRemoteJsModule = memoize(async (modulePath) => {
-  showError('load Remote:', modulePath)
+  trace('load Remote:', modulePath)
 
   // 处理外部加载情况
   const moduleVariableName = convertToValidVariableName(modulePath)
@@ -150,13 +169,11 @@ const loadRemoteJsModule = memoize(async (modulePath) => {
   }
 
   let moduleUrl = modulePath
-  if (window.ridge && window.ridge.baseUrl) {
-    const npmPrefix = window.ridge.baseUrl
-    if (!moduleUrl.startsWith(npmPrefix)) {
-      moduleUrl = npmPrefix + modulePath
-    }
+  if (window.RidgeUI && window.RidgeUI.ridgeBaseUrl) {
+    const npmPrefix = window.RidgeUI.ridgeBaseUrl
+    moduleUrl = addStringPrefix(npmPrefix, modulePath)
   }
-  showError('load Remote:', moduleUrl)
+  trace('load Remote:', moduleUrl)
   const textContent = `
       import * as currentModule from '${moduleUrl}'
       globalThis.appModules['${moduleUrl}'] = currentModule
@@ -167,7 +184,7 @@ const loadRemoteJsModule = memoize(async (modulePath) => {
   return new Promise((resolve, reject) => {
     try {
       globalThis.appModulesNotifier[moduleUrl] = Module => {
-        showError('Callback:', moduleUrl)
+        trace('Callback:', moduleUrl)
         if (Module) {
           resolve(Module.default || Module)
         } else {
@@ -177,7 +194,7 @@ const loadRemoteJsModule = memoize(async (modulePath) => {
       scriptEl.textContent = textContent
       document.head.append(scriptEl)
     } catch (e) {
-      showError('remote js error', e)
+      trace('remote js error', e)
       resolve(null)
     } finally {
       // window.onerror = null
@@ -193,7 +210,7 @@ const loadRemoteJsModuleLts = memoize(async (modulePath) => {
     jsPath = (window.ridge.baseUrl + '/' + jsPath.replace(/^\/npm/, '').replace(/^\//, ''))
   }
 
-  showError('load Remote:', jsPath)
+  trace('load Remote:', jsPath)
   return await loadLocalJsModule(jsPath, {
     load: async url => {
       const fetched = await window.fetch(url, {
@@ -352,6 +369,7 @@ async function loadScript (url) {
 }
 
 export {
+  loadJSON,
   loadCss,
   loadScript,
   loadWebFont,

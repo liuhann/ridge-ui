@@ -1,56 +1,11 @@
-/* global location */
-/* global localStorage */
-import Debug from 'debug'
-import RidgeContext, { Element, Composite } from 'ridgejs'
-import WorkSpaceControl from '../workspace/WorkspaceControl.js'
-import { cloneDeep, isEqual } from 'lodash'
-
-import { getNodeListConfig } from '../workspace/editorUtils.js'
-import EditorComposite from '../workspace/EditorComposite.js'
-import { ensureLeading } from '../utils/string.js'
-
-import { localRepoService } from '../store/app.store.js'
-import { removeUrlProtocol } from 'ridgejs/src/utils/string.js'
-// import PreviewComposite from '../workspace/PreviewComposite.js'
-
-// import { appService } from '../store/app.store.js'
-
-const debug = Debug('ridge:editor')
-
-const NPM_CDN_SERVER = new URLSearchParams(location.href).get('registry') || localStorage.getItem('registry') || window.baseUrl || 'https://cdn.jsdelivr.net/npm'
-
-// eslint-disable-next-line
-// const baseUrl = (location.host.startsWith('localhost') || location.host.startsWith('127.0.0.1')) ? '/npm' : NPM_CDN_SERVER
-const baseUrl = NPM_CDN_SERVER
+import debug from 'debug'
 
 /**
  * 'no-react' service for editor.
  * connect each part and manage state for editor
  **/
-class RidgeEditorContext extends RidgeContext {
+class RidgeEditorContext {
   constructor () {
-    super({ baseUrl: '/npm', loadPropControl: true })
-    window.ridge = this
-    // Register For Panel
-
-    // this.theme = localStorage.getItem('ridge-theme') || '@douyinfe/semi-ui/dist/css/semi.min.css'
-    // this.isLight = localStorage.getItem('ridge-is-light') || true
-
-    // this.services.appService = appService
-    // this.services.distributeService = new DistributionService(this)
-    // this.services.npmService = new NpmService()
-
-    // 存放配置性数据例如类样式列表等，供配置过程使用
-    // this.pluginData = []
-
-    // this.setTheme(this.theme)
-
-    // 保存工作区间打开过的页面列表
-    // this.openedFileContentMap = new Map()
-
-    // 页面位置map
-    // this.pageTransformMap = new Map()
-    // this.checkInterval = setInterval(this.checkModification.bind(this), 2000)
   }
 
   /**

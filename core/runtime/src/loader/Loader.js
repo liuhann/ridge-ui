@@ -2,40 +2,39 @@ import debug from 'debug'
 import memoize from 'lodash/memoize'
 
 import ridgeExternals from 'ridge-externals'
-import { loadRemoteJsModule, loadLocalJsModule, loadCss, loadWebFont, loadScript } from '../utils/load'
+import { loadRemoteJsModule, loadLocalJsModule, loadCss, loadWebFont, loadScript, loadJSON } from '../utils/load'
+import { addStringPrefix, extractComponentPath } from '../utils/string'
 const log = debug('ridge:loader')
 
 const trace = window.showError || function () {}
+
 /**
- * 组件定义（js及其依赖）加载服务类
- * @class
- */
+   * 工具方法：根据module名称查找externals配置
+   * @param {String} moduleName 模块名（如 react、antd、@douyinfe/semi-ui）
+   * @param {Array} externalsList 配置列表（dependencyExternals / packageExternals）
+   * @returns {Object|null} 匹配的配置项
+   */
+const findExternalsConfig = (moduleName, externalsList) => {
+  return externalsList.find(item => item.module === moduleName) || null
+}
 
 class Loader {
   /**
    * 构造器
-   * @param {string} baseUrl  元素下载基础地址, 支持 本地（ridge-http）  https://www.unpkg.com/  https://www.jsdelivr.com/ 等
+   * @param {string} baseUrl  元素下载基础地址
    * @param {string} loadPropControl  加载属性的自定义控制编辑
    */
-
-  constructor ({
-    baseUrl,
-    loadPropControl
-  }) {
+  constructor (baseUrl, externals = ['/npm/ridge-externals/externals-config.json']) {
     this.baseUrl = baseUrl.replace(/\/$/, '')
-    this.loadPropControl = loadPropControl
     log('RidgeLoader baseUrl: ' + this.baseUrl)
 
     // 加载的字体列表
     this.loadedFonts = []
-
     this.themeUrls = {}
 
     // this.getPackageJSON = memoize(this._getPackageJSON)
-    this.loadComponent = memoize(this._loadComponent)
-    this.loadScript = memoize(this._loadScript)
     this.loadExternal = memoize(this._loadExternal)
-    // this.loadJSON = memoize(this.loadJSON)
+    this.loadJSON = memoize(this.loadJSON)
     this.loadTextContent = memoize(this.loadTextContent)
     this.loadStoreScript = memoize(this.loadStoreScript)
     this.loadLocalJsModule = loadLocalJsModule
@@ -49,6 +48,10 @@ class Loader {
     this.blobCache = new Map()
   }
 
+  async confirmExternals () {
+
+  }
+
   getURIPath (resourceUrl) {
     return `${this.baseUrl}/${resourceUrl}`.replace(
       /(https?:\/\/)|(\/)+/g,
@@ -57,157 +60,106 @@ class Loader {
   }
 
   /**
-   * 加载组件， 支持2种参数
-   * 1、对象
-   * {
-   *   packageName: 'ridge-basic',
-   *   path: './build/container1.pel.js'
-   * }
-   * 2、全路径
-   * ridge-basic/build/container1.pel.js 或 ridge-basic@ridge/build/container1.pel.js
-   *
-   * @param {String} packageName Npm包名
-   * @param {String} path 相对于包的组件路径
+   * 加载组件， 路径为 ${npmPackageName}/${componentId}
+   * 例如
+   * ridge-container/flex
+   * antd/Button
+   * @douyinfe/semi-ui/Tree
+   * 首先加载组件包完整dist， 然后通过其全局变量获取组件 例如 SemiUI.Tree / Antd.Button 等
+   * 其中下载dist地址会有额外映射表维护 例如 antd 需要下载 js和css 另外还有依赖的react
+   * 另外，因为组件包有多个组件，组件包依赖只加载一次
+   * @param {String} componentPath 组件路径
    */
-  async _loadComponent (componentPath) {
-    let packageName, path
-    if (typeof componentPath === 'object') {
-      packageName = componentPath.packageName
-      path = componentPath.path
-    } else {
-      // 抽取包和路径
-      const paths = componentPath.split('/')
-      if (paths[0].startsWith('@')) {
-        packageName = paths.splice(0, 2).join('/')
-        path = paths.join('/')
+  async loadComponent (componentPath) {
+    const { packageName, componentPath } = extractComponentPath(componentPath)
+
+    // 查找组件包的externals配置
+    const packageConfig = findExternalsConfig(packageName, this.packageExternals)
+
+    if (!packageConfig) {
+      console.error('对应组件包未定义:', packageName)
+      return null
+    }
+    const globalVar = packageConfig.root
+
+    const loaded = getComponentFromGlobalVar(globalVar, componentPath)
+    if (loaded) {
+      return loaded
+    }
+     // 3. 加载组件包
+    await this.loadPackage(packageName)
+
+    return getComponentFromGlobalVar(globalVar, componentPath)
+  }
+
+  getComponentFromGlobalVar(globalVar, componentPath) {
+    if (window[globalVar]) {
+      if (!window[globalVar][componentPath]) {
+        console.error('组件在组件包中不存在', packageName, componentPath)
+        return null
       } else {
-        packageName = paths.splice(0, 1).join('/')
-        path = paths.join('/')
+        return window[globalVar][componentPath]
       }
-    }
-    // globalThis方式
-    if (window[packageName] && window[packageName][path]) {
-      return window[packageName][path]
-    }
-    if (window[`${packageName}/${path}`]) {
-      return window[`${packageName}/${path}`].default
-    }
-    const doLoaded = await this.doLoadComponent({ packageName, path })
-    if (doLoaded) {
-      doLoaded.componentPath = componentPath
-    }
-    return doLoaded
-  }
-
-  /**
-   * 进行网络传输、加载组件内容
-   * @param {*} param0
-   * @returns
-   */
-  async doLoadComponent ({
-    packageName, path
-  }) {
-    log('doLoadComponent', packageName, path)
-    // 加载包依赖的js （必须首先加载否则组件加载会出错）
-    const packageJSONObject = await this.getPackageJSON(packageName)
-
-    if (packageJSONObject == null) {
-      return null
-    }
-
-    // 加载包依赖定义
-    await this.confirmPackageDependencies(packageName)
-
-    let rcd = null
-    if (packageJSONObject.ridgeDist) {
-      // 整体加载
-      await this.loadScript(`${packageJSONObject.name}/${packageJSONObject.ridgeDist}`)
-      rcd = window[packageJSONObject.name][path]
-    } else {
-      // 单独加载
-      rcd = await this.loadComponentScript({ packageName, path })
-    }
-
-    if (rcd) {
-      await this.prepareComponent(rcd, { packageName, path }, packageJSONObject)
-    }
-    return rcd
-  }
-
-  /**
-   * 预处理组件定义，定义前后变更的兼容性问题解决
-   * @param {} rcd 组件定义
-   * @param {*} param1
-   * @param {*} packageJSONObject
-   */
-  async prepareComponent (rcd, {
-    packageName,
-    path
-  }) {
-    rcd.packageName = packageName
-    rcd.path = path
-
-    // 标题统一是title
-    rcd.title = rcd.title || rcd.label
-    // 加载单独的依赖
-    if (Array.isArray(rcd.externals)) {
-      for (const ext of rcd.externals) {
-        if (ext.startsWith('/')) {
-          await this.loadScript(ext)
-        } else {
-          await this.loadScript(packageName + '/' + ext)
-        }
-      }
-    }
-    // 处理渲染器，加载渲染器依赖
-    if (rcd.component) {
-      // 支持异步的加载情况
-      if (typeof rcd.component === 'function') {
-        if (rcd.component.constructor.name === 'AsyncFunction') {
-          rcd.component = (await rcd.component()).default
-        }
-      }
-      if (this.loadPropControl) {
-        for (const prop of rcd.props || []) {
-          if (prop && prop.control && typeof prop.control === 'function' && prop.control.toString().startsWith('()')) {
-            prop.controlComponent = (await prop.control()).default
-          }
-          if (prop.options && typeof prop.options === 'function' && prop.options.toString().startsWith('()')) {
-            prop.optionsLoads = await prop.options()
-          }
-        }
-      }
-    } else {
-      log('组件 Component定义未加载到', rcd)
-    }
-  }
-
-  on (eventName, callback) {
-    this.eventCallbacks.push({
-      eventName,
-      callback
-    })
-  }
-
-  /**
-     * 加载前端组件的代码，支持2种方式 globalThis 及 amd
-     */
-  async loadComponentScript ({
-    packageName,
-    path
-  }) {
-    // 加载图元脚本，其中每个图元在编译时都已经设置到了window根上，以图元url为可以key
-    await this.loadScript(`${packageName}/build/${path}.js`)
-
-    const scriptLibName = `${packageName}/${path}`
-    // globalThis方式
-    if (window[scriptLibName]) {
-      return window[scriptLibName].default
     } else {
       return null
     }
   }
+  
+  /**
+   * 加载组件包（JS+CSS）
+   * @param {String} packageName 包名（如 antd、@douyinfe/semi-ui）
+   * @returns {Promise}
+   */
+  async loadPackage (packageConfig) {
+    // 已加载过则直接返回
+    if (this.loadedPackages.has(packageConfig.module)) {
+      return
+    }
+    try {
+      // 1. 先加载组件包的依赖
+      if (packageConfig.dependencies && packageConfig.dependencies.length > 0) {
+        await this.loadDependencies(packageConfig.dependencies)
+      }
+      
+      // 2. 加载CSS（如有）
+      if (Array.isArray(packageConfig.dist)) {
+        for (const distPath  of packageConfig.dist) {
+          await this.loadScript(distPath)
+        }
+      } else if (typeof packageConfig.dist === 'string') {
+        await this.loadScript(packageConfig.dist)
+      }
 
+      // 4. 标记为已加载
+      this.loadedPackages.add(packageConfig.module)
+    } catch (error) {
+      console.error(`加载组件包 ${packageConfig.module} 失败：`, error)
+      throw error
+    }
+  }
+
+    /**
+   * 加载依赖模块（递归加载，处理dependencies依赖链）
+   * @param {Array<String>} dependencies 依赖模块名列表（如 ['react', 'react-dom']）
+   * @returns {Promise}
+   */
+  async loadDependencies (dependencies = []) {
+    for (const depName of dependencies) {
+      // 查找依赖的externals配置
+      const depConfig = this.findExternalsConfig(depName, this.dependencyExternals)
+      if (!depConfig) {
+        throw new Error(`未找到依赖模块 ${depName} 的externals配置`)
+      }
+
+      // 先加载当前依赖的子依赖
+      if (depConfig.dependencies && depConfig.dependencies.length > 0) {
+        await this.loadDependencies(depConfig.dependencies)
+      }
+      // 加载当前依赖
+      await this.loadScript(depConfig.dist)
+    }
+  }
+  
   removeCss (href) {
     if (!href) return
     const links = Array.from(document.head.children).filter(node => node.tagName.toLowerCase() === 'link')
@@ -236,16 +188,13 @@ class Loader {
    * @param {*} url
    * @returns
    */
-  async _loadScript (url) {
+  async loadScript (url) {
     if (url == null) {
       return
     }
     try {
-      // 去重无意义的双斜线
-      let loadUrl = url.replace(/\/\//g, '/')
-      if (!loadUrl.startsWith('/')) {
-        loadUrl = '/' + loadUrl
-      }
+      const loadUrl = addStringPrefix(this.baseUrl, url)
+      
       // script和link标签具体相同结尾的：不重复加载
       if (Array.from(document.querySelectorAll('script')).find(script => script.src && script.src.endsWith(loadUrl)) ||
         Array.from(document.querySelectorAll('link')).find(script => script.href && script.href.endsWith(loadUrl))) {
@@ -253,113 +202,15 @@ class Loader {
         return loadUrl
       }
 
-      // 拼接npm cdn地址
-      const finalUrl = this.baseUrl + loadUrl
-
-      trace('Load:' + finalUrl)
-      if (finalUrl.endsWith('.css')) {
-        await loadCss(finalUrl)
-      } else if (finalUrl.endsWith('.js')) {
-        await loadScript(finalUrl)
+      trace('Load:' + loadUrl)
+      if (loadUrl.endsWith('.css')) {
+        await loadCss(loadUrl)
+      } else if (loadUrl.endsWith('.js')) {
+        await loadScript(loadUrl)
       }
       return loadUrl
     } catch (e) {
       console.error('JS Load Error:', `${url}`)
-    }
-  }
-
-  /**
-   * 获取package.json定义对象
-   * @param {*} packageName
-   * @returns
-   */
-  async getPackageJSON (packageName) {
-    return this.loadJSON(`${packageName}/package.json`)
-  }
-
-  /**
-   * 加载组件包的依赖资源
-   * 主要加载package.json中的 externals (外部依赖)
-   * @param {String} packageName 组件包名称
-   */
-  async _confirmPackageDependencies (packageName) {
-    log('_confirmPackageDependencies', packageName)
-    if (window[packageName]) return
-    const packageJSONObject = await this.getPackageJSON(packageName)
-    if (packageJSONObject == null) return
-
-    const dependencies = Object.keys(packageJSONObject.dependencies || {})
-
-    // 主要目的：加载React、Lodash等通用依赖资源
-    for (const npmdep of dependencies) {
-      await this.loadExternal(npmdep)
-    }
-
-    // 组件包指定的external地址： 直接按地址加载
-    const externals = packageJSONObject.externals || packageJSONObject.prepares
-    const loading = []
-    // 加载prepares 库。
-    if (Array.isArray(externals)) {
-      for (const external of externals) {
-        if (external.startsWith('/')) {
-          loading.push(await this.loadScript(external))
-        } else {
-          loading.push(await this.loadScript(packageJSONObject.name + '/' + external))
-        }
-      }
-    }
-    await Promise.allSettled(loading)
-
-    if (window.ridgeTheme && window.ridgeTheme[packageName]) {
-      // 全局定义了当前组件库的主题样式位置
-      this.loadPackageTheme(packageName, window.ridgeTheme[packageName])
-    } else if (packageJSONObject.themes) {
-      // 支持主题的包，加载指定主题
-      this.loadPackageTheme(packageName, packageJSONObject.themes.default)
-    }
-    return packageJSONObject
-  }
-
-  async loadPackageTheme (packageName, themeUrl) {
-    if (this.themeUrls[packageName]) {
-      this.removeCss(this.themeUrls[packageName])
-    }
-
-    loadCss(this.baseUrl + '/' + themeUrl)
-    this.themeUrls[packageName] = themeUrl
-  }
-
-  /**
-   * 加载Ridge声明的额外包
-   * @param {*} packageName 包名
-   */
-  async _loadExternal (packageName) {
-    log('_loadExternal', packageName)
-    const packageFound = ridgeExternals.externals.filter(ex => ex.module === packageName)[0]
-
-    if (packageFound) {
-      log('Found External Package', packageFound)
-      if (packageFound.root && window[packageFound.root]) {
-        return
-      }
-
-      // 先递归加载包的依赖
-      if (packageFound.dependencies) {
-        for (const depend of packageFound.dependencies) {
-          await this.loadExternal(depend)
-        }
-      }
-
-      // 并行加载dist
-      if (Array.isArray(packageFound.dist)) {
-        const loadings = []
-        for (const di of packageFound.dist) {
-          loadings.push(this.loadScript(di))
-        }
-        await Promise.allSettled(loadings)
-      } else if (typeof packageFound.dist === 'string') {
-        await this.loadScript(packageFound.dist)
-      }
     }
   }
 
@@ -369,19 +220,6 @@ class Loader {
    */
   async loadStoreScript (url) {
     return loadRemoteJsModule(url)
-  }
-
-  async fetchJSON (url) {
-    trace('Fetch:' + url)
-    const response = await window.fetch(url, {
-      mode: 'cors',
-      credentials: 'include'
-    })
-    if (response.ok) {
-      return await response.json()
-    } else {
-      return null
-    }
   }
 
   async loadTextContent (url) {
@@ -399,33 +237,10 @@ class Loader {
     }
   }
 
-  getJSONCache (jsonUrl) {
-    if (globalThis && globalThis['json://' + jsonUrl]) {
-      return globalThis['json://' + jsonUrl]
-    } else {
-      return this.jsonCache.get(jsonUrl)
-    }
-  }
-
-  setJSONCache (url, jsonObject) {
-    const jsonUrl = this.getURIPath(url)
-    this.jsonCache.set(jsonUrl, jsonObject)
-  }
-
   async loadJSON (path) {
     const jsonUrl = this.getURIPath(path)
 
-    const jsonCache = this.getJSONCache(jsonUrl)
-    if (!jsonCache) {
-      const jsonObject = await this.fetchJSON(jsonUrl)
-      if (jsonObject) {
-        this.jsonCache.set(jsonUrl, jsonObject)
-        return jsonObject
-      }
-    } else {
-      log('Load json in cache: ', path, jsonUrl)
-      return jsonCache
-    }
+    return await loadJSON(jsonUrl)
   }
 }
 

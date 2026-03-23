@@ -1,6 +1,5 @@
 import React from 'react'
 import { Button, Space } from '@douyinfe/semi-ui'
-import context from '../../service/RidgeEditorContext.js'
 
 /*
 const VIEW_PORTS = [{
@@ -20,7 +19,6 @@ const VIEW_PORTS = [{
 class PreviewMenuBar extends React.Component {
   constructor () {
     super()
-    context.services.previewBar = this
 
     // const viewPortList = VIEW_PORTS.map(vp => {
     //   return {
