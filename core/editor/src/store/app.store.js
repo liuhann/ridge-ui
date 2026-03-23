@@ -23,10 +23,6 @@ const useStore = create((set, get) => ({
     const { importAppFile, openApp } = get()
 
     const appList = await localRepoService.getLocalAppList()
-    set({
-      loadingAppFiles: true,
-      appList
-    })
 
     if (appList.length === 0) { // 无应用默认创建
       if (!localRepoService.importedHello()) {
@@ -39,6 +35,10 @@ const useStore = create((set, get) => ({
     if (currentAppId) {
       openApp(currentAppId)
     }
+    set({
+      loadingAppFiles: false,
+      appList
+    })
   },
   openApp: async id => {
     const appInfo = await localRepoService.getApp(id)

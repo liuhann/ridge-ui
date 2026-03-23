@@ -40,6 +40,7 @@ const Editor = () => {
   const initStore = editorStore((state) => state.initStore)
 
   const currentAppName = appStore((state) => state.currentAppName)
+  const loadingAppFiles = appStore((state) => state.loadingAppFiles)
   const initAppStore = appStore((state) => state.initAppStore)
 
   const pageOpened = openedPages.length > 0

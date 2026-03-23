@@ -17,8 +17,8 @@ const AppListPanel = () => {
   const importAppFile = appStore((state) => state.importAppFile)
 
   return (
-    <>
-      <div className='file-actions panel-actions'>
+    <div className='left-panel'>
+      <div className='panel-title'>
         <Text type='tertiary'>应用管理</Text>
         <Button
           theme='outline' type='primary'
@@ -67,8 +67,7 @@ const AppListPanel = () => {
           }
         ]}
       />
-    </>
-
+    </div>
   )
 }
 

@@ -290,7 +290,7 @@ const AppFileList = () => {
 
   const RenderCreateDropDown = () => {
     return (
-      <>
+      <div className='panel-sub-title'>
         <Dropdown
           trigger='click'
           closeOnEsc
@@ -326,7 +326,7 @@ const AppFileList = () => {
             上传文件
           </Button>
         </Upload>
-      </>
+      </div>
     )
   }
 
