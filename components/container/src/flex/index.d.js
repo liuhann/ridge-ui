@@ -1,9 +1,7 @@
-import FlexBoxContainer from './FlexContainer'
 import { boolean, classList, color, json, number, onClick, radiogroup } from 'ridge-build/src/props'
 
 export default {
-  name: 'flex-container',
-  component: FlexBoxContainer,
+  name: 'FlexContainer',
   title: '弹性容器',
   // description: `适合多个内容进行垂直或水平形式按比例排列场景。排列可以支持左右或者上下对齐，拉伸、居中等。
   // 因为弹性容器可以嵌套使用，能实现很多复杂的功能，因此无论在页面整体布局还是局部上都得到广泛应用。

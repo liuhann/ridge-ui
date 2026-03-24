@@ -8,12 +8,13 @@
   "scripts": {
     "build": "ridge",
     "watch": "ridge -w -s -c",
-    "help": "ridge --help",
-    "bs": "ridge -s"
+    "doc": "react-docgen  ./src --outFile ./component-metadata.json",
+    "dev": "webpack --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js"
   },
   "files": [
-    "build",
-    "icons"
+    "dist",
+    ""
   ],
   "author": "Ridge System",
   "cover": "icons/cover.png",

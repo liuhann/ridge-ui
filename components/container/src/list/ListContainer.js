@@ -8,7 +8,7 @@ function hasScrollbar (el) {
     el.scrollWidth > el.clientWidth
   )
 }
-export default class ListContainer {
+class ListContainer {
   constructor (props) {
     this.props = props
   }
@@ -269,3 +269,5 @@ export default class ListContainer {
     return style
   }
 }
+
+export default ListContainer

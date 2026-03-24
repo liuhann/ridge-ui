@@ -3,7 +3,8 @@ import EditorElement from './EditorElement.js'
 import { parseStoreMeta, searchCodeWithComment, parseSourceWithComments } from './editorUtils.js'
 import { nanoid } from '../utils/string'
 import { cloneDeep, isPlainObject } from 'lodash'
-import ridgeEditorContext from '../service/RidgeEditorContext.js'
+import { hasUrlProtocol, removeUrlProtocol, cleanMultiSlash } from 'ridgejs/src/utils/string.js'
+import { loadLocalJsModule } from 'ridgejs/src/utils/load.js'
 
 const NAME_MAP = {
   // 'ridge-basic': 'ridge-basic',
@@ -17,8 +18,26 @@ const NAME_MAP = {
 class EditorComposite extends Composite {
   constructor (props) {
     super(props)
+    this.appService = props.appService
     this.isEdit = true
-    this.CLASS_LIST = ['ridge-composite', 'viewport-container', 'is-edit']
+    // this.CLASS_LIST = ['ridge-composite', 'viewport-container', 'is-edit']
+  }
+
+  async loadJSModule (jsPath) {
+    if (hasUrlProtocol(jsPath)) {
+      const jsPathInApp = removeUrlProtocol(jsPath)
+      return loadLocalJsModule(jsPathInApp, {
+        load: async path => {
+          const file = this.appService.getFile(path)
+          if (file) {
+            return file.textContent
+          }
+          return ''
+        }
+      })
+    } else {
+      return super.loadJSModule(jsPath)
+    }
   }
 
   createElement (config) {
@@ -34,10 +53,6 @@ class EditorComposite extends Composite {
 
   getClassNames () {
     return this.classNames || []
-  }
-
-  getBlobUrl (url) {
-    return this.context.getBlobUrl(url)
   }
 
   /**
@@ -93,14 +108,6 @@ class EditorComposite extends Composite {
       this.el.style.overflowY = 'initial'
     }
   }
-
-  // async importStyleFiles () {
-  // this.classNames = await importStyleFiles(this.config.cssFiles, this.context)
-  // }
-
-  // async importJSFiles () {
-  //   this.jsModules = await importJSFiles(this.config.jsFiles, this.context)
-  // }
 
   getStoreModules () {
     return this.storeModules || []

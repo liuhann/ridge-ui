@@ -6,9 +6,9 @@ import Mousetrap from 'mousetrap'
 import EditorComposite from './EditorComposite.js'
 import debug from 'debug'
 import { fitRectIntoBounds } from '../utils/rectUtils'
+import { loader } from 'ridgejs'
 
 const RIDGE_ELEMENT = '.ridge-editor-element'
-
 const trace = debug('ridge:workspace')
 
 /**
@@ -914,6 +914,24 @@ export default class WorkSpaceControl {
     a.dispatchEvent(event) // 触发a的点击事件
   }
 
+  async loadPage (pageContent, path, appService) {
+    const editorComposite = new EditorComposite({
+      appName: 'local',
+      path,
+      appService,
+      config: pageContent,
+      loader
+    })
+    await editorComposite.mount(this.viewPortEl)
+
+    if (!this.enabled) {
+      this.enable()
+    }
+    this.selectElements([])
+    this.currentComposite = editorComposite
+    return editorComposite
+  }
+
   initKeyBind () {
     const { context } = this
     Mousetrap.bind('del', () => {
@@ -1028,21 +1046,5 @@ export default class WorkSpaceControl {
       context.services?.menuBar?.setZoom(targetZoom)
       this.setZoom(targetZoom)
     }
-  }
-
-  async loadPage (pageContent) {
-    const editorComposite = new EditorComposite({
-      config: pageContent,
-      context: this.context
-    })
-    editorComposite.firstPaint(this.viewPortEl)
-    await editorComposite.mount()
-
-    if (!this.enabled) {
-      this.enable()
-    }
-    this.selectElements([])
-    this.currentComposite = editorComposite
-    return editorComposite
   }
 }

@@ -5,7 +5,6 @@ import BaseNode from './BaseNode'
 import { STORE, PROP } from '../utils/contants.js'
 import { cloneDeep } from '../utils/object.js'
 import Debug from 'debug'
-import { handleClassListPropValue } from '../utils/pseudo'
 import { generateUrlFontName, toCSSLength, addJsonSuffix, hasUrlProtocol, removeUrlProtocol, cleanMultiSlash } from '../utils/string'
 import { loadRemoteJsModule } from '../utils/load.js'
 const debug = Debug('ridge:composite')
@@ -44,7 +43,7 @@ class Composite extends BaseNode {
 
   // 首屏渲染，决定绘制时即计算，前提：必须加载页面配置文件， 尽最大可能绘制所有可用内容
   firstPaint (el) {
-    debug('Page firstPaint', el, this.appName, this.path)
+    debug('Page FirstPaint', el, this.appName, this.path)
     this.firstPainted = false
     if (el) {
       this.el = el
@@ -164,13 +163,12 @@ class Composite extends BaseNode {
 
   // 挂载
   async mount (el, themeRoot) {
-    debug('Composite Moute: ', this.packageName, this.compositePath)
+    debug('Composite Mount: ', this.appName, this.path)
     try {
       this.beforeMount && this.beforeMount(el)
     } catch (e) { }
     if (el) {
       this.el = el
-      // this.initialClassList = Array.from(el.classList)
       if (el.ridgeComposite) {
         el.ridgeComposite.unmount()
       }
@@ -180,15 +178,15 @@ class Composite extends BaseNode {
     // debug(this.packageName, this.compositePath, 'mounting')
 
     if (!this.config) {
-      debug('Loading Config', this.packageName, this.compositePath)
+      debug('Loading Config', this.appName, this.path)
       this.setStatus('Loading')
       await this.loadConfig()
     }
     this.removeStatus('Loading')
 
     if (!this.config) {
-      this.setStatus('Page-not-found')
-      debug('Config Not Found', this.packageName, this.compositePath)
+      this.setStatus('Notfound')
+      debug('Config Not Found', this.appName, this.path)
       this.onPageNotFound && this.onPageNotFound(this)
       return
     }
@@ -196,23 +194,6 @@ class Composite extends BaseNode {
       this.firstPaint()
     }
 
-    /*
-    // 加载应用包定义，以便后续store读取，作为整体应用的配置来源
-    if (!this.appPackageObject) {
-      debug('Load PackageJSON', this.packageName, this.compositePath)
-      this.appPackageObject = await this.context.loadAppPackageJSON(this.packageName)
-    }
-
-    if (themeRoot) { // 作为根节点挂载时，要配置全局样式
-      debug('Apply theme', this.packageName, this.compositePath)
-      window.ridgeTheme = {}
-      if (this.appPackageObject.themes) {
-        for (const theme of Object.keys(this.appPackageObject.themes)) {
-          window.ridgeTheme[theme] = this.appPackageObject.themes[theme]
-        }
-      }
-    }
-    */
     await this.importJSFiles()
     await this.loadStore()
     this.updatePromotedElement()
@@ -292,7 +273,7 @@ class Composite extends BaseNode {
 
       // const classList = handleClassListPropValue(this.config.classList, this)
 
-      this.el.className = [...this.initialClassList, 'ridge-composite', ...this.CLASS_LIST].join(' ')
+      this.el.className = ['ridge-composite', ...this.CLASS_LIST].join(' ')
     }
   }
 
@@ -329,9 +310,9 @@ class Composite extends BaseNode {
   async loadJSModule (jsPath) {
     if (hasUrlProtocol(jsPath)) {
       const jsPathInApp = removeUrlProtocol(jsPath)
-      return await loadRemoteJsModule(cleanMultiSlash(`${this.appName}/${jsPathInApp}`))
+      return loadRemoteJsModule(cleanMultiSlash(`${this.appName}/${jsPathInApp}`))
     } else {
-      return await loadRemoteJsModule(jsPath)
+      return loadRemoteJsModule(jsPath)
     }
   }
 
@@ -515,7 +496,7 @@ class Composite extends BaseNode {
    * 加载页面状态库
    * */
   async loadStore () {
-    debug('Load loadStore', this.packageName, this.compositePath, this.jsModules, this.properties)
+    debug('Load loadStore', this.appName, this.path, this.jsModules, this.properties)
     // 加载页面引入的storejs
     this.store = new ValtioStore(this)
     try {

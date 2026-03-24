@@ -1,7 +1,7 @@
 /**
  * Composite类型组件封装类
  */
-export default class CompositeWrapper {
+class CompositeContainer {
   constructor (props) {
     this.props = props
   }
@@ -67,3 +67,5 @@ export default class CompositeWrapper {
     }
   }
 }
+
+export default CompositeContainer

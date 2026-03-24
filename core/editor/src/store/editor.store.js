@@ -87,7 +87,7 @@ const editorStore = create((set, get) => ({
   },
 
   openFile: async id => {
-    const { openPage, openCode, openImage} = get()
+    const { openPage, openCode, openImage } = get()
     const appService = localRepoService.getCurrentAppService()
 
     if (appService) {
@@ -107,6 +107,7 @@ const editorStore = create((set, get) => ({
   // 打开页面
   openPage: async (id, page) => {
     const { currentOpenPageId, unmountWorkspace, openedFileContentMap, pageTransformMap, workspaceControl, openedPages } = get()
+    const appService = localRepoService.getCurrentAppService()
     if (currentOpenPageId === id) {
       return
     }
@@ -123,7 +124,7 @@ const editorStore = create((set, get) => ({
       pageObject = cloneDeep(page.json)
     }
 
-    const editorComposite = await workspaceControl.loadPage(pageObject)
+    const editorComposite = await workspaceControl.loadPage(pageObject, page.path, appService)
 
     const transform = pageTransformMap.get(id)
     if (transform) {
