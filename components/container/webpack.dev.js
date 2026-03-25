@@ -7,7 +7,7 @@ module.exports = merge(common, {
   devtool: 'eval-source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'ridge-containers.umd.js',
+    filename: 'ridge-container.umd.js',
     library: {
       name: 'RidgeContainers',
       type: 'umd'

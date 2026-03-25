@@ -5,6 +5,17 @@
 // React hook 使用时报错 因此，React一定要使用window全局的React对象
 import Renderer from './Renderer'
 
+// 判断函数式 React 组件
+function isReactFunctionComponent (comp) {
+  return typeof comp === 'function' && comp.prototype?.isReactComponent !== true && comp.toString().includes('React.createElement') || comp.toString().includes('JSX')
+}
+
+// 判断类 React 组件
+function isReactClassComponent (comp) {
+  return typeof comp === 'function' &&
+         comp.prototype instanceof React.Component
+}
+
 /**
  * 渲染及React组件到图元层
  * @param JSXComponent  React组件实例
@@ -127,5 +138,9 @@ export default class ReactRenderer extends Renderer {
     if (this.renderRef) {
       this.renderRef = null
     }
+  }
+
+  static isComponent (comp) {
+    return typeof comp === 'function' || !!comp.prototype?.isReactComponent
   }
 }

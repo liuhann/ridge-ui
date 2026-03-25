@@ -1,15 +1,8 @@
-import FlexBoxContainer from './flex/FlexContainer'
-import RelativeContainer from './relative/RelativeContainer'
-import ListContainer from './list/ListContainer'
-import SwitchContainer from './switch/SwitchContainer'
-import StackContainer from './stack/StackContainer'
-import CompositeContainer from './composite/CompositeContainer'
 
-export default {
-  FlexBoxContainer,
-  RelativeContainer,
-  CompositeContainer,
-  ListContainer,
-  StackContainer,
-  SwitchContainer
-}
+export { default as FlexBoxContainer } from './flex/FlexContainer'
+export { default as ListContainer } from './list/ListContainer'
+export { default as SwitchContainer } from './switch/SwitchContainer'
+export { default as StackContainer } from './stack/StackContainer'
+export { default as CompositeContainer } from './composite/CompositeContainer'
+
+export { default as flex } from './flex/FlexContainer'

@@ -269,7 +269,13 @@ const loadLocalJsModule = async (filePath, loader) => {
     } finally {
       document.head.removeChild(scriptEl)
     }
-    return globalThis.appModules[filePath]
+    const ModuleLoaded = globalThis.appModules[filePath]
+    if (ModuleLoaded) {
+      ModuleLoaded.jsContent = sourceCode
+      return ModuleLoaded
+    } else {
+      return null
+    }
   } else {
     return null
   }

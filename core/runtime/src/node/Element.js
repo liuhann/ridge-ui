@@ -57,12 +57,12 @@ class Element extends BaseNode {
   getProperties () {
     return Object.assign({
       // 转入传给组件的特殊属性,目前包括：width/height/visible
-      width: this.style.width,
-      height: this.style.height,
-      visible: this.style.visible,
-      __composite: this.composite,
+      // width: this.style.width,
+      // height: this.style.height,
+      // visible: this.style.visible,
+      // __composite: this.composite,
       // Since 1.4 增加__applyEffect动作，可以用插件更新
-      __applyEffect: this.composite.context.applyEffect.bind(this.composite.context)
+      // __applyEffect: this.composite.context.applyEffect.bind(this.composite.context)
     }, this.config.props, this.events, this.properties, {
       children: this.children
     })
@@ -242,23 +242,6 @@ class Element extends BaseNode {
    * 初始化组件属性、事件
    */
   initializeEvents () {
-    if (this.componentDefinition.props) {
-      const inputProp = this.componentDefinition.props.find(prop => prop.name === 'value' || prop.input === true)
-      if (inputProp) {
-        this.inputKey = inputProp.name
-      }
-    }
-
-    // 属性名为inputKey且与state连接时， 增加 input 事件，事件传值回写到state
-    if (this.inputKey && this.config.propEx[this.inputKey]) {
-      this.events.input = val => {
-        this.composite.store.dispatchChange(this.config.propEx[this.inputKey], val, this.getScopedData())
-      }
-      this.events.onChange = val => {
-        this.composite.store.dispatchChange(this.config.propEx[this.inputKey], val, this.getScopedData())
-      }
-    }
-
     for (const [eventName, actions] of Object.entries(this.config.events ?? {})) {
       this.events[eventName] = (...payload) => {
         if (Array.isArray(actions)) {
@@ -318,16 +301,13 @@ class Element extends BaseNode {
     if (this.componentDefinition == null) {
       return null
     }
-    const { type = 'vanilla' } = this.componentDefinition
     try {
-      switch (type) {
-        case 'vanilla':
-          this.renderer = new VanillaRender(this.componentDefinition.component, this.getProperties())
-          this.renderer.mount(this.el)
-          break
-        case 'react':
-          this.renderer = new ReactRenderer(this.componentDefinition.component, this.getProperties())
-          this.renderer.mount(this.el)
+      if (VanillaRender.isComponent(this.componentDefinition)) {
+        this.renderer = new VanillaRender(this.componentDefinition, this.getProperties())
+        this.renderer.mount(this.el)
+      } else if (ReactRenderer.isComponent(this.componentDefinition)) {
+        this.renderer = new VanillaRender(this.componentDefinition, this.getProperties())
+        this.renderer.mount(this.el)
       }
     } catch (e) {
       this.setStatus('render-error', {

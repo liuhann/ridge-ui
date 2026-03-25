@@ -7,23 +7,13 @@ const log = debug('ridge:loader')
 
 const trace = window.showError || function () {}
 
-/**
-   * 工具方法：根据module名称查找externals配置
-   * @param {String} moduleName 模块名（如 react、antd、@douyinfe/semi-ui）
-   * @param {Array} externalsList 配置列表（dependencyExternals / packageExternals）
-   * @returns {Object|null} 匹配的配置项
-   */
-const findExternalsConfig = (moduleName, externalsList) => {
-  return externalsList.find(item => item.module === moduleName) || null
-}
-
 class Loader {
   /**
    * 构造器
    * @param {string} baseUrl  元素下载基础地址
    * @param {string} loadPropControl  加载属性的自定义控制编辑
    */
-  constructor (baseUrl, externals = ['ridge-externals/registry.json']) {
+  constructor (baseUrl, registries = ['ridge-externals/registry.json']) {
     this.baseUrl = baseUrl.replace(/\/$/, '')
     log('RidgeLoader baseUrl: ' + this.baseUrl)
 
@@ -31,14 +21,21 @@ class Loader {
     this.loadPackageMemoized = memoize(this.loadPackage)
     this.loadWebFont = memoize(loadWebFont)
     this.confirmExternalsMemoized = memoize(this.confirmExternals)
+    this.packageMap = null
+    this.registries = registries
     this.loadCss = loadCss
   }
 
   async confirmExternals () {
-    if (!this.packageExternals) {
-      this.packageExternals = []
-      for (const ext of this.externals) {
-        this.packageExternals.push(...(await this.loadJSON(addStringPrefix(this.baseUrl, ext))))
+    if (!this.packageMap) {
+      this.packageMap = new Map()
+      for (const registry of this.registries) {
+        const packagesLoaded = await this.loadJSON(registry)
+        if (Array.isArray(packagesLoaded)) {
+          for (const pkg of packagesLoaded) {
+            this.packageMap.set(pkg.module, pkg)
+          }
+        }
       }
     }
   }
@@ -67,16 +64,9 @@ class Loader {
     return this.getComponentFromGlobalVar(packageName, componentPath)
   }
 
-  getURIPath (resourceUrl) {
-    return `${this.baseUrl}/${resourceUrl}`.replace(
-      /(https?:\/\/)|(\/)+/g,
-      (match, p1, p2) => p1 || '/'
-    )
-  }
-
   getComponentFromGlobalVar (packageName, componentPath) {
     // 查找组件包的externals配置
-    const packageConfig = findExternalsConfig(packageName, this.packageExternals)
+    const packageConfig = this.packageMap.get(packageName)
 
     if (!packageConfig) {
       console.error('对应组件包未定义:', packageName)
@@ -102,8 +92,14 @@ class Loader {
    * @returns {Promise}
    */
   async loadPackage (packageName) {
-    const packageConfig = findExternalsConfig(packageName)
+    const packageConfig = this.packageMap.get(packageName)
     if (!packageConfig) return
+
+    // 根存在也就不再加载
+    const globalVar = packageConfig.root
+    if (window[globalVar]) {
+      return
+    }
     try {
       // 1. 先加载组件包的依赖
       if (packageConfig.dependencies && packageConfig.dependencies.length > 0) {
@@ -169,9 +165,7 @@ class Loader {
   }
 
   async loadJSON (path) {
-    const jsonUrl = this.getURIPath(path)
-
-    return await loadJSON(jsonUrl)
+    return await loadJSON(addStringPrefix(this.baseUrl, path))
   }
 }
 

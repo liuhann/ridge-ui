@@ -78,4 +78,12 @@ export default class VanillaRender extends Renderer {
       this.instance = null
     }
   }
+
+  static isComponent (comp) {
+    if (comp) {
+      return typeof comp.prototype?.mount === 'function'
+    } else {
+      return true
+    }
+  }
 }

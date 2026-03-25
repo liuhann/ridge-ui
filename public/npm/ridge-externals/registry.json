@@ -48,12 +48,9 @@
   },
   {
     "module": "ridge-container",
-    "root": "RidgeContainer",
-    "dependencies": [
-      "react"
-    ],
+    "root": "RidgeContainers",
     "dist": [
-      "ridge-container@1.2.0/dist/ridge-container.umd.js"
+      "ridge-container@1.2.0/dist/ridge-container.umd.min.js"
     ]
   },
   {
