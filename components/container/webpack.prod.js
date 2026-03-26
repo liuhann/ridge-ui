@@ -10,6 +10,7 @@ const packageName = pkg.name
 const packageVersion = pkg.version
 
 const targetCopyPath = path.resolve(__dirname, `../../public/npm/${packageName}@${packageVersion}/dist`)
+const iconPath = path.resolve(__dirname, `../../public/npm/${packageName}@${packageVersion}/icons`)
 
 module.exports = merge(common, {
   mode: 'production',
@@ -41,6 +42,14 @@ module.exports = merge(common, {
           from: path.resolve(__dirname, 'dist'),
           // 目标：包名+版本号目录
           to: targetCopyPath,
+          // 开启：覆盖已有文件
+          force: true
+        },
+        {
+          // 来源：webpack 构建完的输出目录（dist）
+          from: path.resolve(__dirname, 'icons'),
+          // 目标：包名+版本号目录
+          to: iconPath,
           // 开启：覆盖已有文件
           force: true
         }

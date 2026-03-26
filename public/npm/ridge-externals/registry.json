@@ -2,79 +2,121 @@
   {
     "module": "react",
     "root": "React",
-    "dist": "react@18.3.1/umd/react.production.min.js"
+    "dist": "react@18.3.1/umd/react.production.min.js",
+    "category": "base", 
+    "type": "base"
   },
   {
     "module": "react-dom",
     "root": "ReactDOM",
-    "dependencies": [
-      "react"
-    ],
-    "dist": "react-dom@18.3.1/umd/react-dom.production.min.js"
+    "dependencies": ["react"],
+    "dist": "react-dom@18.3.1/umd/react-dom.production.min.js",
+    "category": "base",
+    "type": "base"
   },
   {
     "module": "lodash",
     "root": "_",
-    "dist": "lodash@4.17.21/lodash.min.js"
+    "dist": "lodash@4.17.21/lodash.min.js",
+    "category": "base",
+    "type": "base"
   },
   {
     "module": "moment",
     "root": "moment",
-    "dist": "moment@2.30.1/moment.min.js"
+    "dist": "moment@2.30.1/moment.min.js",
+    "category": "base",
+    "type": "base"
   },
   {
     "module": "antd",
+    "title": "Antd",
     "root": "Antd",
-    "dependencies": [
-      "react",
-      "react-dom"
-    ],
+    "icon": "ridge-externals/icons/antd.svg",
+    "dependencies": ["react", "react-dom"],
     "dist": [
       "antd@5.12.8/dist/antd.min.js",
       "antd@5.12.8/dist/antd.min.css"
-    ]
+    ],
+    "category": "interaction",
+    "type": "ui",
+    "description": "企业级UI设计语言和React组件库"
   },
   {
     "module": "@douyinfe/semi-ui",
     "root": "SemiUI",
-    "dependencies": [
-      "react",
-      "react-dom"
-    ],
+    "title": "SemiUI",
+    "icon": "ridge-externals/icons/semi.png",
+    "dependencies": ["react", "react-dom"],
     "dist": [
       "@douyinfe/semi-ui@2.61.0/dist/umd/semi-ui.min.js",
       "@douyinfe/semi-ui@2.61.0/dist/css/semi.min.css"
-    ]
+    ],
+    "category": "interaction",
+    "type": "ui",
+    "description": "字节跳动Semi Design组件库"
+  },
+  {
+    "module": "@mui/material",
+    "root": "MUI",
+    "title": "Material UI",
+    "icon": "ridge-externals/icons/mui.svg",
+    "dependencies": ["react", "react-dom"],
+    "dist": [
+        "https://cdn.jsdelivr.net/gh/alanhzz/mui-dist@main/mui.bundle.min.js",
+        "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    ],
+    "category": "interaction",
+    "type": "ui",
+    "description": "Material Design 官方 React UI 组件库"
   },
   {
     "module": "ridge-container",
     "root": "RidgeContainers",
+    "title": "布局组件",
+    "dependencies": ["react"],
+    "icon": "ridge-container@1.2.0/icons/GlyphsPolyGrid1.svg",
     "dist": [
       "ridge-container@1.2.0/dist/ridge-container.umd.min.js"
-    ]
+    ],
+    "category": "container", 
+    "type": "container",
+    "description": "容器组件"
   },
   {
     "module": "@arco-design/web-react",
     "root": "ArcoDesign",
-    "dependencies": [
-      "react",
-      "react-dom"
-    ],
+    "dependencies": ["react", "react-dom"],
     "dist": [
       "@arco-design/web-react@2.52.0/dist/arco.min.js",
       "@arco-design/web-react@2.52.0/dist/arco.min.css"
-    ]
+    ],
+    "category": "interaction",
+    "type": "ui",
+    "description": "字节跳动Arco Design组件库"
+  },
+  {
+  "module": "@radix-ui/react",
+  "root": "RadixUI",
+  "title": "RadixUI",
+  "icon": "ridge-externals/icons/SimpleIconsRadixui.svg",
+  "dependencies": ["react", "react-dom"],
+  "dist": [
+  ],
+  "category": "interaction",
+  "type": "ui",
+  "description": "无样式、可访问性优先的React组件库，支持完全自定义设计"
   },
   {
     "module": "element-react",
     "root": "Element",
-    "dependencies": [
-      "react",
-      "react-dom"
-    ],
+    "dependencies": ["react", "react-dom"],
     "dist": [
       "element-react@1.4.34/dist/index.js",
       "element-react@1.4.34/dist/theme-default/index.css"
-    ]
+    ],
+    "category": "interaction",
+    "type": "ui",
+    "description": "基于Vue Element的React实现"
   }
 ]

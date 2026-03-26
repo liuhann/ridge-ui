@@ -1,0 +1,35 @@
+{
+  "name": "CompositeContainer",
+  "title": "子页面",
+  "description": "用于加载、显示一个RidgeUI应用内的页面",
+  "tags": ["容器", "页面"],
+  "category": "容器",
+  "version": "1.0.0",
+  "author": "LiuHan",
+  "visualConfig": {
+    "thumbnail": "icons/page.svg",
+    "preferredWidth": "600px",
+    "preferredHeight": "400px",
+    "resizable": true,
+    "aspectRatio": "no"
+  },
+  "aiContext": {
+    "suggestedUseCases": ["提取相对独立的部分成为子页面"],
+    "bestPractices": ["不能通过属性", "建议搭配分页组件使用"],
+    "antiPatterns": [],
+    "relatedComponents": []
+  },
+  "properties": [{
+    "name": "packageName",
+    "description": "配置为其他RidgeUI应用的应用名称",
+    "label": "应用名称",
+    "control": "text",
+    "type": "string"
+  }, {
+    "name": "pagePath",
+    "description": "配置为其他RidgeUI应用内页面JSON文件路径",
+    "label": "页面路径",
+    "control": "text",
+    "type": "string"
+  }]
+}

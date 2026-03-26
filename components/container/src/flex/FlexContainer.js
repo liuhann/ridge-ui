@@ -65,8 +65,7 @@ export default class FlexBoxContainer extends BaseContainer {
       padding,
       flexWrap,
       justify = 'flex-start',
-      rectStyle,
-      __isEdit
+      rectStyle
     } = this.props
     const containerStyle = {
       display: 'flex',

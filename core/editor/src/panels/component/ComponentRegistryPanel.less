@@ -1,0 +1,223 @@
+// ComponentGrid.less
+.component-grid {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--semi-color-bg-0);
+  overflow: hidden;
+  padding: 8px;
+  box-sizing: border-box;
+
+  &-header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--semi-color-border);
+  }
+
+  &-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--semi-color-text-0);
+    margin: 0;
+  }
+
+  &-subtitle {
+    font-size: 12px;
+    color: var(--semi-color-text-2);
+    margin-top: 4px;
+  }
+
+  &-container {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  &-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  &-footer {
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid var(--semi-color-border);
+    text-align: center;
+  }
+
+  &-count {
+    font-size: 12px;
+    color: var(--semi-color-text-2);
+  }
+}
+
+.component-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--semi-color-bg-1);
+  border: 1px solid var(--semi-color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 6px;
+  box-sizing: border-box;
+
+  &:hover {
+    border-color: var(--semi-color-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &-image {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 8px;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .default-icon {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--semi-color-primary), var(--semi-color-secondary));
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 8px;
+    }
+  }
+
+  &-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--semi-color-text-0);
+    text-align: center;
+    margin: 0;
+    line-height: 1.4;
+    word-break: break-word;
+    max-height: 2.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  &-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 16px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+  }
+
+  &:hover &-hover {
+    display: flex;
+  }
+
+  &-hover-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--semi-color-text-0);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  &-hover-version {
+    font-size: 11px;
+    color: var(--semi-color-text-2);
+    background-color: var(--semi-color-fill-0);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  &-hover-description {
+    font-size: 11px;
+    color: var(--semi-color-text-1);
+    text-align: center;
+    line-height: 1.4;
+    max-height: 3.6em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  &-hover-dependencies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  &-dependency {
+    font-size: 9px;
+    color: var(--semi-color-text-2);
+    background-color: var(--semi-color-fill-0);
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+}
+
+.category-header {
+  grid-column: 1 / -1;
+  margin: 4px 0 4px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--semi-color-border);
+
+  &-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--semi-color-text-0);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &-count {
+    font-size: 11px;
+    color: var(--semi-color-text-2);
+    background-color: var(--semi-color-fill-0);
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .component-grid-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .component-grid-list {
+    grid-template-columns: 1fr;
+  }
+}

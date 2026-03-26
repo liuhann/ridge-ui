@@ -22,8 +22,17 @@ class Loader {
     this.loadWebFont = memoize(loadWebFont)
     this.confirmExternalsMemoized = memoize(this.confirmExternals)
     this.packageMap = null
+    this.registryPackages = []
     this.registries = registries
     this.loadCss = loadCss
+  }
+
+  getRegistry () {
+    return this.registryPackages
+  }
+
+  addUrlPrefix (url) {
+    return addStringPrefix(this.baseUrl, url)
   }
 
   async confirmExternals () {
@@ -32,6 +41,12 @@ class Loader {
       for (const registry of this.registries) {
         const packagesLoaded = await this.loadJSON(registry)
         if (Array.isArray(packagesLoaded)) {
+          this.registryPackages.push(...packagesLoaded.map(pkg => {
+            if (pkg.icon) {
+              pkg.icon = this.addUrlPrefix(pkg.icon)
+            }
+            return pkg
+          }))
           for (const pkg of packagesLoaded) {
             this.packageMap.set(pkg.module, pkg)
           }
