@@ -1,22 +1,31 @@
-// components/ComponentItemCard.jsx
-import React, { useState } from 'react';
-import { Tooltip, Typography } from '@douyinfe/semi-ui';
-import { getDisplayName, getInitial, getIconUrl } from './componentUtils';
+import React, { useState } from 'react'
+import { Tooltip, Typography } from '@douyinfe/semi-ui'
+import { getDisplayName, getInitial, getIconUrl } from './componentUtils'
+import DragStore from '../../workspace/DragStore'
 
-const { Text } = Typography;
+const { Text } = Typography
 
-const ComponentItemCard = ({ item, onItemClick }) => {
-  const displayName = getDisplayName(item);
-  const description = item.description || '无描述';
-  const iconUrl = getIconUrl(item);
-  const tags = item.tags || [];
-  const [isHovered, setIsHovered] = useState(false);
+const ComponentItemCard = ({ packageName, item, onItemClick }) => {
+  const displayName = getDisplayName(item)
+  const description = item.description || '无描述'
+  const iconUrl = getIconUrl(item)
+  const tags = item.tags || []
+  const [isHovered, setIsHovered] = useState(false)
 
   const handleCardClick = () => {
     if (onItemClick) {
-      onItemClick(item);
+      onItemClick(item)
     }
-  };
+  }
+
+  const handleDragStart = () => {
+    DragStore.startDrag({
+      type: 'component',
+      packageName,
+      componentName: item.name,
+      item
+    })
+  }
 
   return (
     <Tooltip
@@ -49,25 +58,28 @@ const ComponentItemCard = ({ item, onItemClick }) => {
     >
       <div
         className='component-item-card'
-        onClick={handleCardClick}
+        draggable
+        onDragStart={handleDragStart}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className='component-item-image'>
-          {iconUrl ? (
-            <img 
-              src={iconUrl} 
-              alt={displayName} 
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = `<div class="default-item-icon">${getInitial(displayName)}</div>`;
-              }}
-            />
-          ) : (
-            <div className='default-item-icon'>
-              {getInitial(displayName)}
-            </div>
-          )}
+          {iconUrl
+            ? (
+              <img
+                src={iconUrl}
+                alt={displayName}
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  e.target.parentElement.innerHTML = `<div class="default-item-icon">${getInitial(displayName)}</div>`
+                }}
+              />
+              )
+            : (
+              <div className='default-item-icon'>
+                {getInitial(displayName)}
+              </div>
+              )}
         </div>
 
         <div className='component-item-content'>
@@ -77,7 +89,7 @@ const ComponentItemCard = ({ item, onItemClick }) => {
         </div>
       </div>
     </Tooltip>
-  );
-};
+  )
+}
 
-export default ComponentItemCard;
+export default ComponentItemCard

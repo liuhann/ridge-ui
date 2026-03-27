@@ -1,6 +1,8 @@
 {
+  "name": "ridge-container",
+  "version": "1.2.0",
   "schemaVersion": "2.0",
-  "lastUpdated": "2026-03-27T03:06:16.532Z",
+  "lastUpdated": "2026-03-27T09:35:57.584Z",
   "generatedBy": "ridge-ui-cli",
   "components": [
     {

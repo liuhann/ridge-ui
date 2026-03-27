@@ -19,6 +19,7 @@ const ComponentRegistryPanel = ({ componentStore, onComponentItemClick }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [componentData, setComponentData] = useState([]);
+  const [componentLibMeta, setComponentLibMeta] = useState({});
 
   const registry = componentStore(state => state.registry);
   const init = componentStore(state => state.init);
@@ -53,9 +54,10 @@ const ComponentRegistryPanel = ({ componentStore, onComponentItemClick }) => {
     setCurrentLib(libItem);
     
     try {
-      const componentMeta = await loader.loadJSON(libItem.meta);
-      const mockComponents = componentMeta.components;
+      const componentLibMeta = await loader.loadJSON(libItem.meta);
+      const mockComponents = componentLibMeta.components;
       
+      setComponentLibMeta(componentLibMeta);
       setLibComponents(mockComponents);
       setCurrentView('components');
     } catch (err) {
@@ -188,6 +190,7 @@ const ComponentRegistryPanel = ({ componentStore, onComponentItemClick }) => {
                 {libComponents.map((component, index) => (
                   <div key={index} className='component-grid-item'>
                     <ComponentItemCard
+                      packageName={componentLibMeta.name}
                       item={component}
                       onItemClick={handleComponentClick}
                     />

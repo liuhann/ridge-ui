@@ -1,6 +1,8 @@
 import Selecto from 'selecto'
 import { createMoveable } from './moveable'
 import Mousetrap from 'mousetrap'
+import DragStore from './DragStore'
+
 // import html2canvas from 'html2canvas'
 
 import EditorComposite from './EditorComposite.js'
@@ -37,6 +39,7 @@ export default class WorkSpaceControl {
     this.dragActive = true
     this.selected = []
     this.viewPortEl.style.transformOrigin = 'top left'
+    this.currentComposite = null
   }
 
   enable () {
@@ -52,6 +55,7 @@ export default class WorkSpaceControl {
 
   disable () {
     if (this.enabled) {
+      this.currentComposite = null
       this.selecto.destroy()
       this.selecto = null
       this.moveable.destroy()
@@ -60,8 +64,8 @@ export default class WorkSpaceControl {
         this.workspaceMovable.destroy()
         this.workspaceMovable = null
       }
-      this.enabled = false
       this.viewPortEl.style.transform = ''
+      this.enabled = false
     }
   }
 
@@ -503,88 +507,80 @@ export default class WorkSpaceControl {
 
   }
 
-  /**
-   * 放置组件事件
-   * @param {*} ev
-   */
-  onWorkspaceDrop (ev) {
-    if (!this.enabled) {
-      return
-    }
+
+  onWorkspaceDrop(ev) {
+    if (!this.enabled) return
     ev.preventDefault()
 
-    const { context } = this
-
     const rbcr = this.viewPortEl.getBoundingClientRect()
+
     const x = Math.floor((ev.pageX - rbcr.x) / this.zoom)
     const y = Math.floor((ev.pageY - rbcr.y) / this.zoom)
+
+    // ✅ 从 DragStore 拿拖拽数据
+    const dragData = DragStore.consumeDragData()
+    if (!dragData) return
 
     const doDropComposite = async (compositeInfo) => {
       const compositeDef = await context.loader.loadComponent('ridge-container/composite')
 
-      const def = {}
-      def.componentPath = 'ridge-container/composite'
+      const def = {
+        componentPath: 'ridge-container/composite'
+      }
 
       let compositeLoaded = null
       const compisitePathProps = {}
-      if (compositeInfo.componentPath) { // 来自组件列表栏
+
+      if (compositeInfo.componentPath) {
         const [pkgName, ...rest] = compositeInfo.componentPath.split('/')
         def.title = compositeInfo.title
         compisitePathProps.pagePath = rest.join('/')
         compisitePathProps.packageName = pkgName
-        compositeLoaded = await context.loadComposite(compisitePathProps.packageName, compisitePathProps.pagePath)
-      } else if (compositeInfo.path) { // 来自应用文件树的文件
+        compositeLoaded = await context.loadComposite(
+          pkgName,
+          compisitePathProps.pagePath
+        )
+      } else if (compositeInfo.path) {
         compositeLoaded = await context.loadComposite(null, compositeInfo.path)
         const splited = compositeInfo.path.split('/')
         def.title = splited[splited.length - 1]
-        // 同pkg仅有path
         compisitePathProps.pagePath = compositeInfo.path
       }
 
       if (compositeLoaded) {
-        const ridgeNode = context.createElement(Object.assign({}, compositeDef, def), {
-          x,
-          y,
-          width: compositeLoaded.style.width,
-          height: compositeLoaded.style.height,
-          props: {
-            ...Object.assign({}, compositeLoaded.properties),
-            ...compisitePathProps
-          }
-        })
-        this.placeElementAt(ridgeNode.el, ev.pageX, ev.pageY)
-      }
-    }
-    if (context.draggingComponent) {
-      if (context.draggingComponent.type === 'composite') {
-        doDropComposite(context.draggingComponent)
-      } else {
-        // 处理新增组件的情况
-        const ridgeNode = context.createElement(context.draggingComponent, {
-          x,
-          y
-        })
-        this.placeElementAt(ridgeNode.el, ev.pageX, ev.pageY)
-        this.moveable.target = ridgeNode.el
-        /*
-        setTimeout(() => {
-          if (ridgeNode.el.firstChild) {
-            const bc = ridgeNode.el.firstChild.getBoundingClientRect()
-            if (bc.width && bc.height) {
-              ridgeNode.updateStyleConfig({
-                width: parseInt(bc.width / this.zoom),
-                height: parseInt(bc.height / this.zoom)
-              })
+        const ridgeNode = context.createElement(
+          Object.assign({}, compositeDef, def),
+          {
+            x,
+            y,
+            width: compositeLoaded.style.width,
+            height: compositeLoaded.style.height,
+            props: {
+              ...compositeLoaded.properties,
+              ...compisitePathProps
             }
-            this.moveable.updateTarget()
           }
-        }, 500)
-        */
+        )
+        this.placeElementAt(ridgeNode.el, ev.pageX, ev.pageY)
       }
-    } else if (context.draggingComposite) { // 直接从文件列表拖拽
-      doDropComposite(context.draggingComposite)
     }
-    context.draggingComponent = null
+
+    // ✅ 根据拖拽数据类型分发
+    if (dragData.type === 'composite') {
+      doDropComposite(dragData)
+    } else {
+      // ✅ 组件创建：先留白
+      this.currentComposite.createElement({
+        pa
+      })
+      const ridgeNode = context.createElement(dragData, {
+        x,
+        y
+      })
+
+      this.placeElementAt(ridgeNode.el, ev.pageX, ev.pageY)
+      this.moveable.target = ridgeNode.el
+    }
   }
 
   /**

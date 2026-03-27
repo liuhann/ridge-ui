@@ -75,8 +75,14 @@ async function mergeMetaJsonWithGlob(pattern, outputFile) {
       }
     });
     
+    const packageJSON = fs.readFileSync('./package.json', 'utf8');
+    const packageJSONObject = JSON.parse(packageJSON);
+
+
     // 写入输出文件
     fs.writeFileSync(outputFile, JSON.stringify({
+      "name": packageJSONObject.name,
+      "version": packageJSONObject.version,
       "schemaVersion": "2.0",
       "lastUpdated": new Date(),
       "generatedBy": "ridge-ui-cli",

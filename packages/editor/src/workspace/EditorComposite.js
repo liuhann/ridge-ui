@@ -6,12 +6,6 @@ import { cloneDeep, isPlainObject } from 'lodash'
 import { hasUrlProtocol, removeUrlProtocol, cleanMultiSlash } from 'ridgejs/src/utils/string.js'
 import { loadLocalJsModule } from 'ridgejs/src/utils/load.js'
 
-const NAME_MAP = {
-  // 'ridge-basic': 'ridge-basic',
-  // 'ridge-container': 'ridge-container',
-  // 'ridge-bootstrap': 'ridge-bootstrap',
-  // 'ridge-semi': 'ridge-semi'
-}
 /**
  * 编辑器下Composite，提供额外Element编辑和更新能力
  **/
@@ -20,7 +14,7 @@ class EditorComposite extends Composite {
     super(props)
     this.appService = props.appService
     this.isEdit = true
-    // this.CLASS_LIST = ['ridge-composite', 'viewport-container', 'is-edit']
+    this.CLASS_LIST = ['viewport-container', 'is-edit']
   }
 
   async loadJSModule (jsPath) {
@@ -41,10 +35,6 @@ class EditorComposite extends Composite {
   }
 
   createElement (config) {
-    // 未来移除 组件包改名后，名称重新映射
-    if (config.path && NAME_MAP[config.path.split('/')[0]]) {
-      config.path = NAME_MAP[config.path.split('/')[0]] + '/' + config.path.split('/')[1]
-    }
     return new EditorElement({
       composite: this,
       config
