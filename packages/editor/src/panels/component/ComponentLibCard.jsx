@@ -1,22 +1,22 @@
 // components/ComponentLibCard.jsx
-import React, { useState } from 'react';
-import { Popover, Tooltip, Typography } from '@douyinfe/semi-ui';
-import { getDisplayName, getInitial, getIconUrl } from './componentUtils';
-import PopoverDetailContent from './PopoverDetailContent.jsx';
+import React, { useState } from 'react'
+import { Popover, Tooltip, Typography } from '@douyinfe/semi-ui'
+import { getDisplayName, getInitial, getIconUrl } from './componentUtils'
+import PopoverDetailContent from './PopoverDetailContent.jsx'
 
-const { Text } = Typography;
+const { Text } = Typography
 
 const ComponentLibCard = ({ item, onItemClick }) => {
-  const displayName = getDisplayName(item);
-  const version = item.version || '未知';
-  const iconUrl = getIconUrl(item);
-  const [popoverVisible, setPopoverVisible] = useState(false);
+  const displayName = getDisplayName(item)
+  const version = item.version || '未知'
+  const iconUrl = getIconUrl(item)
+  const [popoverVisible, setPopoverVisible] = useState(false)
 
   const handleCardClick = () => {
     if (onItemClick) {
-      onItemClick(item);
+      onItemClick(item)
     }
-  };
+  }
 
   return (
     <Popover
@@ -37,13 +37,15 @@ const ComponentLibCard = ({ item, onItemClick }) => {
         onMouseLeave={() => setPopoverVisible(false)}
       >
         <div className='component-card-image'>
-          {iconUrl ? (
-            <img src={iconUrl} alt={displayName} />
-          ) : (
-            <div className='default-icon'>
+          {iconUrl
+            ? (
+  <img src={iconUrl} alt={displayName} />
+              )
+            : (
+  <div className='default-icon'>
               {getInitial(displayName)}
             </div>
-          )}
+              )}
         </div>
 
         <Text className='component-card-name'>
@@ -55,7 +57,7 @@ const ComponentLibCard = ({ item, onItemClick }) => {
         </Tooltip>
       </div>
     </Popover>
-  );
-};
+  )
+}
 
-export default ComponentLibCard;
+export default ComponentLibCard

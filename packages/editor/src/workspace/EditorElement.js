@@ -47,20 +47,14 @@ export default class EditorElement extends Element {
     merge(this.config, config)
     this.style = { ...this.config.style }
     this.properties = { ...this.config.props }
-    this.updateEditStyle()
     this.updateProps()
-    this.updateEditorStyle()
+    this.updateStyle()
   }
 
-  updateEditorStyle () {
-    if (!this.el) return
-    this.updateEditStyle()
-    this.parent?.updateChildStyle(this)
-  }
-
-  updateEditStyle () {
+  styleUpdated () {
     if (!this.el) return
 
+    this.el.classList.add('ridge-editor-element')
     if (this.config.locked) {
       this.el.classList.add('ridge-is-locked')
     } else {
@@ -72,17 +66,11 @@ export default class EditorElement extends Element {
     } else {
       this.el.classList.add('ridge-is-hidden')
     }
-
+    if (this.isContainer()) this.el.classList.add('ridge-container')
+    this.el.classList.toggle('ridge-is-slot', !!this.isSlot)
     if (this.config.locked || !this.config.visible) {
       // context.workspaceControl?.selectElements([])
     }
-  }
-
-  styleUpdated () {
-    if (!this.el) return
-    this.el.classList.add('ridge-editor-element')
-    if (this.isContainer()) this.el.classList.add('ridge-container')
-    this.el.classList.toggle('ridge-is-slot', !!this.isSlot)
   }
 
   isContainer () {
@@ -91,37 +79,17 @@ export default class EditorElement extends Element {
     )
   }
 
-  isDroppable () {
-    const props = this.getPropDefinations()
-    const slotLen = props.filter(p => p.type === 'slot').length
-    const childLen = props.some(p => p.name === 'children') ? 9999 : 0
-    const max = slotLen + childLen
-    const cur = this.children?.length || 0
-    return cur < max
-  }
-
+  // 对于像对话框、侧边弹窗等组件，全局运行的
   canDroppedOnElement () {
     return this.componentMeta?.portalled !== true
   }
 
   getPropDefinations () {
-    return this.componentMeta?.props || []
+    return this.componentMeta?.properties || []
   }
 
   getPropDefination (name) {
     return this.getPropDefinations().find(p => p.name === name) || null
-  }
-
-  // 移除原来的 load 方法，由外部处理加载
-  async load (includeChildren = false) {
-    // 这个方法不再加载组件元数据，只处理子节点
-    if (includeChildren && this.config.props.children) {
-      for (const id of this.config.props.children) {
-        const child = this.composite.getNode(id)
-        child && await child.load(true)
-      }
-    }
-    return true
   }
 
   appendChild (node, { x, y } = {}, rect) {
@@ -204,24 +172,6 @@ export default class EditorElement extends Element {
       return this.parent.isSlotChildResizable(this.config.id)
     }
     return true
-  }
-
-  // ========================================================================
-  // 样式更新
-  // ========================================================================
-  updateStyleConfig (style) {
-    if (!this.config.style) {
-      this.config.style = {}
-    }
-    Object.assign(this.config.style, style)
-    this.style = { ...this.config.style }
-    this.updateStyle()
-  }
-
-  setStyleConfig (style) {
-    this.config.style = { ...style }
-    this.style = { ...this.config.style }
-    this.updateStyle()
   }
 
   updateChildConfig (children) {

@@ -14,14 +14,13 @@ import { isObject, isObjectsEqual } from '../utils/is.js'
 export default class Element extends BaseNode {
   constructor ({
     config,
-    composite,
-    componentDefinition
+    composite
   }) {
     super()
     this.config = { ...config }
     this.uuid = 'ins-' + nanoid(8)
     this.composite = composite
-    this.componentDefinition = componentDefinition
+    this.definition = null
     this.properties = {}
     this.events = {}
     this.renderer = null
@@ -29,6 +28,7 @@ export default class Element extends BaseNode {
     this.mounteds = []
 
     this.config.events ||= {}
+    this.config.props ||= {}
     this.config.visible ??= true
     this.config.slots ||= []
     this.config.propEx ||= {}
@@ -71,11 +71,11 @@ export default class Element extends BaseNode {
   // 异步加载组件（不阻塞拖拽）
   // ========================================================================
   async load (includeChildren = false) {
-    if (this.componentDefinition) return true
+    if (this.definition) return true
 
     if (this.config.path) {
       try {
-        this.componentDefinition = await this.composite.loader.loadComponent(this.config.path)
+        this.definition = await this.composite.loader.loadComponent(this.config.path)
       } catch (e) {
         console.error('[ridge] load component failed', this.config.path, e)
         this.setStatus('load-error')
@@ -83,11 +83,14 @@ export default class Element extends BaseNode {
       }
     }
 
-    if (!this.componentDefinition) {
+    if (!this.definition) {
       this.setStatus('not-found')
       return false
+    } else {
+      this.setStatus('loaded')
     }
 
+    // 同时加载子节点（貌似没必要？）
     if (includeChildren && this.config.props.children) {
       for (const id of this.config.props.children) {
         const child = this.composite.getNode(id)
@@ -127,7 +130,7 @@ export default class Element extends BaseNode {
 
     // 异步不阻塞
     this.load().then(() => {
-      if (!this.componentDefinition) return
+      if (!this.definition) return
       this.initializeEvents()
       this.initSubscription()
       this.updateConnectedProperties()
@@ -138,12 +141,12 @@ export default class Element extends BaseNode {
   }
 
   createRenderer () {
-    if (!this.componentDefinition) return
+    if (!this.definition) return
     try {
-      if (VanillaRender.isComponent(this.componentDefinition)) {
-        this.renderer = new VanillaRender(this.componentDefinition, this.getProperties())
-      } else if (ReactRenderer.isComponent(this.componentDefinition)) {
-        this.renderer = new ReactRenderer(this.componentDefinition, this.getProperties())
+      if (VanillaRender.isComponent(this.definition)) {
+        this.renderer = new VanillaRender(this.definition, this.getProperties())
+      } else if (ReactRenderer.isComponent(this.definition)) {
+        this.renderer = new ReactRenderer(this.definition, this.getProperties())
       }
       this.renderer?.mount(this.el)
     } catch (e) {
@@ -263,16 +266,16 @@ export default class Element extends BaseNode {
     if (!node) return null
     node.parent = this
     node.isSlot = true
-    return this.componentDefinition?.type === 'react'
+    return this.definition?.type === 'react'
       ? createReactElement(node)
       : node
   }
 
   preparePropsBeforeRender () {
-    if (!this.componentDefinition?.props) return
+    if (!this.definition?.props) return
     let slotOrder = 0
 
-    for (const prop of this.componentDefinition.props) {
+    for (const prop of this.definition.props) {
       if (prop.type === 'image' || prop.type === 'file') {
         const v = this.config.props[prop.name] ?? this.properties[prop.name]
         if (v) this.properties[prop.name] = this.composite.getBlobUrl(v, this.composite.packageName)
@@ -317,7 +320,7 @@ export default class Element extends BaseNode {
     }
 
     this.parent?.updateChildStyle(this)
-    this.styleUpdated()
+    this.styleUpdated && this.styleUpdated()
   }
 
   updateChildStyle (child) {
@@ -345,7 +348,6 @@ export default class Element extends BaseNode {
   clone () {
     const cloned = new this.constructor({
       composite: this.composite,
-      componentDefinition: this.componentDefinition,
       config: JSON.parse(JSON.stringify(this.config))
     })
 

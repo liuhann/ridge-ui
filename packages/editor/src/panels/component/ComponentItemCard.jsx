@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Tooltip, Typography } from '@douyinfe/semi-ui'
+import { Tooltip, Typography, Popover } from '@douyinfe/semi-ui'
 import { getDisplayName, getInitial, getIconUrl } from './componentUtils'
 import DragStore from '../../workspace/DragStore'
 
@@ -28,7 +28,8 @@ const ComponentItemCard = ({ packageName, item, onItemClick }) => {
   }
 
   return (
-    <Tooltip
+    <Popover
+      trigger='click'
       content={
         <div className='component-item-tooltip'>
           <div className='tooltip-header'>
@@ -88,7 +89,7 @@ const ComponentItemCard = ({ packageName, item, onItemClick }) => {
           </Text>
         </div>
       </div>
-    </Tooltip>
+    </Popover>
   )
 }
 

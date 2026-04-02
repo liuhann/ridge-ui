@@ -1,5 +1,3 @@
-import './style.css'
-
 /**
  * @abstract BaseContainer
  * 容器基础实现，包含通用配置及方法
@@ -149,61 +147,6 @@ export default class BaseContainer {
 
   isDroppable () {
     return true
-  }
-
-  // 拖拽上浮
-  onDragOver (node) {
-    if (!node) return
-
-    let existedNode = null
-    if (node) {
-      existedNode = this.containerEl.querySelector('[shadow-for="' + node.getId() + '"]')
-    }
-
-    if (existedNode) {
-      // 已经拖离出阴影后，相当于完全拖出 删除阴影
-      if (!this.isIntersect(node.el.getBoundingClientRect(), existedNode.getBoundingClientRect())) {
-        this.containerEl.removeChild(existedNode)
-        existedNode = null
-      }
-    }
-
-    if (!existedNode) {
-      existedNode = this.el.querySelector(':scope > .drop-shadow')
-    }
-    if (existedNode == null) {
-      const shadowNode = document.createElement('div')
-      shadowNode.classList.add('drop-shadow')
-      shadowNode.classList.add('full-shadow')
-      shadowNode.innerHTML = '可以放入容器内'
-
-      this.el.appendChild(shadowNode)
-
-      if (!this.el.style.position) {
-        this.el.style.position = 'relative'
-      }
-    }
-  }
-
-  isIntersect (rect1, rect2) {
-    if ((rect1.x + rect1.width < rect2.x) || (rect1.x > rect2.x + rect2.width) || (rect1.y + rect1.height < rect2.y) || (rect1.y > rect2.y + rect2.height)) {
-      return false
-    } else {
-      return true
-    }
-  }
-
-  // 拖拽离开
-  onDragOut (node) {
-    if (this.el.querySelector(':scope > .drop-shadow')) {
-      this.el.removeChild(this.el.querySelector(':scope > .drop-shadow'))
-    }
-    if (this.containerEl.querySelector(':scope > .drop-shadow')) {
-      this.containerEl.removeChild(this.containerEl.querySelector(':scope > .drop-shadow'))
-    }
-    if (this.el.style.position === 'relative') {
-      this.el.style.position = ''
-    }
   }
 
   // 删除子节点

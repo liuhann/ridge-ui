@@ -15,6 +15,8 @@ import {
   isElementSelectable,
   isElementResizable,
   getElementRectConfig,
+  onDragOver,
+  onDragOut,
   screenToViewport,
   getElementCenter
 } from './workspaceUtils.js'
@@ -638,28 +640,25 @@ export default class WorkSpaceControl {
    * @param {*} y
    */
   putElementToRoot (el, x, y) {
-    // 修改父子关系
     const rbcr = this.viewPortEl.getBoundingClientRect()
     const bcr = el.getBoundingClientRect()
-    if (x == null || y == null || (x > bcr.x && x < (bcr.x + bcr.width) && y > bcr.y && y < (bcr.y + bcr.height))) {
-      // 计算位置
-      el.ridgeNode.updateConfig({
-        style: {
-          x: Math.floor((bcr.x - rbcr.x) / this.zoom),
-          y: Math.floor((bcr.y - rbcr.y) / this.zoom)
-        }
-      })
-      this.editorStore.getState().updateNodeRect(el.ridgeNode.config.style)
-    } else {
-      // 计算位置
-      el.ridgeNode.updateConfig({
-        style: {
-          x: Math.floor((x - rbcr.x - bcr.width / 2) / this.zoom),
-          y: Math.floor((y - rbcr.y - bcr.height / 2) / this.zoom)
-        }
-      })
-      this.editorStore.getState().updateNodeRect(el.ridgeNode.config.style)
-    }
+
+    const clientX = x || (bcr.x + bcr.width / 2)
+    const clientY = y || (bcr.y + bcr.height / 2)
+
+    const viewportX = (clientX - rbcr.left) / this.zoom
+    const viewportY = (clientY - rbcr.top) / this.zoom
+
+    const finalX = viewportX - bcr.width / 2
+    const finalY = viewportY - bcr.height / 2
+
+    el.ridgeNode.updateConfig({
+      style: {
+        x: Math.floor(finalX),
+        y: Math.floor(finalY)
+      }
+    })
+    this.editorStore.getState().updateNodeRect(el.ridgeNode.config.style)
     this.moveable.updateTarget()
   }
 
@@ -796,7 +795,6 @@ export default class WorkSpaceControl {
     const zoom = this.zoom || 1
     const filtered = Array.from(droppableElements).filter(el => {
       if (!el.ridgeNode) return false
-      if (!el.ridgeNode.isDroppable()) return false
 
       // 2. 修复：禁止拖拽元素把自己当容器
       if (dragEl === el) return false
@@ -839,22 +837,6 @@ export default class WorkSpaceControl {
     }
 
     this.ensureDragPlacement(target)
-
-    // 6. 修复：updateDragOver 默认 true
-    if (target && updateDragOver) {
-      try {
-        target.ridgeNode?.invoke('onDragOver', dragEl ? [dragEl.ridgeNode] : [])
-      } catch (e) {
-        console.error('Container dragOver Error', target, e)
-      }
-
-      droppableElements.forEach(el => {
-        if (el !== target) {
-          el.ridgeNode?.invoke('onDragOut', dragEl ? [dragEl.ridgeNode] : [])
-        }
-      })
-    }
-
     return target
   }
 
@@ -897,6 +879,7 @@ export default class WorkSpaceControl {
 
   async loadPage (pageContent, path, appService) {
     const editorComposite = new EditorComposite({
+      loader,
       appName: 'local',
       path,
       appService,

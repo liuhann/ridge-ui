@@ -61,8 +61,10 @@ class EditorComposite extends Composite {
 
     const element = new EditorElement({
       composite: this,
-      config: elementConfig
+      config: elementConfig,
+      componentMeta: meta
     })
+    element.initPropsOnCreate()
     element.mount(div)
     this.appendChild(element)
     // 避免名称重复
