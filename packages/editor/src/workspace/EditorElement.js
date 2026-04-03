@@ -120,10 +120,6 @@ export default class EditorElement extends Element {
     this.config.props.children = this.children.map(c => c.getId())
     node.parent = null
 
-    const ws = context.workspaceControl
-    const rect = ws?.getElementRectConfig(node.el)
-    if (rect) node.setStyleConfig(rect)
-
     this.invoke('removeChild', [node])
     this.forceUpdate()
   }

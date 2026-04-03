@@ -206,7 +206,11 @@ const ConfigPanel = () => {
             type: 'divider',
             label: '来自父-' + parentComponentMeta.title
           })
-          nodePropFields.push(...(parentComponentMeta?.childProps || []))
+          if (parentComponentMeta.childStyles) {
+            nodePropFields.push(...(parentComponentMeta.childStyles.map(childStyle => {
+              return { ...childStyle, field: 'style.' + childStyle.name, fieldEx: 'styleEx.' + childStyle.name }
+            })))
+          }
           nodePropFields.push({
             type: 'divider'
           })

@@ -418,12 +418,6 @@ export default class WorkSpaceControl {
       return
     }
 
-    // 已经选择了当前select节点的上级
-    // if (this.moveable.target && this.moveable.target.length ===1 && isAncestor(this.moveable.target[0], target)) {
-    //   e.stop()
-    //   return
-    // }
-
     // 拖拽起始位置位于元素内
     const closestRidgeNode = target.closest(RIDGE_ELEMENT)
     if (this.isElementMovable(closestRidgeNode)) {
@@ -640,25 +634,26 @@ export default class WorkSpaceControl {
    * @param {*} y
    */
   putElementToRoot (el, x, y) {
+    // 修改父子关系
     const rbcr = this.viewPortEl.getBoundingClientRect()
     const bcr = el.getBoundingClientRect()
-
-    const clientX = x || (bcr.x + bcr.width / 2)
-    const clientY = y || (bcr.y + bcr.height / 2)
-
-    const viewportX = (clientX - rbcr.left) / this.zoom
-    const viewportY = (clientY - rbcr.top) / this.zoom
-
-    const finalX = viewportX - bcr.width / 2
-    const finalY = viewportY - bcr.height / 2
-
-    el.ridgeNode.updateConfig({
-      style: {
-        x: Math.floor(finalX),
-        y: Math.floor(finalY)
-      }
-    })
-    this.editorStore.getState().updateNodeRect(el.ridgeNode.config.style)
+    if (x == null || y == null || (x > bcr.x && x < (bcr.x + bcr.width) && y > bcr.y && y < (bcr.y + bcr.height))) {
+      // 计算位置
+      el.ridgeNode.updateConfig({
+        style: {
+          x: Math.floor((bcr.x - rbcr.x) / this.zoom),
+          y: Math.floor((bcr.y - rbcr.y) / this.zoom)
+        }
+      })
+    } else {
+      // 计算位置
+      el.ridgeNode.updateConfig({
+        style: {
+          x: Math.floor((x - rbcr.x - bcr.width / 2) / this.zoom),
+          y: Math.floor((y - rbcr.y - bcr.height / 2) / this.zoom)
+        }
+      })
+    }
     this.moveable.updateTarget()
   }
 
@@ -671,12 +666,12 @@ export default class WorkSpaceControl {
   onElementDragStart (el) {
     if (el.ridgeNode && el.ridgeNode.parent &&
         el.ridgeNode.parent !== this.currentComposite) { // 非根节点
-      const rectConfig = getElementRectConfig(el)
+      const rectConfig = getElementRectConfig(el, this.viewPortEl, this.zoom)
       el.ridgeNode.parent.removeChild(el.ridgeNode)
       this.currentComposite.appendChild(el.ridgeNode)
 
       // 更新大纲面板
-      this.editorStore.getState().outlinePanel?.updateOutline?.()
+      this.editorStore.getState().updateOutLine()
 
       el.ridgeNode.updateConfig({
         style: rectConfig

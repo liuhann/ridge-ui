@@ -15,5 +15,8 @@
     "components-metadata.json"
   ],
   "author": "Ridge System",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "clean-webpack-plugin": "^4.0.0"
+  }
 }

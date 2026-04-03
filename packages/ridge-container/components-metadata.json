@@ -2,7 +2,7 @@
   "name": "ridge-container",
   "version": "1.2.0",
   "schemaVersion": "2.0",
-  "lastUpdated": "2026-03-27T09:35:57.584Z",
+  "lastUpdated": "2026-04-03T10:16:55.168Z",
   "generatedBy": "ridge-ui-cli",
   "components": [
     {
@@ -72,31 +72,10 @@
       "author": "LiuHan",
       "visualConfig": {
         "thumbnail": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxnIGZpbGw9Im5vbmUiPjxwYXRoIGZpbGw9IiM2NmUxZmYiIGQ9Ik0xLjY4OCA3LjMxM3YxNC4wNmMwIC41MTkuNDIuOTM4LjkzOC45MzhIOC4yNVY3LjMxM3ptMTQuMDYyIDB2MTQuOTk4aDUuNjI0Yy41MTggMCAuOTM3LS40Mi45MzctLjkzN1Y3LjMxNHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMTUuNzUgNy4zMTNoLTcuNXYxNC45OThoNy41eiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0yMS4zNzQgMS42ODlIMi42MjZhLjkzNy45MzcgMCAwIDAtLjkzOC45Mzd2NC42ODdoMjAuNjIzVjIuNjI2YS45MzcuOTM3IDAgMCAwLS45MzctLjkzNyIvPjxwYXRoIGZpbGw9IiNlNGYxZjUiIGQ9Ik0yMi4zMTEgNC41SDEuNjg4djIuODEzaDIwLjYyM3oiLz48cGF0aCBzdHJva2U9IiMxOTE5MTkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTIxLjM3NCAxLjY4OUgyLjYyNmEuOTM3LjkzNyAwIDAgMC0uOTM4LjkzN3Y0LjY4N2gyMC42MjNWMi42MjZhLjkzNy45MzcgMCAwIDAtLjkzNy0uOTM3Ii8+PHBhdGggc3Ryb2tlPSIjMTkxOTE5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGQ9Ik0xLjY4OCA3LjMxM3YxNC4wNmMwIC41MTkuNDIuOTM4LjkzOC45MzhIOC4yNVY3LjMxM3ptMTQuMDYyIDB2MTQuOTk4aDUuNjI0Yy41MTggMCAuOTM3LS40Mi45MzctLjkzN1Y3LjMxNHptMCAwaC03LjV2MTQuOTk4aDcuNXoiLz48L2c+PC9zdmc+",
-        "preferredWidth": "360px",
-        "preferredHeight": "240px",
+        "preferredWidth": 360,
+        "preferredHeight": 240,
         "resizable": true,
         "aspectRatio": "no"
-      },
-      "aiContext": {
-        "suggestedUseCases": [
-          "创建响应式布局",
-          "实现卡片列表、导航栏、表单等模块的对齐排列",
-          "通过嵌套实现复杂的多级布局"
-        ],
-        "bestPractices": [
-          "优先使用 gap 控制子项间距，而非 margin",
-          "合理使用 flex 属性控制子项伸缩比例",
-          "在需要等分布局时使用 space-between 或 space-evenly"
-        ],
-        "antiPatterns": [
-          "避免在 flex 容器内嵌套过多层级",
-          "不要在单个子项上同时设置 width/height 和 flex 属性，可能导致布局冲突"
-        ],
-        "relatedComponents": [
-          "GridContainer",
-          "AbsoluteContainer",
-          "PageContainer"
-        ]
       },
       "properties": [
         {
@@ -227,38 +206,52 @@
           "label": "鼠标按下"
         }
       ],
-      "childProperties": [
+      "childStyles": [
         {
-          "name": "style.width",
+          "name": "width",
           "description": "子项的宽度（单位：像素）",
           "label": "宽度",
           "control": "number",
           "type": "number"
         },
         {
-          "name": "style.height",
+          "name": "height",
           "description": "子项的高度（单位：像素）",
           "label": "高度",
           "control": "number",
           "type": "number"
         },
         {
-          "name": "style.flex",
+          "name": "flex",
           "description": "子项在主轴上的伸缩比例（例如 1, 2, \"none\"）",
           "label": "弹性比例",
           "control": "text",
           "type": "string"
         },
         {
-          "name": "style.alignSelf",
+          "name": "autoWidth",
+          "description": "子项在主轴上的伸缩比例（例如 1, 2, \"none\"）",
+          "label": "宽度自动",
+          "control": "boolean",
+          "type": "boolean"
+        },
+        {
+          "name": "autoHeight",
+          "description": "子项在主轴上的伸缩比例（例如 1, 2, \"none\"）",
+          "label": "高度自动",
+          "control": "boolean",
+          "type": "boolean"
+        },
+        {
+          "name": "alignSelf",
           "description": "子项在交叉轴上是否拉伸填充",
           "label": "交叉填充",
           "control": "boolean",
           "type": "boolean"
         },
         {
-          "name": "style.visible",
-          "description": "子项是否可见（若为 false 则隐藏但仍占位）",
+          "name": "visible",
+          "description": "子项是否可见",
           "label": "占位",
           "control": "boolean",
           "type": "boolean"

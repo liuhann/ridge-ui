@@ -76,6 +76,10 @@ const editorStore = create((set, get) => ({
 
   },
 
+  updateOutLine: () => {
+
+  },
+
   updateNodeRect: (rect) => {
     const { currentOpenPageId, unsavedPages } = get()
     set({

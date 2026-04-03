@@ -1,17 +1,31 @@
 const path = require('path')
+const fs = require('fs') // 加这个
+const pkg = require('./package.json')
+
 // const svgToMiniDataURI = require('mini-svg-data-uri');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
+const distpath = path.resolve(__dirname, './dist')
+console.log('distPath', distpath)
+
+if (!fs.existsSync(distpath)) {
+  fs.mkdirSync(distpath, { recursive: true })
+}
+const copyFiles = pkg.files || []
+
+console.log('copyFiles', copyFiles)
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, './dist'),
+    path: distpath,
     filename: 'ridge-container.umd.min.js',
     library: {
       name: 'RidgeContainer',
       type: 'umd'
       // export: 'default'
     },
-    globalObject: 'this',
-    clean: true
+    globalObject: 'this'
+    // clean: true
   },
   module: {
     rules: [{
@@ -123,5 +137,13 @@ module.exports = {
     debug: 'debug',
     'react-dom': 'ReactDOM'
   },
-  plugins: []
+  plugins: [
+    new CleanWebpackPlugin(),
+    new CopyPlugin({
+      patterns: copyFiles.map((item) => ({
+        from: path.resolve(__dirname, item),
+        to: path.resolve(__dirname, '../../public/npm/ridge-container/', item)
+      }))
+    })
+  ]
 }

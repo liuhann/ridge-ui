@@ -42,7 +42,7 @@ export default class BaseContainer {
   getContainerStyle () {}
 
   // 子节点style信息
-  getChildStyle (view) {}
+  getChildStyle (style) {}
 
   // 挂载子节点：  但是像Tab容器这样，可以延迟挂载
   async mountChildNode (childNode, div) {
@@ -111,20 +111,12 @@ export default class BaseContainer {
     // 安全判断：防止组件未加载完成
     if (!childNode || !childNode.el) return
 
-    const shadowNode = this.containerEl.querySelector('[shadow-for="' + childNode.getId() + '"]')
     const el = childNode.el
 
-    if (shadowNode) {
-      this.containerEl.replaceChild(el, shadowNode)
+    if (index > -1 && this.containerEl.childNodes[index]) {
+      this.containerEl.insertBefore(el, this.containerEl.childNodes[index])
     } else {
-      if (this.el.querySelector(':scope > .drop-shadow')) {
-        this.el.removeChild(this.el.querySelector(':scope > .drop-shadow'))
-      }
-      if (index > -1 && this.containerEl.childNodes[index]) {
-        this.containerEl.insertBefore(el, this.containerEl.childNodes[index])
-      } else {
-        this.containerEl.appendChild(el)
-      }
+      this.containerEl.appendChild(el)
     }
     this.onChildAppended(childNode, { x, y })
     this.updateChildStyle(childNode)
@@ -168,7 +160,7 @@ export default class BaseContainer {
 
     const el = div || childNode.el
     if (el) {
-      const style = Object.assign({}, this.getChildStyle(childNode, el))
+      const style = Object.assign({}, this.getResetStyle(), this.getChildStyle(childNode.getStyle()))
       Object.assign(el.style, style)
     }
   }
