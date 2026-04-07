@@ -38,34 +38,53 @@ const AppFileList = () => {
   }, [currentAppFilesTree])
 
   const getAppTreeData = (treeData) => {
+  // SVG 图标集合 —— 专业、简洁、统一
+    const ICONS = {
+      folder: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#6B7280' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M3 7h18l-2 14H5L3 7z' /><path d='M3 7h18l-2 14H5L3 7z' /><path d='M3 7h18l-2 14H5L3 7z' /><path d='M3 7L5 3h6l4 4h6' /></svg>,
+      page: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#3B82F6' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z' /><polyline points='14,2 14,8 20,8' /></svg>,
+      js: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#F59E0B' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M16.5 10.5B4.5 4.5 4.5 19.5 16.5 19.5' /><path d='M10 7.5L7.5 10 10 12.5M14 11.5L16.5 14 14 16.5' /></svg>,
+      json: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#8B5CF6' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M10 7L8 12L10 17M14 7L16 12L14 17' /></svg>,
+      image: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#EC4899' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><rect x='3' y='3' width='18' height='18' rx='2' ry='2' /><circle cx='8.5' cy='8.5' r='1.5' /><path d='M21 15l-5-5L5 21' /></svg>,
+      font: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#10B981' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M4 3l4 18h8l4-18' /><path d='M12 3v18' /></svg>,
+      audio: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#06B6D4' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M9 18V5l12-2v13' /><circle cx='6' cy='18' r='3' /><circle cx='18' cy='16' r='3' /></svg>,
+      file: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#64748B' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z' /><polyline points='13,2 13,9 20,9' /></svg>,
+      md: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#64748B' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M13 13l-3-3-3 3' /><path d='M13 11l3 3 3-3' /><rect x='2' y='4' width='20' height='16' rx='2' ry='2' /></svg>
+    }
+
     const fileTree = mapTree(treeData, file => {
+    // 默认文件图标
+      file.icon = ICONS.file
+
       if (file.mimeType) {
         if (file.mimeType === 'application/font-woff') {
-          file.icon = (<i className='bi bi-fonts' />)
+          file.icon = ICONS.font
         } else if (file.mimeType.indexOf('audio') > -1) {
-          file.icon = (<i className='bi bi-file-earmark-music' />)
+          file.icon = ICONS.audio
         } else if (file.mimeType.indexOf('image') > -1) {
-          file.icon = <i class='bi bi-image' />
-        } else {
-          file.icon = <i className='bi bi-file-earmark' />
+          file.icon = ICONS.image
         }
       }
-      file.label = file.name
 
+      file.label = file.name
       if (file.label.endsWith('.md')) {
-        file.icon = <i className='bi bi-file-earmark-arrow-down' />
+        file.icon = ICONS.md
       }
       if (file.label.endsWith('.js')) {
-        file.icon = <i class='bi bi-code-slash' />
+        file.icon = ICONS.js
       }
       if (file.label.endsWith('.json')) {
-        file.icon = <i class='bi bi-braces' />
+        file.icon = ICONS.json
       }
-      if (file.type === 'page') {
-        file.icon = <i className='bi bi-layout-text-window-reverse' />
-      }
+      // 根据文件类型设置图标
       if (file.type === 'directory') {
-        file.icon = <i className='bi bi-folder2' />
+        file.icon = ICONS.folder
+      }
+      // page 类型不显示 .json 后缀
+      if (file.type === 'page' && file.name.endsWith('.json')) {
+        file.label = file.name.replace(/\.json$/, '')
+        file.icon = ICONS.page
+      } else {
+        file.label = file.name
       }
 
       return {
@@ -76,14 +95,13 @@ const AppFileList = () => {
         key: file.id
       }
     })
+
     return [{
       id: -1,
       key: -1,
       label: currentAppName,
-      raw: {
-        path: '/',
-        id: -1
-      },
+      icon: ICONS.folder,
+      raw: { path: '/', id: -1 },
       children: fileTree
     }]
   }
@@ -153,19 +171,45 @@ const AppFileList = () => {
     }
   }
 
-  const onFileExportClick = (data) => {
-    const { appService } = context.services
-    appService.exportFileArchive(data.key)
+  // 根据 key 查找树节点
+  const findTreeNodeByKey = (treeData, key) => {
+    for (const node of treeData) {
+      if (node.key === key) return node
+      if (node.children) {
+        const res = findTreeNodeByKey(node.children, key)
+        if (res) return res
+      }
+    }
+    return null
   }
 
   const confirmFileRename = async () => {
-    const result = await renameFile(currentRename.key, currentRename.value)
+    let finalName = currentRename.value
+
+    // 找到当前正在重命名的节点
+    const node = findTreeNodeByKey(treeData, currentRename.key)
+
+    // 如果是 page 类型，自动补上 .json
+    if (node && node.raw?.type === 'page' && !finalName.endsWith('.json')) {
+      finalName += '.json'
+    }
+
+    const result = await renameFile(currentRename.key, finalName)
     if (result === -1) {
       Toast.error('文件名称冲突')
     } else {
       setCurrentRename(null)
     }
   }
+
+  // const confirmFileRename = async () => {
+  //   const result = await renameFile(currentRename.key, currentRename.value)
+  //   if (result === -1) {
+  //     Toast.error('文件名称冲突')
+  //   } else {
+  //     setCurrentRename(null)
+  //   }
+  // }
 
   const CREATE_MENUS = [
     <Dropdown.Item key='page' icon={<i className='bi bi-file-earmark-plus' />} onClick={() => showCreateDialog('page')}>创建页面</Dropdown.Item>,

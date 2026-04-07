@@ -146,17 +146,18 @@ html, body {
         // outline: 1px dashed rgba(var(--semi-light-blue-5), 0.3); /* dashed 虚线 / dotted 点线 */
     }
   }
-  .ridge-element-edit:has(.ridge-element-edit:hover) {
+  .ridge-editor-element:has(.ridge-element-edit:hover) {
     outline: none;
   }
-  .ridge-element-edit.selected:hover {
+  .ridge-editor-element.selected:hover {
     outline: none; 
   }
-  .ridge-element-edit:hover {
-    outline: 1px dashed var(--semi-color-secondary);
-    outline-offset: 2px;
+  .ridge-editor-element:hover {
+    outline: 2px solid rgba(var(--semi-light-blue-5), 0.2);
+    // outline: 1px dashed var(--semi-color-secondary);
+    outline-offset: 3px;
   }
-  .ridge-element-edit:hover:has(.drop-shadow) {
+  .ridge-editor-element:hover:has(.drop-shadow) {
     outline: none;
     outline-offset: 2px;
   }
