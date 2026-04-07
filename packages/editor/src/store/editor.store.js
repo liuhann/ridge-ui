@@ -27,6 +27,7 @@ const editorStore = create((set, get) => ({
   editorComposite: null,
   openedFileContentMap: new Map(),
   pageTransformMap: new Map(),
+  pageZoomMap: new Map(),
   codeEditorRef: null,
   workspaceControl: null,
 
@@ -110,7 +111,7 @@ const editorStore = create((set, get) => ({
 
   // 打开页面
   openPage: async (id, page) => {
-    const { currentOpenPageId, unmountWorkspace, openedFileContentMap, pageTransformMap, workspaceControl, openedPages } = get()
+    const { currentOpenPageId, unmountWorkspace, openedFileContentMap, pageZoomMap, pageTransformMap, workspaceControl, openedPages, setZoom } = get()
     const appService = localRepoService.getCurrentAppService()
     if (currentOpenPageId === id) {
       return
@@ -135,6 +136,13 @@ const editorStore = create((set, get) => ({
       workspaceControl.setTransform(transform)
     } else {
       workspaceControl.setTransform({})
+    }
+
+    const zoom = pageZoomMap.get(id)
+    if (zoom) {
+      setZoom(zoom)
+    } else {
+      setZoom(1)
     }
 
     set({
@@ -162,12 +170,13 @@ const editorStore = create((set, get) => ({
   },
 
   unmountWorkspace: (cache) => {
-    const { editorComposite, workspaceControl, openedFileContentMap, pageTransformMap, currentOpenPageId } = get()
+    const { editorComposite, workspaceControl, openedFileContentMap, pageZoomMap, pageTransformMap, zoom, currentOpenPageId } = get()
 
     if (cache) {
       // 缓存当前图纸
       openedFileContentMap.set(currentOpenPageId, editorComposite.exportPageJSON())
       pageTransformMap.set(currentOpenPageId, workspaceControl.getTransform())
+      pageZoomMap.set(currentOpenPageId, zoom)
     }
     editorComposite.unmount()
     workspaceControl.disable()
@@ -179,9 +188,10 @@ const editorStore = create((set, get) => ({
 
   // 关闭所有页面
   closeAllPages: async () => {
-    const { openedFileContentMap, unmountWorkspace, pageTransformMap } = get()
+    const { openedFileContentMap, pageZoomMap, unmountWorkspace, pageTransformMap } = get()
     unmountWorkspace(false)
     openedFileContentMap.clear()
+    pageZoomMap.clear()
     pageTransformMap.clear()
     set({
       currentOpenPageId: null,
@@ -192,7 +202,7 @@ const editorStore = create((set, get) => ({
 
   // 切换到另一页面
   switchPage: async id => {
-    const { currentOpenPageId, unmountWorkspace, openedFileContentMap, pageTransformMap, workspaceControl } = get()
+    const { currentOpenPageId, unmountWorkspace, openedFileContentMap, pageZoomMap, pageTransformMap, workspaceControl, setZoom } = get()
     if (currentOpenPageId === id) {
       return
     }
@@ -211,6 +221,12 @@ const editorStore = create((set, get) => ({
       } else {
         workspaceControl.setTransform({})
       }
+      const zoom = pageZoomMap.get(id)
+      if (zoom) {
+        setZoom(zoom)
+      } else {
+        setZoom(1)
+      }
       set({
         currentOpenPageId: id,
         editorComposite
@@ -220,10 +236,11 @@ const editorStore = create((set, get) => ({
 
   // 关闭页面
   closePage: async (id) => {
-    const { openedFileContentMap, openedPages, currentOpenPageId, unmountWorkspace, openPage } = get()
+    const { openedFileContentMap, pageZoomMap, openedPages, currentOpenPageId, unmountWorkspace, openPage } = get()
 
     const leftOpenedPages = openedPages.filter(p => p.id !== id)
     openedFileContentMap.delete(id)
+    pageZoomMap.delete(id)
     if (currentOpenPageId === id) { // 关闭当前页
       unmountWorkspace(false)
       set({
