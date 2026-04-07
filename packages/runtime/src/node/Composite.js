@@ -77,7 +77,9 @@ class Composite extends BaseNode {
     this.nodes = {}
     // 创建每个组件实例
     for (let i = 0; i < this.config.elements.length; i++) {
-      const node = this.createElement(this.config.elements[i])
+      const node = this.createElement({
+        config: this.config.elements[i]
+      })
       this.nodes[node.getId()] = node
     }
     this.initChildren()
@@ -137,6 +139,7 @@ class Composite extends BaseNode {
     return this.context.getBlobUrl(url, this.packageName)
   }
 
+  // 构造页面树结构
   initChildren () {
     if (!this.config.children) {
       this.children = Object.values(this.nodes).filter(n => n.config.parent == null)
@@ -273,7 +276,8 @@ class Composite extends BaseNode {
 
       // const classList = handleClassListPropValue(this.config.classList, this)
 
-      this.el.className = ['ridge-composite', ...this.CLASS_LIST].join(' ')
+      this.el.classList.add('ridge-composite')
+      // this.el.className = ['ridge-composite', ...this.CLASS_LIST].join(' ')
     }
   }
 

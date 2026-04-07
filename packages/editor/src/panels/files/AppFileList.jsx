@@ -315,7 +315,7 @@ const AppFileList = () => {
             >
               <i className='more-button bi bi-three-dots-vertical' />
             </Dropdown>
-            </>}
+          </>}
         {/* <Text
           onClick={() => {
             const now = new Date().getTime()
@@ -411,11 +411,20 @@ const AppFileList = () => {
   // 渲染逻辑
   return (
     <div className='left-panel'>
+      {/* 顶部标题栏：优化对齐 */}
       <div className='panel-title'>
-        <Text type='tertiary'>应用文件</Text>
-        <Button type='tertiary' onClick={confirmExitToAppList} theme='borderless' icon={<i className='bi bi-box-arrow-right' />} />
-        {/* {currentAppName && RenderShareDropDown()} */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <i className='bi bi-folder2' style={{ fontSize: '16px', color: '#667085' }} />
+          <span>应用文件</span>
+        </div>
+        <Button
+          type='tertiary'
+          onClick={confirmExitToAppList}
+          theme='borderless'
+          icon={<i className='bi bi-box-arrow-right' />}
+        />
       </div>
+
       <DialogCreate
         show={dialogCreateShow}
         type={dialgeCreateFileType}
@@ -425,7 +434,10 @@ const AppFileList = () => {
           setDialogCreateShow(false)
         }}
       />
-      {RenderCreateDropDown()}
+
+      {/* 按钮工具栏：完美排版 */}
+      <RenderCreateDropDown />
+
       <Tree
         autoExpandParent
         className='file-tree'

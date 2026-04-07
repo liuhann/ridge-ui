@@ -12,10 +12,10 @@ const localRepoService = new LocalRepoService()
 const useStore = create((set, get) => ({
   // 初始化状态
   appList: [],
-  loadingAppFiles: true,
-  currentAppName: '',
-  currentAppId: '',
+  currentAppName: '', // 👈 改为 null，区分“未初始化”和“无应用”
+  currentAppId: '', // 👈 同上
   currentAppFilesTree: [],
+  isReady: false, // 👈 新增：全局是否初始化完成
 
   appService: null,
 
@@ -33,10 +33,10 @@ const useStore = create((set, get) => ({
     const currentAppId = await localRepoService.getCurrentAppId()
 
     if (currentAppId) {
-      openApp(currentAppId)
+      await openApp(currentAppId)
     }
     set({
-      loadingAppFiles: false,
+      isReady: true,
       appList
     })
   },

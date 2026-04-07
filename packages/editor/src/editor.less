@@ -1,11 +1,13 @@
-html, body {
+html,
+body {
   overflow: hidden;
-  overflow-y: hidden!important;
+  overflow-y: hidden !important;
   user-select: none;
-  background-color: var(--semi-color-bg-0)!important;
+  background-color: var(--semi-color-bg-0) !important;
   width: 100%;
   height: 100%;
 }
+
 #root {
   --bs-border-color: var(--semi-color-border);
   height: 100%;
@@ -25,24 +27,28 @@ html, body {
 
 ::-webkit-scrollbar,
 ::-webkit-scrollbar-thumb {
-    width: 12px;
-    height: 12px;
-    border-radius: 20px;
-    background-clip: padding-box;
-    border: 2px solid transparent;
-    color: var(--semi-color-fill-2);
+  width: 12px;
+  height: 12px;
+  border-radius: 20px;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  color: var(--semi-color-fill-2);
 }
+
 ::-webkit-scrollbar-thumb:hover {
-    color:var(--semi-color-fill-2);
+  color: var(--semi-color-fill-2);
 }
+
 ::-webkit-scrollbar-thumb:active {
-    color: var(--semi-color-fill-2);
+  color: var(--semi-color-fill-2);
 }
+
 ::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 0 10px;
+  box-shadow: inset 0 0 0 10px;
 }
+
 ::-webkit-scrollbar-corner {
-    display: none;
+  display: none;
 }
 
 
@@ -51,30 +57,47 @@ html, body {
   flex-direction: row;
   align-items: stretch;
   height: 100%;
+
   .root-nav {
     overflow: hidden;
     padding: 4px;
+
     .semi-breadcrumb-item-icon {
       width: 16px;
       height: 16px;
     }
   }
+
+  .left-content {
+    .semi-tabs-bar {
+      display: none;
+    }
+
+    .semi-tabs-content {
+      height: 100%;
+    }
+  }
+
   .left-resizer {
     width: 6px;
     cursor: e-resize;
     border-right: 1px solid var(--semi-color-border);
   }
+
   >.editor-content {
     flex: 1;
     display: flex;
     flex-direction: column;
+
     >.workspace-panel {
       flex: 1;
       display: flex;
       flex-direction: row;
+
       .workspace {
         flex: 1;
       }
+
       .config-panel {
         width: 320px;
         padding: 4px;
@@ -90,37 +113,39 @@ html, body {
   flex-direction: column;
   align-items: stretch;
   height: 100%;
+
   >.preview-container {
     flex: 1;
   }
 }
+
 .workspace {
   flex: 1;
   position: relative;
-  background: var( --semi-color-fill-0);
-  overflow: auto;
+  background: var(--semi-color-fill-0);
+  overflow: hidden;
+
   &.preview {
     overflow: auto;
   }
-  .viewport-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    background-color: var(--semi-color-bg-0);
+
+  .viewport {
     &.preview-full {
       width: 100%;
       height: 100%;
       overflow: auto;
     }
   }
+
   .user-panel {
-    background-color: var( --semi-color-bg-0);
+    background-color: var(--semi-color-bg-0);
     position: fixed;
     left: 5px;
     background: var(--semi-color-bg-0);
     border: 1px solid var(--semi-color-border);
     border-radius: 8px;
   }
+
   .no-open-file {
     position: absolute;
     width: 875px;
@@ -132,31 +157,44 @@ html, body {
   }
 
   .view-port {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: var(--semi-color-bg-0);
     .ridge-element:has(.ridge-element:hover) {
       outline: none;
     }
+    .ridge-container {
+      background-color: rgba(var(--semi-light-blue-5), 0.04);
+    }
+
     .ridge-element:hover {
       // cursor: pointer;
-       background-color: rgba(var(--semi-light-blue-5), 0.04);
+      background-color: rgba(var(--semi-light-blue-5), 0.04);
       // outline: 1px dashed rgba(var(--semi-light-blue-5), 0.5); /* dashed 虚线 / dotted 点线 */
     }
+
     .ridge-container:hover {
       transition: background-color .5s cubic-bezier(0.075, 0.82, 0.165, 1);
       background-color: rgba(var(--semi-light-blue-5), 0.04);
-        // outline: 1px dashed rgba(var(--semi-light-blue-5), 0.3); /* dashed 虚线 / dotted 点线 */
+      // outline: 1px dashed rgba(var(--semi-light-blue-5), 0.3); /* dashed 虚线 / dotted 点线 */
     }
   }
+
   .ridge-editor-element:has(.ridge-element-edit:hover) {
     outline: none;
   }
+
   .ridge-editor-element.selected:hover {
-    outline: none; 
+    outline: none;
   }
+
   .ridge-editor-element:hover {
     outline: 2px solid rgba(var(--semi-light-blue-5), 0.2);
     // outline: 1px dashed var(--semi-color-secondary);
     outline-offset: 3px;
   }
+
   .ridge-editor-element:hover:has(.drop-shadow) {
     outline: none;
     outline-offset: 2px;
@@ -177,11 +215,12 @@ slot {
   .cm-editor {
     .cm-scroller {
       .cm-line {
-        font-family: Menlo,Monaco,Consolas,Courier New,monospace;
+        font-family: Menlo, Monaco, Consolas, Courier New, monospace;
       }
     }
   }
 }
+
 .pop-code-editor-container {
   width: 420px;
   margin: 5px 0;
@@ -200,17 +239,21 @@ slot {
     flex: 1;
     height: 24px;
   }
+
   .label-action {
     display: none;
   }
+
   &:hover {
     .label-action {
       display: initial;
     }
+
     .hover-show {
       visibility: initial;
     }
   }
+
   .hover-show {
     visibility: hidden;
   }
@@ -227,6 +270,7 @@ slot {
   justify-content: center;
   align-items: center;
   background-color: var(--semi-color-bg-3);
+
   .semi-spin {
     width: 300px;
   }
@@ -248,11 +292,14 @@ slot {
 
 /* 脉冲动画关键帧 */
 @keyframes borderPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     border: 2px dashed var(--semi-color-primary-hover);
   }
+
   50% {
-    border: 2px dashed var( --semi-color-info-light-active);
+    border: 2px dashed var(--semi-color-info-light-active);
   }
 }
 
@@ -262,9 +309,11 @@ slot {
     align-items: center;
     gap: 8px;
   }
+
   .flex-1 {
     flex: 1;
   }
+
   .code-editor-container {
     border: 1px solid var(--semi-color-border);
     overflow: auto;
@@ -272,6 +321,7 @@ slot {
     width: 100%;
     height: calc(100% - 60px);
   }
+
   .no-open-script-file {
     width: 100%;
     height: calc(100% - 60px);
@@ -280,28 +330,35 @@ slot {
     background-color: var(--semi-color-bg-3);
     align-items: center;
   }
+
   .semi-tabs {
     .semi-tabs-content {
       padding: 0;
     }
   }
+
   .semi-spin {
     width: 100%;
     height: 100%;
+
     .semi-spin-children {
       width: 100%;
       height: 100%;
     }
   }
+
   .semi-sidesheet-header {
     padding: 6px 18px;
+
     .semi-sidesheet-title {
       font-size: 16px;
     }
   }
+
   .semi-sidesheet-body {
     padding: 0 16px;
   }
+
   .semi-sidesheet-footer {
     padding: 6px 18px;
   }

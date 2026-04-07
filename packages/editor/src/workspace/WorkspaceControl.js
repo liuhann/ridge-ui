@@ -34,6 +34,9 @@ export default class WorkSpaceControl {
     viewPortEl,
     editorStore
   }) {
+    console.log('init workspace introl')
+    if (this.workspaceEl) return
+
     this.workspaceEl = workspaceEl
     this.viewPortEl = viewPortEl
     this.editorStore = editorStore
@@ -73,7 +76,7 @@ export default class WorkSpaceControl {
         this.workspaceMovable.destroy()
         this.workspaceMovable = null
       }
-      this.viewPortEl.style.transform = ''
+      this.getViewPortEl().style.transform = ''
       this.enabled = false
     }
   }
@@ -84,7 +87,7 @@ export default class WorkSpaceControl {
 
   fitByWidth () {
     const wsbc = this.workspaceEl.getBoundingClientRect()
-    const vpbc = this.viewPortEl.getBoundingClientRect()
+    const vpbc = this.getViewPortEl().getBoundingClientRect()
 
     this.viewPortX = 292
     this.viewPortY = 7
@@ -98,14 +101,14 @@ export default class WorkSpaceControl {
     } else {
       this.zoom = 0.5
     }
-    this.viewPortEl.style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
+    this.getViewPortEl().style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
     return this.zoom
   }
 
   fitToCenter (padding = 40) {
-    this.viewPortEl.style.transform = ''
+    this.getViewPortEl().style.transform = ''
     const wsbc = this.workspaceEl.getBoundingClientRect()
-    const vpbc = this.viewPortEl.getBoundingClientRect()
+    const vpbc = this.getViewPortEl().getBoundingClientRect()
     this.zoom = 1
 
     const fitted = fitRectIntoBounds({
@@ -126,7 +129,7 @@ export default class WorkSpaceControl {
     this.viewPortX = (wsbc.width - fitted.width) / 2
     this.viewPortY = (wsbc.height - fitted.height) / 2
 
-    this.viewPortEl.style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
+    this.getViewPortEl().style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
 
     return this.zoom
   }
@@ -139,7 +142,7 @@ export default class WorkSpaceControl {
       this.moveable.updateTarget()
     }
 
-    this.viewPortEl.style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
+    this.getViewPortEl().style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
   }
 
   getTransform () {
@@ -155,7 +158,7 @@ export default class WorkSpaceControl {
     this.viewPortY = viewPortY
     this.zoom = zoom
 
-    this.viewPortEl.style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
+    this.getViewPortEl().style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
 
     // 使用 scrollTo() 方法
     setTimeout(() => {
@@ -188,7 +191,7 @@ export default class WorkSpaceControl {
         this.viewPortX += ev.delta[0]
         this.viewPortY += ev.delta[1]
 
-        this.viewPortEl.style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
+        this.getViewPortEl().style.transform = `translate(${this.viewPortX}px, ${this.viewPortY}px) scale(${this.zoom})`
       }
     })
   }
@@ -372,7 +375,7 @@ export default class WorkSpaceControl {
       // Selecto's root container (No transformed container. (default: null)
       rootContainer: null,
       // The area to drag selection element (default: container)
-      dragContainer: this.workspaceEl,
+      dragContainer: '.workspace',
       // Targets to select. You can register a queryselector or an Element.
       selectableTargets: [RIDGE_ELEMENT],
       // Whether to select by click (default: true)
@@ -513,7 +516,7 @@ export default class WorkSpaceControl {
     if (!this.enabled) return
     ev.preventDefault()
 
-    const rbcr = this.viewPortEl.getBoundingClientRect()
+    const rbcr = this.getViewPortEl().getBoundingClientRect()
 
     const x = Math.floor((ev.pageX - rbcr.x) / this.zoom)
     const y = Math.floor((ev.pageY - rbcr.y) / this.zoom)
@@ -571,7 +574,7 @@ export default class WorkSpaceControl {
       doDropComposite(dragData)
     } else {
       // ✅ 组件创建：先留白
-      const node = this.currentComposite.createElement({
+      const node = this.currentComposite.createNewElement({
         meta: dragData.item,
         path: dragData.packageName + '/' + dragData.componentName
       })
@@ -635,7 +638,7 @@ export default class WorkSpaceControl {
    */
   putElementToRoot (el, x, y) {
     // 修改父子关系
-    const rbcr = this.viewPortEl.getBoundingClientRect()
+    const rbcr = this.getViewPortEl().getBoundingClientRect()
     const bcr = el.getBoundingClientRect()
     if (x == null || y == null || (x > bcr.x && x < (bcr.x + bcr.width) && y > bcr.y && y < (bcr.y + bcr.height))) {
       // 计算位置
@@ -666,7 +669,7 @@ export default class WorkSpaceControl {
   onElementDragStart (el) {
     if (el.ridgeNode && el.ridgeNode.parent &&
         el.ridgeNode.parent !== this.currentComposite) { // 非根节点
-      const rectConfig = getElementRectConfig(el, this.viewPortEl, this.zoom)
+      const rectConfig = getElementRectConfig(el, this.getViewPortEl(), this.zoom)
       el.ridgeNode.parent.removeChild(el.ridgeNode)
       this.currentComposite.appendChild(el.ridgeNode)
 
@@ -840,7 +843,7 @@ export default class WorkSpaceControl {
     let hintLayer = document.querySelector('.drag-target-hint')
     if (target == null) {
       if (hintLayer) {
-        this.viewPortEl.removeChild(hintLayer)
+        this.getViewPortEl().removeChild(hintLayer)
       }
       return
     }
@@ -852,11 +855,11 @@ export default class WorkSpaceControl {
       hintLayer.dataset.targetId = target.id || 'target_' + Date.now()
       hintLayer.textContent = '拖放内容到此处'
       // 将提示层添加到浮层
-      this.viewPortEl.appendChild(hintLayer)
+      this.getViewPortEl().appendChild(hintLayer)
     }
 
     const rect = target.getBoundingClientRect()
-    const vprect = this.viewPortEl.getBoundingClientRect()
+    const vprect = this.getViewPortEl().getBoundingClientRect()
     hintLayer.style.top = (rect.top - vprect.top) / this.zoom + 'px'
     hintLayer.style.left = (rect.left - vprect.left) / this.zoom + 'px'
     hintLayer.style.width = rect.width / this.zoom + 'px'
@@ -872,6 +875,10 @@ export default class WorkSpaceControl {
     a.dispatchEvent(event) // 触发a的点击事件
   }
 
+  getViewPortEl () {
+    return document.querySelector('.view-port')
+  }
+
   async loadPage (pageContent, path, appService) {
     const editorComposite = new EditorComposite({
       loader,
@@ -881,7 +888,7 @@ export default class WorkSpaceControl {
       config: pageContent
     })
 
-    await editorComposite.mount(this.viewPortEl)
+    await editorComposite.mount(this.getViewPortEl())
 
     if (!this.enabled) {
       this.enable()
@@ -933,7 +940,7 @@ export default class WorkSpaceControl {
     })
 
     this.workspaceEl.onwheel = (event) => {
-      if (!this.enabled) return
+      // if (!this.enabled) return
       event.preventDefault()
       let targetZoom = this.zoom + (event.deltaY > 0 ? -1 : 1) * 0.01
       targetZoom = Math.min(Math.max(0.1, targetZoom), 2)

@@ -35,6 +35,13 @@ const editorStore = create((set, get) => ({
     viewPortContainerRef,
     codeEditorRef
   }) => {
+    document.body.onwheel = (event) => {
+      const { zoom, setZoom } = get()
+      event.preventDefault()
+      let targetZoom = zoom + (event.deltaY > 0 ? -1 : 1) * 0.01
+      targetZoom = Math.min(Math.max(0.1, targetZoom), 2)
+      setZoom(targetZoom)
+    }
     set({
       codeEditorRef
     })
@@ -117,7 +124,7 @@ const editorStore = create((set, get) => ({
     }
     // 关闭之前打开的页面 （非当前页面）
     if (currentOpenPageId) {
-      unmountWorkspace()
+      unmountWorkspace(true)
     }
 
     let pageObject = null
@@ -161,15 +168,15 @@ const editorStore = create((set, get) => ({
     }
   },
 
-  unmountWorkspace: () => {
+  unmountWorkspace: (cache) => {
     const { editorComposite, workspaceControl, openedFileContentMap, pageTransformMap, currentOpenPageId } = get()
 
-    if (editorComposite) {
+    if (cache) {
       // 缓存当前图纸
       openedFileContentMap.set(currentOpenPageId, editorComposite.exportPageJSON())
       pageTransformMap.set(currentOpenPageId, workspaceControl.getTransform())
-      editorComposite.unmount()
     }
+    editorComposite.unmount()
     workspaceControl.disable()
 
     set({
@@ -180,7 +187,7 @@ const editorStore = create((set, get) => ({
   // 关闭所有页面
   closeAllPages: async () => {
     const { openedFileContentMap, unmountWorkspace, pageTransformMap } = get()
-    unmountWorkspace()
+    unmountWorkspace(false)
     openedFileContentMap.clear()
     pageTransformMap.clear()
     set({
@@ -199,7 +206,7 @@ const editorStore = create((set, get) => ({
 
     // 关闭之前打开的页面 （非当前页面）
     if (currentOpenPageId) {
-      unmountWorkspace()
+      unmountWorkspace(true)
     }
 
     if (openedFileContentMap.get(id)) { // 之前打开过
@@ -225,13 +232,12 @@ const editorStore = create((set, get) => ({
     const leftOpenedPages = openedPages.filter(p => p.id !== id)
     openedFileContentMap.delete(id)
     if (currentOpenPageId === id) { // 关闭当前页
-      unmountWorkspace()
-      if (leftOpenedPages.length === 0) {
-        set({
-          currentOpenPageId: null
-        })
-      } else {
-        await openPage(leftOpenedPages[0].id)
+      unmountWorkspace(false)
+      set({
+        currentOpenPageId: null
+      })
+      if (leftOpenedPages.length > 0) {
+        await openPage(leftOpenedPages[0].id, openedFileContentMap.get(leftOpenedPages[0].id))
       }
     }
     set({
@@ -264,8 +270,12 @@ const editorStore = create((set, get) => ({
     await appService.updateFileContent(id, code)
   },
 
-  zoomChange: () => {
-
+  setZoom: (zoom) => {
+    const { workspaceControl } = get()
+    workspaceControl.setZoom(zoom)
+    set({
+      zoom
+    })
   }
 
 }))

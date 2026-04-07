@@ -34,7 +34,14 @@ class EditorComposite extends Composite {
     }
   }
 
-  createElement ({ path, meta }) {
+  createElement ({ config }) {
+    return new EditorElement({
+      config,
+      composite: this
+    })
+  }
+
+  createNewElement ({ path, meta, config }) {
     const div = document.createElement('div')
     // 从meta生成元素配置
     const elementConfig = {
@@ -142,58 +149,6 @@ class EditorComposite extends Composite {
 
   getStoreModules () {
     return this.storeModules || []
-  }
-
-  /**
-  * 从定义创建组件
-  * @param {Object} defination
-  * @returns
-  */
-  createNewElement (definition, { x, y, width, height }, props = {}) {
-    // 生成组件定义
-    const ewidth = width || definition.width || 100
-    const eheight = height || definition.height || 100
-
-    const nodes = this.getNodes()
-
-    let nameLoop = 1
-    let title = definition.title
-
-    while (nodes.find(n => n.config.title === title)) {
-      title = definition.title + '_' + nameLoop
-      nameLoop++
-    }
-
-    const elementConfig = {
-      title,
-      path: definition.componentPath,
-      id: nanoid(10),
-      style: {
-        position: 'absolute',
-        visible: true,
-        x: x ? (x - ewidth / 2) : 0,
-        y: y ? (y - eheight / 2) : 0,
-        width: ewidth,
-        height: eheight
-      },
-      styleEx: {},
-      props,
-      propEx: {},
-      events: {},
-      visible: true,
-      locked: false,
-      full: false
-    }
-
-    const element = new EditorElement({
-      config: cloneDeep(elementConfig),
-      componentDefinition: definition,
-      composite: this
-    })
-    element.parent = this
-    this.nodes[element.getId()] = element
-    element.initPropsOnCreate()
-    return element
   }
 
   /**

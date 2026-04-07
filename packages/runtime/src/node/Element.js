@@ -105,6 +105,8 @@ export default class Element extends BaseNode {
   // ========================================================================
   firstPaint (el) {
     if (el) this.el = el
+    if (this.firstPainted) return
+
     this.firstPainted = true
     this.setStatus('loading')
     this.el.ridgeNode = this
@@ -118,13 +120,14 @@ export default class Element extends BaseNode {
   // ========================================================================
   // 挂载：外壳同步，渲染异步
   // ========================================================================
-  async mount (el) {
-    if (!el) return
-    if (this.el && this.el !== el) {
+  mount (el) {
+    if (!el && !this.el) return
+    if (this.el && el && this.el !== el) {
       try { this.unmount() } catch (e) {}
     }
-
-    this.el = el
+    if (el) {
+      this.el = el
+    }
     this.el.ridgeNode = this
     this.firstPaint()
 
@@ -137,6 +140,8 @@ export default class Element extends BaseNode {
       this.preparePropsBeforeRender()
       this.createRenderer()
       this.mounted()
+      this.parent?.updateChildStyle(this)
+      this.styleUpdated && this.styleUpdated()
     })
   }
 
@@ -164,6 +169,34 @@ export default class Element extends BaseNode {
 
   hasMethod (methodName) {
     return this.renderer?.hasMethod(methodName) || false
+  }
+
+  /**
+   * 初始化(递归)所有可触达节点
+   */
+  initChildren () {
+    if (this.config.props.children && this.children == null) {
+      this.children = []
+      for (const id of this.config.props.children) {
+        const childNode = this.composite.getNode(id)
+        if (childNode) {
+          childNode.parent = this
+          this.children.push(childNode)
+          childNode.initChildren()
+        }
+      }
+    }
+
+    if (this.config.slots && this.config.slots.length) {
+      for (const id of this.config.slots) {
+        const childNode = this.composite.getNode(id)
+        if (childNode) {
+          childNode.parent = this
+          childNode.isSlot = true
+          childNode.initChildren()
+        }
+      }
+    }
   }
 
   // ========================================================================

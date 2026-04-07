@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-import { ImagePreview } from '@douyinfe/semi-ui'
+import { ImagePreview, Tabs, TabPane, Spin } from '@douyinfe/semi-ui'
 
 import ConfigPanel from './panels/config/ConfigPanel.jsx'
 import DialogCodeEdit from './panels/files/DialogCodeEdit.jsx'
@@ -15,7 +15,6 @@ import './editor.less'
 import './panels/common.less'
 import AppFileList from './panels/files/AppFileList.jsx'
 import AppListPanel from './panels/apps/AppListPanel.jsx'
-import ridgeEditorContext from './service/RidgeEditorContext.js'
 import LeftNav from './panels/left-nav/LeftNav.jsx'
 import PreviewPanel from './panels/preview/PreviewPanel.jsx'
 import ComponentRegistryPanel from './panels/component/ComponentRegistryPanel.jsx'
@@ -32,7 +31,6 @@ const Editor = () => {
 
   const [currentPanel, setCurrentPanel] = useState('app')
 
-  const isPreview = editorStore((state) => state.isPreview)
   const openedPages = editorStore((state) => state.openedPages)
   const imagePreviewVisible = editorStore((state) => state.imagePreviewVisible)
   const imagePreviewSrc = editorStore((state) => state.imagePreviewSrc)
@@ -40,16 +38,18 @@ const Editor = () => {
   const closeImagePreview = editorStore((state) => state.closeImagePreview)
   const initStore = editorStore((state) => state.initStore)
 
+  // 🔥 这里加入 isReady
   const currentAppName = appStore((state) => state.currentAppName)
-  const loadingAppFiles = appStore((state) => state.loadingAppFiles)
+  const isReady = appStore((state) => state.isReady) // 👈 新增
   const initAppStore = appStore((state) => state.initAppStore)
 
+  const appTab = isReady ? (currentAppName ? 'file-list' : 'app-list') : 'loading'
   const pageOpened = openedPages.length > 0
 
+  // 🔥 修复 async 直接写在 useEffect 里（错误写法）
   useEffect(async () => {
-    // 挂载时初始化
-    componentRegistry.init()
-    initAppStore()
+    await componentRegistry.init()
+    await initAppStore()
     initStore({
       workspaceRef,
       viewPortContainerRef,
@@ -59,108 +59,105 @@ const Editor = () => {
     workspaceControl.init({
       workspaceEl: workspaceRef.current,
       viewPortEl: viewPortContainerRef.current,
-      context: ridgeEditorContext,
       editorStore
     })
     setWorkspaceControl(workspaceControl)
-    // editorStore().setState({})
   }, [])
 
   const leftResizingRef = useRef(leftResizing)
-  // 2. 同步 state 到 ref（每次 leftResizing 变化时更新 ref）
   useEffect(() => {
     leftResizingRef.current = leftResizing
   }, [leftResizing])
 
   useEffect(() => {
-    // 执行事件绑定
-    document.addEventListener('mousemove', ev => {
+    const onMouseMove = (ev) => {
       if (leftResizingRef.current) {
         if (ev.clientX > 250) {
           setLeftReisizeWidth(ev.clientX - 50)
         }
       }
-    })
-    document.addEventListener('mouseup', ev => {
-      setLeftResizing(false)
-    })
+    }
+    const onMouseUp = () => setLeftResizing(false)
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
   }, [])
 
-  const LeftPanel = useMemo(() => {
-    return () => {
-      if (currentPanel === 'app') {
-        return currentAppName ? <AppFileList /> : <AppListPanel />
-      } else if (currentPanel === 'preview') {
-        return <PreviewPanel />
-      } else if (currentPanel === 'component') {
-        return <ComponentRegistryPanel />
-      }
-      return null
-    }
-  }, [currentPanel, currentAppName]) // 仅依赖变化时重新创建
-
   return (
-    <>
-      <div
-        className='editor-root' style={{
-          display: isPreview ? 'none' : ''
-        }}
-      >
-        <LeftNav onChange={val => {
-          setCurrentPanel(val)
-        }}
-        />
-        <div
-          style={{
-            width: leftReisizeWidth + 'px'
-          }}
+    <div
+      className='editor-root'
+    >
+      <LeftNav onChange={val => setCurrentPanel(val)} />
+
+      <div className='left-content' style={{ width: leftReisizeWidth + 'px' }}>
+        <Tabs
+          renderTabBar={null}
+          activeKey={currentPanel}
+          onChange={setCurrentPanel}
+          tabPosition='none' // 纵向标签
+          style={{ height: '100%' }}
         >
-          <LeftPanel />
-        </div>
-        <div
-          className='left-resizer'
-          style={{
-            width: collapseLeft ? '0' : '4px'
-          }}
-          onMouseDown={e => {
-            e.preventDefault()
-            setLeftResizing(true)
-          }}
-        />
-        <div className='editor-content'>
-          <EditMenuBar />
-          <div className='workspace-panel'>
-            <div ref={workspaceRef} className='workspace'>
-              <div className='view-port' ref={viewPortContainerRef} />
-              {
-                !pageOpened && <div className='no-open-file'><ReactComposite app='ridge-editor-app' path='Welcome' /></div>
-              }
-            </div>
-            {pageOpened && <ConfigPanel />}
-          </div>
-        </div>
-        <ImagePreview
-          src={imagePreviewSrc} visible={imagePreviewVisible} onVisibleChange={visible => {
-            if (!visible) {
-              closeImagePreview()
-            }
-          }}
-        />
-        <DialogCodeEdit
-          ref={codeEditorRef}
-        />
+          {/* 应用 → 文件列表 / 应用列表 自动切换 */}
+          <TabPane tab='应用' itemKey='app'>
+            <Tabs
+              activeKey={appTab}
+              style={{ height: '100%' }}
+            >
+              <TabPane tab='组件' itemKey='loading'>
+                <Spin spinning size='middle' tip='应用读取中' style={{ minHeight: '600px', height: '100%', width: '100%' }} />
+              </TabPane>
+              <TabPane tab='组件' itemKey='file-list'>
+                <AppFileList />
+              </TabPane>
+              <TabPane tab='应用' itemKey='app-list'>
+                <AppListPanel />
+              </TabPane>
+            </Tabs>
+          </TabPane>
+
+          {/* 组件库 */}
+          <TabPane tab='组件' itemKey='component'>
+            <ComponentRegistryPanel />
+          </TabPane>
+
+          {/* 预览 */}
+          <TabPane tab='预览' itemKey='preview'>
+            <PreviewPanel />
+          </TabPane>
+        </Tabs>
       </div>
 
       <div
-        className='preview-root' style={{
-          display: isPreview ? '' : 'none'
+        className='left-resizer'
+        style={{ width: collapseLeft ? '0' : '4px' }}
+        onMouseDown={e => {
+          e.preventDefault()
+          setLeftResizing(true)
         }}
-      >
-        <div className='preview-container'>
-          <div className='preview-view-port' />
+      />
+
+      <div className='editor-content'>
+        <EditMenuBar />
+        <div className='workspace-panel'>
+          <div ref={workspaceRef} className='workspace'>
+            <div className='view-port' isViewPort ref={viewPortContainerRef} />
+            {!pageOpened && <div className='no-open-file'><ReactComposite app='ridge-editor-app' path='Welcome' /></div>}
+          </div>
+          {pageOpened && <ConfigPanel />}
         </div>
       </div>
-    </>
+
+      <ImagePreview
+        src={imagePreviewSrc}
+        visible={imagePreviewVisible}
+        onVisibleChange={visible => !visible && closeImagePreview()}
+      />
+      <DialogCodeEdit ref={codeEditorRef} />
+    </div>
   )
 }
 
