@@ -135,7 +135,9 @@ export default class WorkSpaceControl {
   }
 
   setZoom (zoom) {
-    this.zoom = zoom
+    if (zoom) {
+      this.zoom = zoom
+    }
 
     if (this.moveable) {
       this.moveable.target = []
@@ -895,6 +897,7 @@ export default class WorkSpaceControl {
     }
     this.selectElements([])
     this.currentComposite = editorComposite
+    this.setZoom()
     return editorComposite
   }
 
@@ -939,13 +942,13 @@ export default class WorkSpaceControl {
       this.onPasteNodes()
     })
 
-    this.workspaceEl.onwheel = (event) => {
-      // if (!this.enabled) return
-      event.preventDefault()
-      let targetZoom = this.zoom + (event.deltaY > 0 ? -1 : 1) * 0.01
-      targetZoom = Math.min(Math.max(0.1, targetZoom), 2)
-      this.setZoom(targetZoom)
-    }
+    // this.workspaceEl.onwheel = (event) => {
+    //   // if (!this.enabled) return
+    //   event.preventDefault()
+    //   let targetZoom = this.zoom + (event.deltaY > 0 ? -1 : 1) * 0.01
+    //   targetZoom = Math.min(Math.max(0.1, targetZoom), 2)
+    //   this.setZoom(targetZoom)
+    // }
   }
 
   // 新增：移动选中元素的方法

@@ -36,6 +36,7 @@ const Editor = () => {
   const imagePreviewSrc = editorStore((state) => state.imagePreviewSrc)
   const setWorkspaceControl = editorStore((state) => state.setWorkspaceControl)
   const closeImagePreview = editorStore((state) => state.closeImagePreview)
+  const handleWheel = editorStore((state) => state.handleWheel)
   const initStore = editorStore((state) => state.initStore)
 
   // 🔥 这里加入 isReady
@@ -81,9 +82,11 @@ const Editor = () => {
 
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
+    document.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
+      document.removeEventListener('wheel', handleWheel)
     }
   }, [])
 

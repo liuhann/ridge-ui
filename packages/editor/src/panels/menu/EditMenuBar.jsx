@@ -12,7 +12,7 @@ const EditorMenuBar = () => {
   const saveCurrentPage = editorStore(state => state.saveCurrentPage)
 
   const zoom = editorStore(state => state.zoom)
-  const zoomChange = editorStore(state => state.zoomChange)
+  const setZoom = editorStore(state => state.setZoom)
   const closePage = editorStore(state => state.closePage)
   const switchPage = editorStore(state => state.switchPage)
 
@@ -55,8 +55,8 @@ const EditorMenuBar = () => {
           type='tertiary' icon={<i className='bi bi-floppy' />} theme='borderless' onClick={savePage}
         />
         <InputNumber
-          disabled={!currentOpenPageId} style={{ width: '96px', background: 'transparent' }} value={zoom} suffix='%' onChange={val => {
-            zoomChange(val)
+          disabled={!currentOpenPageId} style={{ width: '96px', background: 'transparent' }} value={Math.floor(zoom * 100)} suffix='%' onChange={val => {
+            setZoom(val / 100)
           }}
         />
         <Divider layout='vertical' />
@@ -79,7 +79,7 @@ const EditorMenuBar = () => {
             <Button icon={<HumbleiconsShare />}>导出</Button>
           </Popover> */}
 
-        <Tooltip content='预览页面'>
+        {/* <Tooltip content='预览页面'>
           <Button
             disabled={!currentOpenPageId}
             type='tertiary'
@@ -87,7 +87,7 @@ const EditorMenuBar = () => {
             icon={<i className='bi bi-play-fill' />} onClick={() => { context.toggleMode() }}
           >预览
           </Button>
-        </Tooltip>
+        </Tooltip> */}
       </Space>
     </div>
   )

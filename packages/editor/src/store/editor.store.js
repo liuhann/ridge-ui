@@ -7,7 +7,7 @@ const editorStore = create((set, get) => ({
   // 页面编辑状态
   isPreview: false,
   currentOpenPageId: null,
-  zoom: 100,
+  zoom: 1,
   openedPages: [],
   unsavedPages: [],
 
@@ -35,13 +35,6 @@ const editorStore = create((set, get) => ({
     viewPortContainerRef,
     codeEditorRef
   }) => {
-    document.body.onwheel = (event) => {
-      const { zoom, setZoom } = get()
-      event.preventDefault()
-      let targetZoom = zoom + (event.deltaY > 0 ? -1 : 1) * 0.01
-      targetZoom = Math.min(Math.max(0.1, targetZoom), 2)
-      setZoom(targetZoom)
-    }
     set({
       codeEditorRef
     })
@@ -276,8 +269,21 @@ const editorStore = create((set, get) => ({
     set({
       zoom
     })
-  }
+  },
 
+  handleWheel: (event) => {
+  // ✅ 彻底阻止浏览器默认行为：页面缩放 / 滚动
+    event.preventDefault()
+    event.stopPropagation()
+
+    const { zoom, setZoom } = get()
+
+    // 计算目标缩放值
+    let targetZoom = zoom + (event.deltaY > 0 ? -1 : 1) * 0.01
+    targetZoom = Math.min(Math.max(0.1, targetZoom), 2) // 限制 0.1 ~ 2
+
+    setZoom(targetZoom)
+  }
 }))
 
 export default editorStore
