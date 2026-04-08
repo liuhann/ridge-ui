@@ -23,8 +23,10 @@ const editorStore = create((set, get) => ({
     height: 0
   },
 
+  componentTreeData: [],
   // 非状态 作为服务
   editorComposite: null,
+
   openedFileContentMap: new Map(),
   pageTransformMap: new Map(),
   pageZoomMap: new Map(),
@@ -49,7 +51,8 @@ const editorStore = create((set, get) => ({
 
   selectElement: async element => {
     set({
-      currentEditNodeId: element.getId()
+      currentEditNodeId: element.getId(),
+      currentEditNodeRect: { ...element.config.style }
     })
   },
 
@@ -82,12 +85,12 @@ const editorStore = create((set, get) => ({
   },
 
   updateNodeRect: (rect) => {
-    const { currentOpenPageId, unsavedPages } = get()
+    const { currentOpenPageId, unsavedPages, currentEditNodeRect } = get()
     set({
       unsavedPages: [...unsavedPages, currentOpenPageId]
     })
     set({
-      currentEditNodeRect: { ...rect }
+      currentEditNodeRect: { ...currentEditNodeRect, ...rect }
     })
   },
 
@@ -289,7 +292,8 @@ const editorStore = create((set, get) => ({
   },
 
   handleWheel: (event) => {
-  // ✅ 彻底阻止浏览器默认行为：页面缩放 / 滚动
+    if (!event.ctrlKey) return
+    // ✅ 彻底阻止浏览器默认行为：页面缩放 / 滚动
     event.preventDefault()
     event.stopPropagation()
 

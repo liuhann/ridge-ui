@@ -331,6 +331,6 @@ class RidgeEditorContext {
   }
 }
 
-const ridgeEditorContext = new RidgeEditorContext({ baseUrl, loadPropControl: true })
+const ridgeEditorContext = new RidgeEditorContext({ baseUrl: '/npm', loadPropControl: true })
 
 export default ridgeEditorContext

@@ -2,11 +2,11 @@ import BaseContainer from '../BaseContainer'
 
 function getChildIndex (element) {
   if (!element || !element.parentNode) {
-    return -1 // 如果元素不存在或没有父元素，返回-1  
+    return -1 // 如果元素不存在或没有父元素，返回-1
   }
 
-  let children = Array.from(element.parentNode.children) // 将父元素的子节点转换为数组  
-  return children.indexOf(element) // 返回元素在数组中的索引  
+  const children = Array.from(element.parentNode.children) // 将父元素的子节点转换为数组
+  return children.indexOf(element) // 返回元素在数组中的索引
 }
 
 export default class RelativeContainer extends BaseContainer {

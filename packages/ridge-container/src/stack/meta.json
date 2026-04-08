@@ -1,0 +1,77 @@
+{
+  "name": "StackContainer",
+  "title": "堆叠容器",
+  "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Ik0xLjUgNy41aDIxVjZIMi41eiIgZmlsbD0iIzY2ZTFmZiIvPjxwYXRoIGQ9Ik0xLjUgMTJIMTJ2LTNIMi41eiIgZmlsbD0iIzZmYzVmZiIvPjxwYXRoIGQ9Ik0xLjUgMTcuNWgxNnYtM0gxLjV6IiBmaWxsPSIjODdkOGZmIi8+PHBhdGggZD0iTTIyLjUgMTIuNWgtN3YzaDd6IiBmaWxsPSIjYmNlNWZmIi8+PHBhdGggZD0iTTIyLjUgMTcuNWgtN3YzaDd6IiBmaWxsPSIjZTRmMWY1Ii8+PHJlY3QgeD0iMS41IiB5PSIxLjUiIHdpZHRoPSIyMSIgaGVpZ2h0PSI0LjUiIHJ4PSIyIiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxOTE5MTkiLz48L3N2Zz4=",
+  "description": "用于将多个组件层叠堆放在一起显示，实现主要内容之外的背景、前景、修饰等",
+  "tags": [
+    "容器",
+    "前景",
+    "背景",
+    "修饰"
+  ],
+  "category": "容器",
+  "version": "1.0.0",
+  "author": "LiuHan",
+  "visualConfig": {
+    "thumbnail": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Ik0xLjUgNy41aDIxVjZIMi41eiIgZmlsbD0iIzY2ZTFmZiIvPjxwYXRoIGQ9Ik0xLjUgMTJIMTJ2LTNIMi41eiIgZmlsbD0iIzZmYzVmZiIvPjxwYXRoIGQ9Ik0xLjUgMTcuNWgxNnYtM0gxLjV6IiBmaWxsPSIjODdkOGZmIi8+PHBhdGggZD0iTTIyLjUgMTIuNWgtN3YzaDd6IiBmaWxsPSIjYmNlNWZmIi8+PHBhdGggZD0iTTIyLjUgMTcuNWgtN3YzaDd6IiBmaWxsPSIjZTRmMWY1Ii8+PHJlY3QgeD0iMS41IiB5PSIxLjUiIHdpZHRoPSIyMSIgaGVpZ2h0PSI0LjUiIHJ4PSIyIiBmaWxsPSIjZmZmIiBzdHJva2U9IiMxOTE5MTkiLz48L3N2Zz4=",
+    "preferredWidth": 360,
+    "preferredHeight": 240,
+    "resizable": true,
+    "aspectRatio": "no"
+  },
+  "properties": [
+    {
+      "name": "children",
+      "description": "容器内的子组件",
+      "label": "子项",
+      "control": "children",
+      "type": "children",
+      "hidden": true
+    },
+    {
+      "name": "classList",
+      "description": "为容器添加自定义CSS类名",
+      "label": "自定义类名",
+      "control": "classList",
+      "type": "array"
+    }
+  ],
+  "events": [
+    {
+      "name": "onMouseEnter",
+      "description": "鼠标进入容器时触发",
+      "label": "鼠标进入"
+    },
+    {
+      "name": "onMouseLeave",
+      "description": "鼠标离开容器时触发",
+      "label": "鼠标离开"
+    }
+  ],
+  "childStyles": [
+    {
+      "name": "showOnHover",
+      "description": "是否只在悬停时显示（需要容器启用hoverable）",
+      "label": "悬停显示",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "visible",
+      "description": "子项是否可见",
+      "label": "可见性",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "zIndex",
+      "description": "子项的堆叠层级，数值越大显示越靠前",
+      "label": "堆叠层级",
+      "control": "number",
+      "type": "number",
+      "defaultValue": 0
+    }
+  ]
+}

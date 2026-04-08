@@ -160,7 +160,7 @@ const ConfigPanel = () => {
   const updatePageConfig = editorStore(state => state.updatePageConfig)
   const currentEditNodeRect = editorStore(state => state.currentEditNodeRect)
 
-  const updateElementFields = useCallback(async (nodeId) => {
+  const updateElementFields = async (nodeId) => {
     if (!nodeId || !editorComposite) return
 
     const element = editorComposite.getNode(nodeId)
@@ -276,7 +276,19 @@ const ConfigPanel = () => {
     } finally {
       setLoadingDefinitions(false)
     }
-  }, [editorComposite])
+  }
+
+  useEffect(() => {
+    if (currentEditNodeId) {
+      const element = editorComposite.getNode(currentEditNodeId)
+      for (const key of ['title', 'props', 'propEx', 'style', 'styleEx', 'id', 'visible', 'full']) {
+        componentPropFormApi.current?.setValue(key, element.config[key], {
+          notNotify: true
+        })
+      }
+    }
+  }, [nodePropFields])
+
   const updatePageFields = () => {
     setPagePropFields([...PAGE_FIELDS, ...getCompositePropertiesDef(editorComposite)])
     setPageEventFields([...PAGE_EVNETS, ...getCompositeEventsDef(editorComposite)])

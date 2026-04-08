@@ -279,7 +279,7 @@ export default forwardRef((props, pref) => {
             class='bi bi-download' onClick={async () => {
               downloadTextAsFile(currentEditText, tabs.find(tab => tab.id === currentTab).name)
             }}
-        />}
+                                                        />}
         />
         <Button
           type='tertiary' icon={<i className='bi bi-x-lg' />} onClick={() => {
@@ -323,7 +323,13 @@ export default forwardRef((props, pref) => {
             <TabPane closable tab={renderTab(tab)} itemKey={tab.id} key={tab.id} />
           ))}
         </Tabs>
-        {!loading && currentEditText != null && <CodeMirror value={currentEditText} basicSetup extensions={extensionsRef.current} onChange={onCodeChange} />}
+        <div style={{
+          height: 'calc(100% - 40px)',
+          overflow: 'auto'
+        }}
+        >
+          {!loading && currentEditText != null && <CodeMirror value={currentEditText} basicSetup extensions={extensionsRef.current} onChange={onCodeChange} />}
+        </div>
         <div
           style={{
             visibility: hasOpenFile ? 'hidden' : 'visible'

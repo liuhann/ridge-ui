@@ -1,4 +1,4 @@
-import FixedContainer from './FixedContainer.js'
+import FixedContainer from './GroupContainer.js'
 import { classList, number, slot } from 'ridge-build/src/props.js'
 export default {
   name: 'fixed-container',

@@ -486,8 +486,8 @@ export default class WorkSpaceControl {
   }
 
   initComponentDrop () {
-    this.workspaceEl.addEventListener('dragover', this.onWorkspaceDragOver.bind(this))
-    this.workspaceEl.addEventListener('drop', this.onWorkspaceDrop.bind(this))
+    this.getWorkspaceEl().addEventListener('dragover', this.onWorkspaceDragOver.bind(this))
+    this.getWorkspaceEl().addEventListener('drop', this.onWorkspaceDrop.bind(this))
   }
 
   onWorkspaceDragOver (ev) {
@@ -644,19 +644,25 @@ export default class WorkSpaceControl {
     const bcr = el.getBoundingClientRect()
     if (x == null || y == null || (x > bcr.x && x < (bcr.x + bcr.width) && y > bcr.y && y < (bcr.y + bcr.height))) {
       // 计算位置
+      const updatedXY = {
+        x: Math.floor((bcr.x - rbcr.x) / this.zoom),
+        y: Math.floor((bcr.y - rbcr.y) / this.zoom)
+      }
+      this.editorStore.getState().updateNodeRect(updatedXY)
+
       el.ridgeNode.updateConfig({
-        style: {
-          x: Math.floor((bcr.x - rbcr.x) / this.zoom),
-          y: Math.floor((bcr.y - rbcr.y) / this.zoom)
-        }
+        style: updatedXY
       })
     } else {
       // 计算位置
+      const updatedXY = {
+        x: Math.floor((x - rbcr.x - bcr.width / 2) / this.zoom),
+        y: Math.floor((y - rbcr.y - bcr.height / 2) / this.zoom)
+      }
+      this.editorStore.getState().updateNodeRect(updatedXY)
+
       el.ridgeNode.updateConfig({
-        style: {
-          x: Math.floor((x - rbcr.x - bcr.width / 2) / this.zoom),
-          y: Math.floor((y - rbcr.y - bcr.height / 2) / this.zoom)
-        }
+        style: updatedXY
       })
     }
     this.moveable.updateTarget()

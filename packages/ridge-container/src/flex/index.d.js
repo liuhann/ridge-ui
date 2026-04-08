@@ -3,7 +3,7 @@ import { boolean, classList, color, json, number, onClick, radiogroup } from 'ri
 export default {
   name: 'FlexContainer',
   title: '弹性容器',
-  description: `适合多个内容进行垂直或水平形式按固定或比例方式排列。通过弹性容器嵌套使用能实现很多复杂的功能，因为"弹性"的性质，弹性容器也可以满足"自适应"的布局诉求`,
+  description: '适合多个内容进行垂直或水平形式按固定或比例方式排列。通过弹性容器嵌套使用能实现很多复杂的功能，因为"弹性"的性质，弹性容器也可以满足"自适应"的布局诉求',
   icon: 'icons/flex.svg',
   props: [
     radiogroup('direction', '排列方向', [{
