@@ -826,13 +826,13 @@ export default class WorkSpaceControl {
     } else if (filtered.length > 1) {
     // 4. 修复：嵌套容器 → 取 最内层 + 最高层级
       const sorted = filtered.sort((a, b) => {
-        if (a.contains(b)) return -1 // a 包含 b → b 更内层，排前面
-        if (b.contains(a)) return 1 // b 包含 a → a 更内层，排前面
-
-        // 5. 修复：取真实计算样式 zIndex
-        const za = Number(getComputedStyle(a).zIndex) || 0
-        const zb = Number(getComputedStyle(b).zIndex) || 0
-        return zb - za
+        if (a.contains(b)) {
+          return 1 // a 包含 b → b 更内层，排前面
+        } else {
+          return -1
+        }
+        // if (b.contains(a)) return 1 // b 包含 a → a 更内层，排前面
+        // return 1
       })
       target = sorted[0]
     }

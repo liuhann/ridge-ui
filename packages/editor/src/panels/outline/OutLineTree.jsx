@@ -15,16 +15,11 @@ const OutlineTree = () => {
   const editorComposite = useEditorStore((state) => state.editorComposite)
   const currentEditNodeId = useEditorStore((state) => state.currentEditNodeId)
 
+  useEffect(() => {
+    setExpandedKeys([...expandedKeys, currentEditNodeId])
+  }, [currentEditNodeId])
   // 本地状态
   const [expandedKeys, setExpandedKeys] = useState([])
-
-  // 初始化时设置回调
-  useEffect(() => {
-    // 如果有需要，可以在这里设置一些全局回调
-    return () => {
-      // 清理
-    }
-  }, [])
 
   // 查找树节点
   const findNode = useCallback((treeData, key) => {
@@ -82,22 +77,34 @@ const OutlineTree = () => {
   }
 
   // 切换锁定
-  const toggleLock = useCallback((data) => {
+  const toggleLock = (data) => {
     const view = data.element
     if (view) {
-      view.setLocked?.(!view.config.locked)
-      workspaceControl?.selectElements?.([view.el])
+      const locked = view.getLocked()
+      view.setLocked(!locked)
+      updateTreeData() // 更新大纲
+      if (view.getLocked()) {
+        workspaceControl?.selectElements?.([])
+      } else {
+        workspaceControl?.selectElements?.([view.el])
+      }
     }
-  }, [workspaceControl])
+  }
 
   // 切换可见
-  const toggleVisible = useCallback((data) => {
+  const toggleVisible = (data) => {
     const view = data.element
     if (view) {
-      view.setVisible?.(!view.config.visible)
+      const hidden = view.getHidden()
+      view.setHidden(!hidden)
       updateTreeData() // 更新大纲
+      if (view.getHidden()) {
+        workspaceControl?.selectElements?.([])
+      } else {
+        workspaceControl?.selectElements?.([view.el])
+      }
     }
-  }, [updateTreeData])
+  }
 
   // 渲染标签
   const renderFullLabel = useCallback((label, data) => {
@@ -145,7 +152,7 @@ const OutlineTree = () => {
             )}
       </div>
     )
-  }, [toggleLock, toggleVisible])
+  })
 
   // 拖拽排序
   const ordering = useCallback((siblingNodes, dragNode, node, beforeOrAfter) => {
@@ -241,6 +248,7 @@ const OutlineTree = () => {
     <Tree
       className='outline-tree'
       autoExpandWhenDragEnter
+      autoExpandParent
       showFilteredOnly
       filterTreeNode
       draggable

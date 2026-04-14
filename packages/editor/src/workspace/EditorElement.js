@@ -56,22 +56,18 @@ export default class EditorElement extends Element {
     if (!this.el) return
 
     this.el.classList.add('ridge-editor-element')
-    if (this.config.locked) {
+    if (this.getLocked()) {
       this.el.classList.add('ridge-is-locked')
     } else {
       this.el.classList.remove('ridge-is-locked')
     }
 
-    if (this.config.visible) {
-      this.el.classList.remove('ridge-is-hidden')
-    } else {
+    if (this.getHidden()) {
       this.el.classList.add('ridge-is-hidden')
+    } else {
+      this.el.classList.remove('ridge-is-hidden')
     }
     if (this.isContainer()) this.el.classList.add('ridge-container')
-    this.el.classList.toggle('ridge-is-slot', !!this.isSlot)
-    if (this.config.locked || !this.config.visible) {
-      // context.workspaceControl?.selectElements([])
-    }
   }
 
   isContainer () {
@@ -229,6 +225,7 @@ export default class EditorElement extends Element {
       this.config.editor = {}
     }
     this.config.editor.locked = locked
+    this.styleUpdated()
   }
 
   getHidden () {
@@ -240,6 +237,7 @@ export default class EditorElement extends Element {
       this.config.editor = {}
     }
     this.config.editor.hidden = hidden
+    this.styleUpdated()
   }
 
   // ========================================================================

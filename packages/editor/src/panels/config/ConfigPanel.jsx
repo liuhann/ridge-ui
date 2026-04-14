@@ -159,6 +159,7 @@ const ConfigPanel = () => {
   const updateElementConfig = editorStore(state => state.updateElementConfig)
   const updatePageConfig = editorStore(state => state.updatePageConfig)
   const currentEditNodeRect = editorStore(state => state.currentEditNodeRect)
+  const updateTreeData = editorStore(state => state.updateTreeData)
 
   const updateElementFields = async (nodeId) => {
     if (!nodeId || !editorComposite) return
@@ -338,9 +339,11 @@ const ConfigPanel = () => {
 
   // 组件属性表单项修改  组件样式和属性变动
   const componentPropValueChange = (values, field) => {
-    console.log('currentEditNodeId', currentEditNodeId, values, field)
     if (currentEditNodeId === values.id) {
       updateElementConfig(values, field)
+    }
+    if (field.title) {
+      updateTreeData()
     }
   }
 

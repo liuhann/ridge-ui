@@ -193,7 +193,7 @@
     {
       "name": "visible",
       "description": "子项是否可见",
-      "label": "占位",
+      "label": "显示",
       "control": "boolean",
       "type": "boolean"
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './app-list.less'
-import { Button, Modal, Typography, Empty } from '@douyinfe/semi-ui'
+import { Button, Modal, Typography, Empty, Space } from '@douyinfe/semi-ui'
 import CreateAppDialog from './CreateAppDialog.jsx'
 import appStore from '../../store/app.store.js'
 import selectZipFile from '../../utils/selectFileUpload.js'
@@ -33,15 +33,21 @@ const AppListPanel = () => {
   }
 
   return (
-    <div className='app-list-panel'>
+    <div className='app-list-panel left-panel'>
       {/* 顶部标题 + 操作 */}
-      <div className='panel-header'>
-        <div className='header-left'>
-          <Title heading={5} className='panel-title'>应用管理</Title>
-          <Text type='tertiary' className='panel-desc'>
-            管理、创建、编辑你的所有应用
+      <div
+        className='panel-title'
+      >
+        <Space align='center'>
+          <Text
+            strong style={{
+              fontSize: '16px',
+              color: 'var(--semi-color-text-0)'
+            }}
+          >
+            应用管理
           </Text>
-        </div>
+        </Space>
         <Button
           theme='solid'
           type='primary'
@@ -50,6 +56,10 @@ const AppListPanel = () => {
           + 新增应用
         </Button>
       </div>
+
+      <Text type='tertiary' className='panel-desc'>
+        管理、创建、编辑你的所有应用
+      </Text>
 
       {/* 创建弹窗 */}
       <CreateAppDialog

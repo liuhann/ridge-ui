@@ -19,7 +19,8 @@ export function isElementMovable (element) {
 export function isElementSelectable (element) {
   if (!element || !element.classList) return false
   return !element.classList.contains('ridge-is-hidden') &&
-         !element.classList.contains('ridge-is-locked')
+         !element.classList.contains('ridge-is-locked') &&
+         !element.closest('.ridge-is-hidden')
 }
 
 // 检查元素是否可调整大小
