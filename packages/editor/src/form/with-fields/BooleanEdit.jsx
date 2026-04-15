@@ -1,5 +1,5 @@
 import React from 'react'
-import { Checkbox, Button, withField } from '@douyinfe/semi-ui'
+import { Checkbox, Button, withField, Tooltip } from '@douyinfe/semi-ui'
 
 const BooleanEdit = ({
   value,
@@ -8,15 +8,17 @@ const BooleanEdit = ({
 }) => {
   if (options.icon) {
     return (
-      <Button
-        icon={<i style={{ fontSize: 16 }} className={options.icon} />}
-        size='small'
-        type={value ? 'primary' : 'tertiary'}
-        theme={value ? 'solid' : 'borderless'}
-        onClick={() => {
-          onChange(!value)
-        }}
-      />
+      <Tooltip content={options.prompt}>
+        <Button
+          icon={options.icon}
+          size='small'
+          type={value ? 'primary' : 'tertiary'}
+          theme={value ? 'solid' : 'borderless'}
+          onClick={() => {
+            onChange(!value)
+          }}
+        />
+      </Tooltip>
     )
   } else if (options.toggle) {
     return <></>

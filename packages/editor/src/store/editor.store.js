@@ -133,6 +133,7 @@ const editorStore = create((set, get) => ({
     if (currentOpenPageId) {
       unmountWorkspace(true)
     }
+    const pageName = page.name.replace(/\.json$/, '')
 
     let pageObject = null
 
@@ -141,6 +142,7 @@ const editorStore = create((set, get) => ({
     } else if (page) {
       pageObject = cloneDeep(page.json)
     }
+    pageObject.name = pageName
 
     const editorComposite = await workspaceControl.loadPage(pageObject, page.path, appService)
 
@@ -164,7 +166,7 @@ const editorStore = create((set, get) => ({
         ? openedPages
         : [...openedPages, {
             id: page.id,
-            name: page.name
+            name: pageName
           }],
       editorComposite
     })

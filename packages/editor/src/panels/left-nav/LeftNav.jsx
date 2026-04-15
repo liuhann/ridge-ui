@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import NavBar from '../../components/NavBar/NavBar.jsx'
-
+import { ICON_NAV_COMPONENTS, ICON_NAV_FOLDERS, ICON_NAV_RUN, ICON_COMMON_GEAR } from '../../icons/icons.js'
 const LeftNav = ({
   onChange
 }) => {
@@ -14,16 +14,16 @@ const LeftNav = ({
       active={active}
       navs={[{
         name: 'app',
-        icon: <i className='bi bi-folder2' />
+        icon: ICON_NAV_FOLDERS
       }, {
         name: 'component',
-        icon: <i className='bi bi-grid-1x2' />
+        icon: ICON_NAV_COMPONENTS
       }, {
         name: 'preview',
-        icon: <i class='bi bi-caret-right-square' />
+        icon: ICON_NAV_RUN
       }]}
       bottoms={[{
-        icon: <i className='bi bi-gear' />
+        icon: ICON_COMMON_GEAR
       }]}
     />
   )

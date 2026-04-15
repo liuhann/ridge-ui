@@ -6,6 +6,8 @@ import debug from 'debug'
 import editorStore from '../../store/editor.store.js'
 import componentRegistry from '../../service/ComponentRegistry.js'
 import { getCompositePropertiesDef, getCompositeEventsDef } from '../../workspace/editorUtils.js'
+
+import { ICON_RULER } from '../../icons/icons.js'
 const trace = debug('editor:config-panel')
 
 const COMPONENT_BASIC_FIELDS = [{
@@ -88,8 +90,8 @@ const PAGE_FIELDS = [
     width: '24px',
     type: 'boolean',
     control: 'boolean',
-    prompt: '固定宽度',
-    icon: 'bi bi-bounding-box',
+    prompt: '选中后页面将以此固定宽度呈现',
+    icon: ICON_RULER,
     field: 'style.widthFix'
   }, {
     label: '高度',
@@ -100,12 +102,12 @@ const PAGE_FIELDS = [
     width: '24px',
     type: 'boolean',
     control: 'boolean',
-    prompt: '固定高度',
-    icon: 'bi bi-bounding-box',
+    prompt: '选中后页面将以此固定高度呈现',
+    icon: ICON_RULER,
     field: 'style.heightFix'
   }, {
     field: 'jsFiles',
-    label: '脚本库',
+    label: '页面状态库',
     type: 'file',
     multiple: true,
     fileType: 'javascript',

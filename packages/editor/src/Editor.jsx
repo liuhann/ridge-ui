@@ -152,9 +152,12 @@ const Editor = () => {
         <ResizeHandler style={{
           width: 4,
           background: 'var(--semi-color-bg-0)',
+          borderRight: '1px solid var(--semi-color-border)',
           zIndex: 99
         }}
-        />
+        >
+          <div />
+        </ResizeHandler>
 
         {/* 右侧编辑区域 */}
         <ResizeItem

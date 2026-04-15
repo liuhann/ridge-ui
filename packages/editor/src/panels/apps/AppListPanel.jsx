@@ -5,6 +5,8 @@ import CreateAppDialog from './CreateAppDialog.jsx'
 import appStore from '../../store/app.store.js'
 import selectZipFile from '../../utils/selectFileUpload.js'
 
+import { ICON_COMMON_PLUS } from '../../icons/icons.js'
+
 const { Text, Title } = Typography
 
 const AppListPanel = () => {
@@ -49,11 +51,11 @@ const AppListPanel = () => {
           </Text>
         </Space>
         <Button
-          theme='solid'
-          type='primary'
+          theme='borderless' type='tertiary'
+          icon={ICON_COMMON_PLUS}
           onClick={() => setCreateDialogVisible(true)}
         >
-          + 新增应用
+          新增应用
         </Button>
       </div>
 

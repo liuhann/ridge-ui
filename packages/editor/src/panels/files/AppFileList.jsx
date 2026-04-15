@@ -5,14 +5,14 @@ import {
   ResizeItem,
   ResizeHandler
 } from '@douyinfe/semi-ui'
-import { mapTree } from './buildFileTree.js'
 import DialogCreate from './DialogCreate.jsx'
 import './file-list.less'
 
 import OutlineTree from '../outline/OutLineTree.jsx'
 import appStore from '../../store/app.store.js'
 import editorStore from '../../store/editor.store.js'
-import { EP_BACK, FILE_COMPOSITE, FILE_FOLDER, FILE_IMAGE, FILE_JS, FILE_JSON, FILE_MARKDOWN, FILE_PAGE } from '../../icons/icons.js'
+import { EP_BACK, ICON_COMMON_PLUS } from '../../icons/icons.js'
+import { getAppTreeData } from './utils.js'
 const { Text } = Typography
 
 const ACCEPT_FILES = '.svg,.png,.jpg,.json,.css,.js,.md,.webp,.zip,.gif'
@@ -40,77 +40,8 @@ const AppFileList = () => {
   const closeAllPages = editorStore(state => state.closeAllPages)
 
   useEffect(() => {
-    setTreeData(getAppTreeData(currentAppFilesTree))
+    setTreeData(getAppTreeData(currentAppFilesTree, currentAppName))
   }, [currentAppFilesTree])
-
-  const getAppTreeData = (treeData) => {
-  // SVG 图标集合 —— 专业、简洁、统一
-    const ICONS = {
-      folder: FILE_FOLDER,
-      page: FILE_PAGE,
-      js: FILE_JS,
-      json: FILE_JSON,
-      image: FILE_IMAGE,
-      font: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#10B981' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M4 3l4 18h8l4-18' /><path d='M12 3v18' /></svg>,
-      audio: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#06B6D4' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M9 18V5l12-2v13' /><circle cx='6' cy='18' r='3' /><circle cx='18' cy='16' r='3' /></svg>,
-      file: <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#64748B' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'><path d='M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z' /><polyline points='13,2 13,9 20,9' /></svg>,
-      md: FILE_MARKDOWN
-    }
-
-    const fileTree = mapTree(treeData, file => {
-    // 默认文件图标
-      file.icon = ICONS.file
-
-      if (file.mimeType) {
-        if (file.mimeType === 'application/font-woff') {
-          file.icon = ICONS.font
-        } else if (file.mimeType.indexOf('audio') > -1) {
-          file.icon = ICONS.audio
-        } else if (file.mimeType.indexOf('image') > -1) {
-          file.icon = ICONS.image
-        }
-      }
-
-      file.label = file.name
-      if (file.label.endsWith('.md')) {
-        file.icon = ICONS.md
-      }
-      if (file.label.endsWith('.js')) {
-        file.icon = ICONS.js
-      }
-      if (file.label.endsWith('.json')) {
-        file.icon = ICONS.json
-      }
-      // 根据文件类型设置图标
-      if (file.type === 'directory') {
-        file.icon = ICONS.folder
-      }
-      // page 类型不显示 .json 后缀
-      if (file.type === 'page' && file.name.endsWith('.json')) {
-        file.label = file.name.replace(/\.json$/, '')
-        file.icon = ICONS.page
-      } else {
-        file.label = file.name
-      }
-
-      return {
-        raw: file,
-        icon: file.icon,
-        label: file.label,
-        id: file.id,
-        key: file.id
-      }
-    })
-
-    return [{
-      id: -1,
-      key: -1,
-      label: currentAppName,
-      icon: ICONS.folder,
-      raw: { path: '/', id: -1 },
-      children: fileTree
-    }]
-  }
 
   const showCreateDialog = (fileType) => {
     setDialogCreateFileType(fileType)
@@ -321,7 +252,7 @@ const AppFileList = () => {
             >
               <i className='more-button bi bi-three-dots-vertical' />
             </Dropdown>
-          </>}
+            </>}
         {/* <Text
           onClick={() => {
             const now = new Date().getTime()
@@ -353,27 +284,10 @@ const AppFileList = () => {
           }
       >
         <Button
-          colorful theme='outline' type='primary' icon={<i className='bi bi-plus-lg' />}
+          theme='borderless' type='primary' icon={ICON_COMMON_PLUS}
         >创建
         </Button>
       </Dropdown>
-    // <Space>
-    //   <Upload
-    //     action='none'
-    //     multiple showUploadList={false} uploadTrigger='custom' onFileChange={files => {
-    //       onFileUpload(files)
-    //     }} accept={ACCEPT_FILES}
-    //   >
-    //     <Button
-    //       style={{
-    //         marginLeft: '12px',
-    //         marginTop: '6px'
-    //       }}
-    //     >
-    //       上传文件
-    //     </Button>
-    //   </Upload>
-    // </Space>
     )
   }
 
@@ -421,7 +335,7 @@ const AppFileList = () => {
         <Space align='center'>
           <Button
             icon={EP_BACK}
-            theme='borderless'
+            theme='borderless' type='tertiary'
             onClick={confirmExitToAppList}
             className='back-button'
           />

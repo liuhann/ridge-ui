@@ -1,8 +1,11 @@
-import { withField, TreeSelect, Tree, TagInput, Popover, Icon, Tag } from '@douyinfe/semi-ui'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
+import { withField, TreeSelect, Tree, TagInput, Popover, Icon, Tag } from '@douyinfe/semi-ui'
+
+import { getAppTreeData } from '../../panels/files/utils.js'
 import appStore from '../../store/app.store.js'
 import editorStore from '../../store/editor.store'
+import { filterTree } from '../../panels/files/buildFileTree.js'
 
 // 资源文件地址选择, 支持从应用内和外部同时选择、单个或者多个。
 // 选择应用文件后会返回 composite:// 开头的路径
@@ -13,11 +16,19 @@ const AppFileSelectEdit = ({
   options
 }) => {
   const [visible, setVisible] = useState(false)
+  const [treeData, setTreeData] = useState([])
 
   const currentAppFilesTree = appStore(state => state.currentAppFilesTree)
+  const currentAppName = appStore((state) => state.currentAppName)
   const openFile = editorStore(state => state.openFile)
 
-  const treeData = currentAppFilesTree
+  useEffect(() => {
+    const filtered = filterTree(currentAppFilesTree, file => {
+      return file.mimeType && file.mimeType.indexOf(options.fileType) > -1
+    })
+    setTreeData(getAppTreeData(filtered, currentAppName))
+  }, [currentAppFilesTree])
+  console.log('treeData', treeData)
 
   // 选择文件后，将 composite:// 开头的路径返回给上层
   const changeWithComposite = val => {
@@ -82,7 +93,6 @@ const AppFileSelectEdit = ({
       position='leftTop'
       content={
         <Tree
-          leafOnly
           searchAutoFocus
           multiple={options.multiple}
           style={{ width: 320, height: 400 }}

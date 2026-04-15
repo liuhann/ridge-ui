@@ -137,9 +137,7 @@ const ComponentRegistryPanel = () => {
             theme='borderless'
             onClick={handleBackToLibs}
             className='back-button'
-          >
-            返回
-          </Button>
+          />
           <div className='lib-info'>
             <h2 className='lib-name'>{getDisplayName(currentLib)}</h2>
             {currentLib.version && (

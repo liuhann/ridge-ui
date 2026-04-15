@@ -16,6 +16,10 @@ const NavBar = ({
         {navs && navs.map((n, index) => {
           return (
             <Button
+              style={{
+                fontSize: '24px',
+                padding: '18px 6px'
+              }}
               onClick={() => {
                 onChange && onChange(n, index)
               }} theme={active === index ? 'solid' : 'borderless'} type={active === index ? 'primary' : 'tertiary'} key={index} size={size} icon={n.icon} iconSize={iconSize || size}
@@ -24,7 +28,14 @@ const NavBar = ({
         })}
       </div>
       {bottoms && bottoms.map((n, index) => {
-        return <Button theme='borderless' type='tertiary' key={index} size={size} icon={n.icon} iconSize={iconSize || size} />
+        return (
+          <Button
+            style={{
+              fontSize: '24px',
+              padding: '18px 6px'
+            }} theme='borderless' type='tertiary' key={index} size={size} icon={n.icon} iconSize={iconSize || size}
+          />
+        )
       })}
     </div>
   )
