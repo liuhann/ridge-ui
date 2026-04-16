@@ -50,9 +50,9 @@ const OutlineTree = () => {
           treeNode = null
         }
       }
-
       setExpandedKeys(prev => Array.from(new Set([...keys, ...prev])))
     } else {
+
     }
   }, [componentTreeData, findNode])
 
@@ -60,7 +60,7 @@ const OutlineTree = () => {
   const onNodeSelected = (val, treeNode) => {
     const node = editorComposite.getNode(val)
     if (node && node.el) {
-      workspaceControl.selectElements([node.el])
+      workspaceControl.selectElements([node.el], true)
     }
     // const node = getNode(val)
     // if (node) {

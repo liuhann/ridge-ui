@@ -1,0 +1,98 @@
+{
+  "name": "ListContainer",
+  "title": "列表容器",
+  "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxnIGZpbGw9Im5vbmUiPjxwYXRoIGZpbGw9InVybCgjSWNvbmlmeUlkMTlkOTU3N2E3MTk0YzZmYTc2KSIgZD0iTTggMjFoMTFhMiAyIDAgMCAwIDItMnYtMWEyIDIgMCAwIDAtMi0ySDhsLS41IDIuNXptMC02LjVoMTFhMiAyIDAgMCAwIDItMnYtMWEyIDIgMCAwIDAtMi0ySDhMNy41IDEyek04IDhoMTFhMiAyIDAgMCAwIDItMlY1YTIgMiAwIDAgMC0yLTJIOGwtLjUgMi41eiIvPjxwYXRoIGZpbGw9InVybCgjSWNvbmlmeUlkMTlkOTU3N2E3MTk0YzZmYTc3KSIgZD0iTTggOS41djVINWEyIDIgMCAwIDEtMi0ydi0xYTIgMiAwIDAgMSAyLTJ6TTggM3Y1SDVhMiAyIDAgMCAxLTItMlY1YTIgMiAwIDAgMSAyLTJ6bTAgMTN2NUg1YTIgMiAwIDAgMS0yLTJ2LTFhMiAyIDAgMCAxIDItMnoiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9Ikljb25pZnlJZDE5ZDk1NzdhNzE5NGM2ZmE3NiIgeDE9IjUuNDc1IiB4Mj0iMjAuOTM5IiB5MT0iLjQyOSIgeTI9IjE5Ljk4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzM2ZGZmMSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwOTRmMCIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJJY29uaWZ5SWQxOWQ5NTc3YTcxOTRjNmZhNzciIHgxPSI0LjE4OSIgeDI9IjExLjc0NyIgeTE9IjUuMzkzIiB5Mj0iOC43NDUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9Ii4xMjUiIHN0b3AtY29sb3I9IiM5YzZjZmUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3YTQxZGMiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48L2c+PC9zdmc+",
+  "description": "网格布局列表容器，支持配置列数、内边距、间距，运行期自动计算子项尺寸，编辑器可固定子项宽高，支持滚动与子项选中、拖拽排序",
+  "tags": [
+    "容器",
+    "列表",
+    "网格布局",
+    "滚动"
+  ],
+  "category": "容器",
+  "version": "1.0.0",
+  "author": "",
+  "visualConfig": {
+    "thumbnail": "base64缩略图",
+    "preferredWidth": 375,
+    "preferredHeight": 600,
+    "resizable": true,
+    "aspectRatio": "no"
+  },
+  "properties": [
+    {
+      "name": "dataSource",
+      "description": "列表的数据，列表的显示数量和内容取决于此项数据的实际取值",
+      "label": "列表数据",
+      "control": "json",
+      "type": "object"
+    },
+    {
+      "name": "columns",
+      "description": "网格布局列数",
+      "label": "列数",
+      "control": "number",
+      "type": "number",
+      "min": 1,
+      "defaultValue": 1
+    },
+    {
+      "name": "padding",
+      "description": "容器内边距（单位：像素）",
+      "label": "内边距",
+      "control": "number",
+      "type": "number",
+      "min": 0,
+      "defaultValue": 0
+    },
+    {
+      "name": "gap",
+      "description": "子项之间的间距（单位：像素）",
+      "label": "间距",
+      "control": "number",
+      "type": "number",
+      "min": 0,
+      "defaultValue": 8
+    },
+    {
+      "name": "template",
+      "description": "列表循环项插槽组件",
+      "label": "列表项插槽",
+      "control": "slot",
+      "type": "slot"
+    }
+  ],
+  "events": [
+    {
+      "name": "onItemClick",
+      "description": "点击列表子项时触发",
+      "label": "子项点击"
+    },
+    {
+      "name": "selected",
+      "description": "子项选中时触发",
+      "label": "子项选中"
+    },
+    {
+      "name": "unselected",
+      "description": "子项取消选中时触发",
+      "label": "子项取消选中"
+    }
+  ],
+  "childStyles": [
+    {
+      "name": "width",
+      "description": "编辑期子项固定宽度（运行期自动计算）",
+      "label": "子项宽度",
+      "control": "number",
+      "type": "number"
+    },
+    {
+      "name": "height",
+      "description": "编辑期子项固定高度（运行期自动计算）",
+      "label": "子项高度",
+      "control": "number",
+      "type": "number"
+    }
+  ]
+}

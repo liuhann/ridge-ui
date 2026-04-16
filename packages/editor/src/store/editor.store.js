@@ -87,7 +87,11 @@ const editorStore = create((set, get) => ({
   },
 
   updatePageConfig: config => {
-
+    const { editorComposite, unsavedPages, currentOpenPageId } = get()
+    editorComposite.updatePageConfig(config)
+    set({
+      unsavedPages: [...unsavedPages, currentOpenPageId]
+    })
   },
 
   updateOutLine: () => {

@@ -1,0 +1,94 @@
+{
+  "name": "FlexContainer",
+  "title": "弹性容器",
+  "icon": "提供base64 图片图标",
+  "description": "描述组件作用和应用场合： 例如适合多个内容进行垂直或水平形式按固定或比例方式排列 ",
+  "tags": [
+    "容器",
+    "布局",
+    "响应式"
+  ],
+  "category": "容器",
+  "version": "1.0.0",
+  "author": "LiuHan",
+  "visualConfig": {
+    "thumbnail": "供base64 图片， 描述到页面后显示的样子，一般要额外提供",
+    "preferredWidth": 360,
+    "preferredHeight": 240,
+    "resizable": true,
+    "aspectRatio": "no"
+  },
+  "properties": [
+    {
+      "name": "direction",
+      "description": "主轴方向，决定子项的排列方向",
+      "label": "排列方向",
+      "control": "radiogroup",
+      "type": "string",
+      "options": [
+        {
+          "label": "横向",
+          "value": "row"
+        },
+        {
+          "label": "纵向",
+          "value": "column"
+        }
+      ],
+      "defaultValue": "row"
+    },
+    {
+      "name": "flexWrap",
+      "description": "是否允许子项换行显示",
+      "label": "换行",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "gap",
+      "description": "子项之间的间距（单位：像素）",
+      "label": "间隔",
+      "control": "number",
+      "type": "number",
+      "min": 0,
+      "defaultValue": 8
+    },
+    {
+      "name": "children",
+      "description": "容器内的子组件",
+      "label": "子项",
+      "control": "children",
+      "type": "children",
+      "hidden": true
+    }
+  ],
+  "events": [
+    {
+      "name": "onClick",
+      "description": "点击容器时触发",
+      "label": "点击"
+    },
+    {
+      "name": "onMouseDown",
+      "description": "鼠标在容器上按下时触发",
+      "label": "鼠标按下"
+    }
+  ],
+  "childStyles": [
+    {
+      "name": "width",
+      "description": "子项的宽度（单位：像素）",
+      "label": "宽度",
+      "control": "number",
+      "type": "number"
+    },
+    {
+      "name": "height",
+      "description": "子项的高度（单位：像素）",
+      "label": "高度",
+      "control": "number",
+      "type": "number"
+    }
+  ]
+}

@@ -173,6 +173,10 @@ export default class EditorElement extends Element {
     this.updateProps()
   }
 
+  getBlobUrl () {
+
+  }
+
   getIcon () {
     return <img className='outline-element-icon' src={this.getComponentMeta()?.icon} />
   }

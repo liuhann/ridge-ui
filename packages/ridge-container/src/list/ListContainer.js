@@ -1,265 +1,166 @@
-function hasScrollbar (el) {
-  return (
-    el.scrollHeight > el.clientHeight ||
-    el.scrollWidth > el.clientWidth
-  )
-}
 class ListContainer {
   constructor (props) {
-    this.props = props
+    this.props = props || {}
+    this.el = null
+    this.scrollerEl = null
+    this.containerEl = null
+    this.items = []
   }
 
   mount (el) {
+    if (!el || !(el instanceof window.HTMLElement)) return
     this.el = el
-    const { overflowAuto } = this.props
 
-    if (overflowAuto) { // 内容超出滚动为是否有滚动条标识， 有则存在滚动容器
-      if (!this.scrollerEl) {
-        this.scrollerEl = document.createElement('div')
-        this.containerEl = document.createElement('div')
+    if (!this.scrollerEl && !this.props.__isEdit) {
+      this.scrollerEl = document.createElement('div')
+      this.containerEl = document.createElement('div')
 
-        this.scrollerEl.style.width = '100%'
-        this.scrollerEl.style.height = '100%'
+      this.scrollerEl.style.width = '100%'
+      this.scrollerEl.style.height = '100%'
+      this.scrollerEl.style.overflow = 'auto'
+      this.scrollerEl.style.boxSizing = 'border-box'
 
-        el.appendChild(this.scrollerEl)
-        this.scrollerEl.appendChild(this.containerEl)
-      }
-    } else {
-      if (!this.containerEl) {
-        this.containerEl = document.createElement('div')
-        el.appendChild(this.containerEl)
-      }
+      el.appendChild(this.scrollerEl)
+      this.scrollerEl.appendChild(this.containerEl)
     }
     this.renderUpdate()
-    this.updateSortable()
   }
 
-  updateChildStyle () { // 编辑期适用
-    if (this.props.template && this.props.template.el) {
-      this.props.template.el.style.width = this.props.template.config.style.width + 'px'
-      this.props.template.el.style.height = this.props.template.config.style.height + 'px'
+  // 编辑期：更新子项宽高
+  updateChildStyle () {
+    const { children } = this.props
+
+    if (children.length) {
+      const template = children[0]
+      if (template) {
+        const style = template.config.style
+        if (style.width) template.el.style.width = style.width + 'px'
+        if (style.height) template.el.style.height = style.height + 'px'
+      }
     }
   }
 
   update (props) {
-    this.props = props
+    this.props = props || {}
     this.renderUpdate()
   }
 
   renderUpdate () {
-    const {
-      classNames
-    } = this.props
-    Object.assign(this.containerEl.style, this.getContainerStyle())
     if (!this.props.__isEdit) {
-      // 运行状态
+      Object.assign(this.containerEl.style, this.getContainerStyle())
       this.renderListItems()
     } else {
       this.renderUpdateSlots()
-    }
-
-    if (this.scrollerEl) {
-      this.scrollerEl.className = classNames.join(' ')
-      Object.assign(this.scrollerEl.style, this.getScrollerStyle())
+      this.updateChildStyle()
     }
   }
 
-  /**
-   * 更新渲染列表插槽内容
-   * @param {*} props
-   */
-  renderUpdateSlots (props) {
-    if (props) { // update
-      if (props.template !== this.props.template) {
-        this.containerEl.append(props.template.el)
-      }
-    } else {
-      // 初始化mount
-      if (this.props.template) {
-        if (this.props.template.el == null) {
-          const el = document.createElement('div')
-          this.containerEl.append(el)
-          this.props.template.mount(el)
-        } else {
-          this.containerEl.append(this.props.template.el)
-        }
+  // 编辑期渲染插槽
+  renderUpdateSlots () {
+    const { children } = this.props
+
+    if (children.length) {
+      const template = children[0]
+      if (template.el) {
+        this.el.append(template.el)
+      } else {
+        const el = document.createElement('div')
+        this.el.append(el)
+        template.mount?.(el)
       }
     }
   }
 
-  getScrollerStyle () {
-    const {
-      direction = 'y'
-    } = this.props
-    if (direction === 'y') {
-      return {
-        boxSizing: 'border-box',
-        overflow: 'hidden auto'
-      }
-    } else {
-      return {
-        boxSizing: 'border-box',
-        overflow: 'auto hidden'
-      }
-    }
-  }
-
+  // 网格容器样式（仅保留 columns / padding / gap）
   getContainerStyle () {
-    const {
-      gap,
-      direction = 'y'
-    } = this.props
-
-    const containerStyle = {
+    const { padding = 0, gap = 0, columns = 1 } = this.props
+    return {
+      display: 'grid',
+      gridTemplateColumns: `repeat(${columns}, 1fr)`,
+      padding: padding + 'px',
       gap: gap + 'px',
-      display: 'flex',
-      flexDirection: direction === 'y' ? 'row' : 'column',
-      padding: 0
+      boxSizing: 'border-box',
+      width: '100%'
     }
-
-    containerStyle.flexWrap = 'wrap'
-    return containerStyle
   }
 
-  /**
-   * 运行期间更新渲染列表
-   */
+  // 运行期渲染列表（仅使用 dataSource + template）
   async renderListItems () {
-    if (!this.props.template) return
-    const { dataSource, gap, horizontalDivide, verticalDivide, template, fixedHeight, fixedWidth, onItemClick, selected, itemClassNames = [], selectedClassNames = [] } = this.props
+    const { template, dataSource } = this.props
+    if (!template || !Array.isArray(dataSource)) return
 
-    const that = this
-    await template.load(true)
-    if (this.items == null) {
-      this.items = []
+    try {
+      await template.load(true)
+    } catch (err) {
+      console.error('列表项模板加载失败', err)
+      return
     }
 
-    if (Array.isArray(dataSource)) {
-      for (let index = 0; index < dataSource.length; index++) {
-        const data = dataSource[index]
-        if (this.items[index] == null) {
-          const newEl = document.createElement('div')
-          newEl.classList.add('ridge-is-selectable')
-          const itemComponent = this.props.template.clone()
-          itemComponent.setScopedData({
-            i: index,
-            list: dataSource,
-            item: data,
-            selected
-          })
-          this.items[index] = itemComponent
-          const itemWrapperStyle = {
-            position: '',
-            top: '',
-            left: '',
-            transform: '',
-            width: 'auto',
-            height: 'auto'
-          }
-
-          if (fixedHeight) {
-            itemWrapperStyle.height = itemComponent.config.style.height + 'px'
-          } else {
-            itemWrapperStyle.height = `calc((100% - ${gap * (verticalDivide - 1)}px) / ${verticalDivide})`
-          }
-          if (fixedWidth) {
-            itemWrapperStyle.width = itemComponent.config.style.width + 'px'
-          } else {
-            itemWrapperStyle.width = `calc((100% - ${gap * (horizontalDivide - 1)}px) / ${horizontalDivide})`
-          }
-
-          Object.assign(newEl.style, itemWrapperStyle)
-          this.containerEl.appendChild(newEl)
-          newEl.onclick = () => {
-            onItemClick && onItemClick({
-              i: index,
-              item: that.props.dataSource[index],
-              liet: that.props.dataSource,
-              selected
-            })
-          }
-
-          if (data != null) {
-            itemComponent.mount(newEl)
-          } else {
-            itemComponent.el = newEl
-          }
-        } else {
-          this.items[index].setScopedData({
-            i: index,
-            list: dataSource,
-            item: data,
-            selected
-          })
-          if (data == null) {
-            this.items[index].unmount()
-          } else {
-            if (!this.items[index].getIsMounted()) {
-              this.items[index].mount()
-            } else {
-              this.items[index].forceUpdate()
-            }
-          }
-        }
+    // 渲染每一项
+    dataSource.forEach((item, index) => {
+      if (!this.items[index]) {
+        this.createItem(index, item)
+      } else {
+        this.updateItem(index, item)
       }
-      while (this.items.length > dataSource.length) {
-        const pop = this.items.pop()
-        const el = pop.el
-        pop.unmount()
-        if (el && el.parentElement === this.containerEl) {
-          this.containerEl.removeChild(el)
-        }
+    })
+
+    // 移除多余项
+    while (this.items.length > dataSource.length) {
+      const item = this.items.pop()
+      item.unmount?.()
+      if (item.el?.parentElement === this.containerEl) {
+        this.containerEl.removeChild(item.el)
       }
+    }
+  }
+
+  // 创建列表项
+  createItem (index, data) {
+    const { template, onItemClick } = this.props
+
+    const itemEl = document.createElement('div')
+    itemEl.classList.add('list-item')
+
+    // 实例化子组件
+    const itemComponent = template.clone()
+    itemComponent.setScopedData({
+      i: index,
+      list: this.props.dataSource,
+      item: data
+    })
+
+    // 挂载
+    this.containerEl.appendChild(itemEl)
+    data ? itemComponent.mount(itemEl) : (itemComponent.el = itemEl)
+    this.items[index] = itemComponent
+
+    // 点击事件
+    itemEl.onclick = () => {
+      onItemClick?.({
+        i: index,
+        item: this.props.dataSource[index],
+        list: this.props.dataSource
+      })
+    }
+  }
+
+  // 更新列表项
+  updateItem (index, data) {
+    const item = this.items[index]
+    item.setScopedData({
+      i: index,
+      list: this.props.dataSource,
+      item: data
+    })
+
+    if (!data) {
+      item.unmount?.()
+    } else if (!item.getIsMounted?.()) {
+      item.mount?.()
     } else {
-      if (this.items.length) {
-        for (const itemComponent of this.items) {
-          const el = itemComponent.el
-          itemComponent.unmount()
-          if (el && el.parentElement === this.containerEl) {
-            this.containerEl.removeChild(el)
-          }
-        }
-        this.items = []
-      }
+      item.forceUpdate?.()
     }
-
-    for (let i = 0; i < this.containerEl.children.length; i++) {
-      const classList = Array.from(this.containerEl.children[i].classList)
-
-      if (selected != null && ((Array.isArray(selected) && selected.includes(i)) || i === selected)) { // 选中状态
-        // this.containerEl.children[i].classList.add('ridge-is-selected')
-        this.containerEl.children[i].className = Array.from(new Set([...classList, ...itemClassNames, ...selectedClassNames])).join(' ')
-
-        // 2. 创建自定义事件
-        const customEvent = new CustomEvent('selected', {
-          bubbles: true
-        })
-        this.containerEl.children[i].dispatchEvent(customEvent)
-      } else { // 未选中
-        // this.containerEl.children[i].classList.remove('ridge-is-selected')
-        this.containerEl.children[i].className = Array.from(new Set([...classList.filter(name => !selectedClassNames.includes(name)), ...itemClassNames])).join(' ')
-        this.containerEl.children[i].dispatchEvent(new CustomEvent('unselected', {
-          bubbles: true
-        }))
-      }
-    }
-  }
-
-  async updateSortable () {
-    const { sortable, __composite } = this.props
-    if (sortable) {
-      await __composite.loader.loadScript('sortablejs/Sortable.min.js')
-      this.sortable = window.Sortable.create(this.containerEl)
-    }
-  }
-
-  getChildStyle (view) {
-    const style = this.getResetStyle()
-    const configStyle = view.config.style
-
-    style.width = configStyle.width ? (configStyle.width + 'px') : ''
-    style.height = configStyle.height ? (configStyle.height + 'px') : ''
-    return style
   }
 }
 

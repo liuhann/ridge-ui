@@ -4,7 +4,7 @@ import { withField, TreeSelect, Tree, TagInput, Popover, Icon, Tag, Typography }
 import { getAppTreeData } from '../../panels/files/utils.js'
 import appStore from '../../store/app.store.js'
 import editorStore from '../../store/editor.store'
-import { filterTree } from '../../panels/files/buildFileTree.js'
+import { filterTree, mapTree } from '../../panels/files/buildFileTree.js'
 
 // 资源文件地址选择, 支持从应用内和外部同时选择、单个或者多个。
 // 选择应用文件后会返回 composite:// 开头的路径
@@ -26,20 +26,30 @@ const AppFileSelectEdit = ({
     const filtered = filterTree(currentAppFilesTree, file => {
       return file.mimeType && file.mimeType.indexOf(options.fileType) > -1
     })
-    setTreeData(getAppTreeData(filtered, currentAppName))
+    const data = mapTree(getAppTreeData(filtered, currentAppName), node => {
+      return {
+        label: node.label,
+        value: node.raw.path,
+        key: node.raw.path,
+        disabled: node.children != null,
+        isLeaf: node.children == null,
+        children: node.children
+      }
+    })
+    setTreeData(data)
   }, [currentAppFilesTree, options.fileType])
 
   // 选择文件后，将 composite:// 开头的路径返回给上层
-  const changeWithComposite = (val, selectedNodes) => {
+  const changeWithComposite = (selectedNodes) => {
     // 🔥 关键：只保留叶子节点（文件），过滤掉父节点
-    const fileKeys = selectedNodes?.filter(node => node.isLeaf).map(node => node.key) || []
+    const filtered = selectedNodes.filter(node => node.children == null)
 
     if (options.multiple) {
-      onChange && onChange([...fileKeys.map(it => 'composite://' + it), ...value.filter(it => !it.startsWith('composite://'))])
+      onChange && onChange([...filtered.map(key => 'app://' + key), ...value.filter(it => !it.startsWith('app://'))])
     } else {
-      const fileKey = fileKeys[0] || ''
-      if (fileKey) {
-        onChange && onChange('composite://' + fileKey)
+      const file = filtered[0] || ''
+      if (file) {
+        onChange && onChange('app://' + file.key)
         setVisible(false)
       }
     }
@@ -57,13 +67,13 @@ const AppFileSelectEdit = ({
   const getRemovePrefixValue = () => {
     if (options.multiple) {
       if (Array.isArray(value)) {
-        return value.filter(it => it.startsWith('composite://')).map(it => it.substring(12))
+        return value.filter(it => it.startsWith('app://')).map(it => it.substring(6))
       } else {
         return []
       }
     } else {
       if (typeof value === 'string') {
-        return value.startsWith('composite://') ? value.substring(12) : ''
+        return value.startsWith('app://') ? value.substring(6) : ''
       }
       return ''
     }
@@ -76,45 +86,19 @@ const AppFileSelectEdit = ({
         closable
         color='white'
         onClick={() => {
-          if (item.startsWith('composite://')) {
-            openFile(item.substring(12))
+          if (item.startsWith('app://')) {
+            openFile(item.substring(6))
           }
         }}
         onClose={onClose}
         style={{ margin: '2px 4px 2px 0' }}
       >
-        {item && item.startsWith('composite://') ? item.substring(item.lastIndexOf('/') + 1) : item}
+        {item && item.startsWith('app://') ? item.substring(item.lastIndexOf('/') + 1) : item}
       </Tag>
     )
   }
 
-  // 🔥 自定义树节点渲染：控制图标大小、间距、禁用父节点选择
-  const renderTreeNode = (nodeData) => {
-    const { isLeaf, label } = nodeData
-
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        height: '28px', // 行高统一
-        fontSize: '14px'
-      }}
-      >
-        {/* 图标：放大 + 间距 */}
-        <Icon
-          icon={isLeaf ? 'file' : 'folder'}
-          style={{
-            fontSize: '16px', // 图标变大
-            marginRight: '8px', // 图标文字间距
-            color: isLeaf ? '#1890ff' : '#FF9800'
-          }}
-        />
-        {/* 文本 */}
-        <span>{label}</span>
-      </div>
-    )
-  }
-
+  const treeValue = getRemovePrefixValue()
   return (
     <Popover
       trigger='custom'
@@ -153,12 +137,10 @@ const AppFileSelectEdit = ({
 
           {/* 树组件：只允许选文件 */}
           <Tree
-            onChangeWithObject
-            searchAutoFocus
             checkRelation='unRelated'
             multiple={options.multiple}
             style={{ width: 320, height: 400 }}
-            value={getRemovePrefixValue()}
+            value={treeValue}
             onChange={changeWithComposite}
             treeData={treeData}
           />

@@ -3,7 +3,7 @@ import ReactRenderer from '../render/ReactRenderer'
 import VanillaRender from '../render/VanillaRenderer'
 import createReactElement from '../render/createReactElement.js'
 import { STORE, PROP } from '../utils/contants.js'
-import { nanoid } from '../utils/string'
+import { nanoid, ensureLeading } from '../utils/string'
 import BaseNode from './BaseNode.js'
 import {
   forceDOMElementState,
@@ -309,10 +309,10 @@ export default class Element extends BaseNode {
   }
 
   preparePropsBeforeRender () {
-    if (!this.definition?.props) return
+    if (!this.definition?.properties) return
     let slotOrder = 0
 
-    for (const prop of this.definition.props) {
+    for (const prop of this.definition.properties) {
       if (prop.type === 'image' || prop.type === 'file') {
         const v = this.config.props[prop.name] ?? this.properties[prop.name]
         if (v) this.properties[prop.name] = this.composite.getBlobUrl(v, this.composite.packageName)
@@ -337,6 +337,20 @@ export default class Element extends BaseNode {
       } else if (prop.type === 'style') {
         this.properties[prop.name] = handleClassListPropValue(this.config.props[prop.name], this.composite)
       }
+    }
+  }
+
+  getBlobUrl (url) {
+    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('/')) {
+      return url
+    } else if (url.startsWith('app://')) {
+      if (this.composite.packageName) {
+        return this.composite.baseUrl + '/' + this.composite.packageName + ensureLeading(url.substring('composite://'.length))
+      } else {
+        return this.composite.baseUrl + '/' + ensureLeading(url.substring('composite://'.length))
+      }
+    } else {
+      return this.composite.baseUrl + '/' + url
     }
   }
 

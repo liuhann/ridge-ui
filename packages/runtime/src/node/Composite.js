@@ -25,6 +25,7 @@ class Composite extends BaseNode {
     this.id = id
     this.path = path
     this.loader = loader
+    this.baseUrl = loader.baseUrl
     this.appName = appName
     this.config = config
     this.properties = properties || this.comfig?.properties || {}
