@@ -70,7 +70,7 @@ export default class EditorElement extends Element {
 
   isContainer () {
     return this.getPropDefinations().some(p =>
-      p.name === 'children' || p.type === 'slot'
+      p.name === 'children' && p.type === 'children'
     )
   }
 

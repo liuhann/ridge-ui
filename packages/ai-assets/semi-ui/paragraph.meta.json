@@ -1,0 +1,170 @@
+{
+  "name": "Typography.Paragraph",
+  "title": "段落",
+  "icon": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA2SDE5TTMgMTJIMTlNMyAxOEgxNyIgc3Ryb2tlPSIjNEU1OTY2IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",
+  "description": "段落文本组件，用于展示多行文字内容，支持省略、可复制、行距调整、样式修饰等排版能力",
+  "tags": [
+    "段落",
+    "文本",
+    "展示",
+    "排版"
+  ],
+  "category": "展示组件",
+  "version": "1.0.0",
+  "author": "LiuHan",
+  "visualConfig": {
+    "thumbnail": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDM2MCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjM2MCIgaGVpZ2h0PSIyNDAiIGZpbGw9IiNGRkZGRkYiLz48dGV4dCB4PSI1MCIgeT0iMTAwIiBmb250LWZhbWlseT0iYXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM0RTU5NjYiPuazleinuumBvuWFiy88L3RleHQ+PHRleHQgeD0iNTAiIHk9IjEyMCIgZm9udC1mYW1seT0iYXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM0RTU5NjYiPuWFseS6pemBvuWFiyDorr7orqHorr7orqHorr7orqHorr7orqHorr7orqHvvIzg8L3RleHQ+PC9zdmc+",
+    "preferredWidth": 380,
+    "preferredHeight": 80,
+    "resizable": true,
+    "aspectRatio": "no"
+  },
+  "properties": [
+    {
+      "name": "children",
+      "description": "显示的段落文本内容",
+      "label": "段落内容",
+      "type": "string",
+      "defaultValue": "这是一段段落文本"
+    },
+    {
+      "name": "copyable",
+      "description": "是否允许点击复制文本",
+      "label": "可复制",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "delete",
+      "description": "是否显示删除线",
+      "label": "删除线",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "disabled",
+      "description": "是否置灰禁用状态",
+      "label": "禁用",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "ellipsis",
+      "description": "内容超长时自动省略",
+      "label": "自动省略",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "link",
+      "description": "是否作为链接样式",
+      "label": "链接样式",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "mark",
+      "description": "是否高亮标记",
+      "label": "高亮标记",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "size",
+      "description": "文本大小",
+      "label": "文本大小",
+      "control": "select",
+      "type": "string",
+      "options": [
+        {
+          "label": "标准",
+          "value": "normal"
+        },
+        {
+          "label": "小",
+          "value": "small"
+        }
+      ],
+      "defaultValue": "normal"
+    },
+    {
+      "name": "spacing",
+      "description": "行距大小",
+      "label": "行距",
+      "control": "select",
+      "type": "string",
+      "options": [
+        {
+          "label": "标准",
+          "value": "normal"
+        },
+        {
+          "label": "宽松",
+          "value": "extended"
+        }
+      ],
+      "defaultValue": "normal"
+    },
+    {
+      "name": "strong",
+      "description": "是否加粗",
+      "label": "加粗",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "type",
+      "description": "文本颜色类型",
+      "label": "颜色类型",
+      "control": "select",
+      "type": "string",
+      "options": [
+        {
+          "label": "主要",
+          "value": "primary"
+        },
+        {
+          "label": "次要",
+          "value": "secondary"
+        },
+        {
+          "label": "三级",
+          "value": "tertiary"
+        },
+        {
+          "label": "四级",
+          "value": "quaternary"
+        },
+        {
+          "label": "警告",
+          "value": "warning"
+        },
+        {
+          "label": "危险",
+          "value": "danger"
+        },
+        {
+          "label": "成功",
+          "value": "success"
+        }
+      ],
+      "defaultValue": "primary"
+    },
+    {
+      "name": "underline",
+      "description": "是否显示下划线",
+      "label": "下划线",
+      "control": "boolean",
+      "type": "boolean",
+      "defaultValue": false
+    }
+  ],
+  "events": []
+}
