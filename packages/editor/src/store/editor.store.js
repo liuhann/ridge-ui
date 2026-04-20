@@ -34,8 +34,6 @@ const editorStore = create((set, get) => ({
   workspaceControl: null,
 
   initStore: ({
-    workspaceRef,
-    viewPortContainerRef,
     codeEditorRef
   }) => {
     set({
@@ -324,6 +322,18 @@ const editorStore = create((set, get) => ({
     targetZoom = Math.min(Math.max(0.1, targetZoom), 2) // 限制 0.1 ~ 2
 
     setZoom(targetZoom)
+  },
+
+  previewPage: async (id, page) => {
+    const previewComposite = EditorComposite({
+      loader,
+      appName: 'local',
+      path,
+      appService,
+      config: pageContent
+    })
+
+    await editorComposite.mount(this.getViewPortEl())
   }
 }))
 

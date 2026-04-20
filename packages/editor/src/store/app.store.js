@@ -88,6 +88,7 @@ const useStore = create((set, get) => ({
   exitToAppList: () => {
     localRepoService.setCurrentApp(null)
     set({
+      currentAppFilesTree: [],
       currentAppName: null
     })
   },

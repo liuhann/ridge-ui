@@ -13,6 +13,7 @@ import { IconSidebar } from '@douyinfe/semi-icons'
 import ConfigPanel from './panels/config/ConfigPanel.jsx'
 import DialogCodeEdit from './panels/files/DialogCodeEdit.jsx'
 import EditMenuBar from './panels/menu/EditMenuBar.jsx'
+import PreviewMenuBar from './panels/menu/PreviewMenuBar.jsx'
 import WorkSpaceControl from './workspace/WorkspaceControl'
 
 import editorStore from './store/editor.store.js'
@@ -24,14 +25,12 @@ import './panels/common.less'
 import AppFileList from './panels/files/AppFileList.jsx'
 import AppListPanel from './panels/apps/AppListPanel.jsx'
 import LeftNav from './panels/left-nav/LeftNav.jsx'
-import PreviewPanel from './panels/preview/PreviewPanel.jsx'
+import AppPagePreviewList from './panels/files/AppPagePreviewList.jsx'
 import ComponentRegistryPanel from './panels/component/ComponentRegistryPanel.jsx'
 import componentRegistry from './service/ComponentRegistry.js'
 
 const Editor = () => {
-  const workspaceRef = useRef(null)
   const codeEditorRef = useRef(null)
-  const viewPortContainerRef = useRef(null)
 
   const [collapseLeft, setCollapseLeft] = useState(false)
   const [currentPanel, setCurrentPanel] = useState('app')
@@ -57,14 +56,10 @@ const Editor = () => {
       await componentRegistry.init()
       await initAppStore()
       initStore({
-        workspaceRef,
-        viewPortContainerRef,
         codeEditorRef
       })
       const workspaceControl = new WorkSpaceControl()
       workspaceControl.init({
-        workspaceEl: workspaceRef.current,
-        viewPortEl: viewPortContainerRef.current,
         editorStore
       })
       setWorkspaceControl(workspaceControl)
@@ -142,7 +137,7 @@ const Editor = () => {
 
               {/* 预览 */}
               <TabPane tab='预览' itemKey='preview'>
-                <PreviewPanel />
+                <AppPagePreviewList />
               </TabPane>
             </Tabs>
           </div>
@@ -168,11 +163,15 @@ const Editor = () => {
             flex: 1
           }}
         >
-          <div className='editor-content'>
+          <div
+            className='editor-content' style={{
+              display: currentPanel === 'preview' ? 'none' : ''
+            }}
+          >
             <EditMenuBar />
             <div className='workspace-panel'>
-              <div ref={workspaceRef} className='workspace'>
-                <div className='view-port' isViewPort ref={viewPortContainerRef} />
+              <div className='workspace'>
+                <div className='view-port' isViewPort />
                 {!pageOpened && (
                   <div className='no-open-file'>
                     <ReactComposite app='ridge-editor-app' path='Welcome' />
@@ -182,6 +181,14 @@ const Editor = () => {
               {pageOpened && <ConfigPanel />}
             </div>
           </div>
+
+          {currentPanel === 'preview' &&
+            <div className='preview-content'>
+              <PreviewMenuBar />
+              <div className='preview-space'>
+                <div className='preview-view-port' />
+              </div>
+            </div>}
         </ResizeItem>
       </ResizeGroup>
 
