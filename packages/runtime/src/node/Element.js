@@ -9,6 +9,16 @@ import {
 import { isObject, isObjectsEqual } from '../utils/is.js'
 import { IN_APP_FILE_PREFIEX, ridgeBaseUrl } from '../index'
 
+const runtimeDefaults = {
+  styleEx: {},
+  propEx: {},
+  events: {},
+  props: {},
+  visible: true,
+  slots: [],
+  meta: { sync: [], url: [] }
+}
+
 export default class Element extends BaseNode {
   constructor ({
     config,
@@ -16,6 +26,7 @@ export default class Element extends BaseNode {
   }) {
     super()
     this.config = { ...config }
+    this.restoreRuntimeDefaultConfig()
     this.uuid = 'ins-' + nanoid(8)
     this.composite = composite
     this.definition = null
@@ -38,6 +49,15 @@ export default class Element extends BaseNode {
     })
   }
 
+  // 运行时加载：自动回填导出时被清理的默认基础配置
+  restoreRuntimeDefaultConfig () {
+    for (const key in runtimeDefaults) {
+      if (this.config[key] === undefined) {
+        this.config[key] = runtimeDefaults[key]
+      }
+    }
+  }
+
   getId () { return this.config.id }
   getParent () { return this.parent }
   getEl () { return this.el }
@@ -53,8 +73,8 @@ export default class Element extends BaseNode {
     if (typeof properties.children !== 'string') {
       properties.children = this.children
     }
-    if (Array.isArray(this.config.urlProps)) {
-      for (const propName of this.config.urlProps) {
+    if (this.config.meta && Array.isArray(this.config.meta.urlProps)) {
+      for (const propName of this.config.meta.urlProps) {
         properties[propName] = this.getBlobUrl(properties[propName])
       }
     }
@@ -217,12 +237,17 @@ export default class Element extends BaseNode {
   initializeEvents () {
     const events = this.config.events || {}
 
-    // 对属性为value的进行自动处理
-    if (!events.onChange && this.config.propEx.value) {
-      this.events.onChange = (val) => {
-        this.setProperties({ value: val })
-        const store = this.composite.store
-        store.dispatchChange(this.config.propEx.value, val)
+    // 处理“双向绑定”相关
+    if (this.config.meta && this.config.meta.sync.length === 2) {
+      const [propName, eventName] = this.config.meta.sync
+      if (!this.events[eventName] && this.config.propEx[propName]) {
+        this.events[eventName] = val => {
+          this.setProperties({ [propName]: val })
+          const store = this.composite.store
+          if (store) {
+            store.dispatchChange(this.config.propEx[propName], val)
+          }
+        }
       }
     }
 

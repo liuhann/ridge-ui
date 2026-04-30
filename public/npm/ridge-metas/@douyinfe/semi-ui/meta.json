@@ -1,7 +1,7 @@
 {
   "name": "@douyinfe/semi-ui",
   "schemaVersion": "2.0",
-  "lastUpdated": "2026-04-29T05:59:41.882Z",
+  "lastUpdated": "2026-04-29T10:06:02.626Z",
   "generatedBy": "ridge-ui-cli",
   "components": [
     {
@@ -907,6 +907,122 @@
         }
       ],
       "events": []
+    },
+    {
+      "name": "Switch",
+      "title": "开关",
+      "icon": "svgs/switch.svg",
+      "description": "开关选择组件，用于状态切换，支持禁用、加载、尺寸设置、选中状态等功能",
+      "tags": [
+        "开关",
+        "切换",
+        "表单",
+        "状态"
+      ],
+      "category": "表单组件",
+      "version": "1.0.0",
+      "author": "",
+      "visualConfig": {
+        "thumbnail": "",
+        "preferredWidth": 40,
+        "preferredHeight": 24,
+        "resizable": false,
+        "aspectRatio": "no"
+      },
+      "properties": [
+        {
+          "name": "aria-label",
+          "description": "aria-label属性，用来给当前元素加上的标签描述, 提升可访问性",
+          "label": "ARIA标签",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "name": "aria-labelledby",
+          "description": "aria-labelledby属性，表明某些元素的id是某一对象的标签，提升可访问性",
+          "label": "ARIA标签关联",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "name": "className",
+          "description": "类名",
+          "label": "自定义类名",
+          "type": "string",
+          "defaultValue": ""
+        },
+        {
+          "name": "checked",
+          "description": "指示当前是否选中,配合 onChange 使用",
+          "label": "是否选中",
+          "control": "boolean",
+          "type": "boolean",
+          "defaultValue": false
+        },
+        {
+          "name": "defaultChecked",
+          "description": "初始是否选中",
+          "label": "默认选中",
+          "control": "boolean",
+          "type": "boolean",
+          "defaultValue": false
+        },
+        {
+          "name": "disabled",
+          "description": "是否禁用",
+          "label": "禁用",
+          "control": "boolean",
+          "type": "boolean",
+          "defaultValue": false
+        },
+        {
+          "name": "loading",
+          "description": "设置加载状态",
+          "label": "加载中",
+          "control": "boolean",
+          "type": "boolean",
+          "defaultValue": false
+        },
+        {
+          "name": "size",
+          "description": "尺寸",
+          "label": "尺寸",
+          "control": "select",
+          "type": "string",
+          "options": [
+            {
+              "label": "大",
+              "value": "large"
+            },
+            {
+              "label": "默认",
+              "value": "default"
+            },
+            {
+              "label": "小",
+              "value": "small"
+            }
+          ],
+          "defaultValue": "default"
+        }
+      ],
+      "events": [
+        {
+          "name": "onChange",
+          "description": "变化时回调函数",
+          "label": "状态变化"
+        },
+        {
+          "name": "onMouseEnter",
+          "description": "鼠标移入时回调",
+          "label": "鼠标移入"
+        },
+        {
+          "name": "onMouseLeave",
+          "description": "鼠标移出时回调",
+          "label": "鼠标移出"
+        }
+      ]
     },
     {
       "name": "Typography.Text",

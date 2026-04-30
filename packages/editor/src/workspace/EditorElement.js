@@ -1,8 +1,21 @@
 import { Element } from 'ridgejs'
 import cloneDeep from 'lodash/cloneDeep.js'
+import isEqual from 'lodash/isEqual.js'
+
 import { nanoid } from '../utils/string'
 import componentRegistry from '../service/ComponentRegistry'
 import merge from 'lodash/merge'
+
+const defaultConfig = {
+  editor: { hidden: false, locked: false },
+  styleEx: {},
+  propEx: {},
+  events: {},
+  props: {},
+  visible: true,
+  slots: [],
+  meta: { sync: [], url: [] }
+}
 
 export default class EditorElement extends Element {
   constructor ({ config, composite, componentMeta }) {
@@ -20,6 +33,8 @@ export default class EditorElement extends Element {
     this.componentMeta = componentMeta
     // 元数据设置后，立即初始化属性元信息
     this.initPropertyMetadata()
+
+    this.initPropsOnCreate()
   }
 
   // 获取组件元数据
@@ -47,8 +62,6 @@ export default class EditorElement extends Element {
   updateConfig (config) {
     merge(this.config, config)
     this.style = { ...this.config.style }
-    // this.properties = { ...this.config.props }
-    this.config.urlProps = this.getUrlProps()
     this.updateProps()
     this.updateStyle()
   }
@@ -200,16 +213,26 @@ export default class EditorElement extends Element {
     const propsDef = this.componentMeta.properties || []
     const eventsDef = this.componentMeta.events || []
 
-    // 1. 判断双向绑定: properties 包含 value 并且 events 包含 onChange
+    // 1. 收集【支持双向绑定】的属性：
+    //    规则：prop.input === true 且存在 prop.inputEvent
+    //    兼容旧规则：value + onChange
+    const syncProps = []
+
+    // 新规则：支持配置 input: true + inputEvent: "onChange" 的属性
+    propsDef.forEach(prop => {
+      if (prop.input === true && prop.inputEvent) {
+        syncProps.push(prop.name, prop.inputEvent)
+      }
+    })
+
+    // 旧规则（兼容）：properties 包含 value 并且 events 包含 onChange
     const hasValueProp = propsDef.some(p => p.name === 'value')
     const hasOnChangeEvent = eventsDef.some(e => e.name === 'onChange' || e.name === 'on-change')
-
-    const syncProps = []
-    if (hasValueProp && hasOnChangeEvent) {
+    if (hasValueProp && hasOnChangeEvent && !syncProps.length) {
       syncProps.push('value', 'onChange')
     }
 
-    // 2. 收集资源属性列表
+    // 2. 收集资源属性列表（不动你原有逻辑）
     const urlProps = []
     const resourceTypes = ['image', 'file', 'url', 'video', 'audio']
 
@@ -278,21 +301,6 @@ export default class EditorElement extends Element {
     this.styleUpdated()
   }
 
-  getUrlProps () {
-    // 识别并标记资源类属性（目前仅针对 image 类型）
-    // 这些属性在后续处理中可能需要特殊对待（如路径前缀处理）
-    const urlProperties = this.getPropDefinations().filter(p => p.type === 'image')
-
-    const urlProps = []
-
-    for (const urlProperty of urlProperties) {
-      if (this.config.props[urlProperty.name]) {
-        urlProps.push(urlProperty.name)
-      }
-    }
-    return urlProps
-  }
-
   /**
    * 导出当前元素的 JSON 配置数据
    * @returns {Object} 包含元素配置、URL 属性标记及插槽信息的 JSON 对象
@@ -300,13 +308,36 @@ export default class EditorElement extends Element {
   exportJSON () {
     const json = cloneDeep(this.config)
 
+    // ==========================
+    // 🔥 核心：移除默认值属性（不导出）
+    // ==========================
+    const propsDef = this.getPropDefinations()
+    if (json.props) {
+      for (const prop of propsDef) {
+        const propName = prop.name
+        const defaultValue = prop.defaultValue
+
+        // 如果配置里的值 === 默认值 → 删除，不导出
+        if (
+          propName !== undefined &&
+        defaultValue !== undefined &&
+        json.props[propName] === defaultValue
+        ) {
+          delete json.props[propName]
+        }
+      }
+    }
+
+    // 清理编辑器默认值
+    for (const key in defaultConfig) {
+      if (isEqual(json[key], defaultConfig[key])) {
+        delete json[key]
+      }
+    }
+
     // 子节点是组件
     if (this.getPropDefination('children')?.type === 'children') {
       json.props.children = this.children?.map(c => c.getId()) || []
-    }
-    const urlProps = this.getUrlProps()
-    if (urlProps.length) {
-      json.urlProps = urlProps
     }
     // deprecated
     json.slots = this.getSlotElements()
