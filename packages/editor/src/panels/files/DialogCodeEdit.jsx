@@ -228,7 +228,7 @@ export default forwardRef((props, pref) => {
       await loadExtensions()
     }
     setLoading(false)
-    if (contents[file.id]) {
+    if (contents[file.id] && type !== 'json') {
       setCurrentEditText(contents[file.id])
     } else {
       setContents({

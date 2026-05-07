@@ -99,6 +99,20 @@ const editorStore = create((set, get) => ({
 
   },
 
+  setCurrentPageChanged: (changed) => {
+    const { unsavedPages, currentOpenPageId, updateTreeData } = get()
+    if (changed) {
+      set({
+        unsavedPages: [...unsavedPages, currentOpenPageId]
+      })
+      updateTreeData()
+    } else {
+      set({
+        unsavedPages: unsavedPages.filter(id => id !== currentOpenPageId)
+      })
+    }
+  },
+
   updateNodeRect: (rect) => {
     const { currentOpenPageId, unsavedPages, currentEditNodeRect } = get()
     set({
@@ -197,14 +211,10 @@ const editorStore = create((set, get) => ({
   },
 
   saveCurrentPage: async () => {
-    const { currentOpenPageId, editorComposite, unsavedPages } = get()
+    const { currentOpenPageId, editorComposite, saveFile } = get()
 
     if (currentOpenPageId && editorComposite) {
-      const appService = localRepoService.getCurrentAppService()
-      appService.updateFileContent(currentOpenPageId, JSON.stringify(editorComposite.exportPageJSON(), null, 2))
-      set({
-        unsavedPages: unsavedPages.filter(pid => pid !== currentOpenPageId)
-      })
+      await saveFile(currentOpenPageId, JSON.stringify(editorComposite.exportPageJSON(), null, 2))
     }
   },
 
@@ -330,7 +340,7 @@ const editorStore = create((set, get) => ({
     })
   },
 
-  saveFile: async (fileId, content) => {
+  saveFile: async (fileId, content, doRefresh = true) => {
     const appService = localRepoService.getCurrentAppService()
     const { editorComposite, openedFileContentMap, currentOpenPageId, unsavedPages } = get()
 
@@ -348,7 +358,7 @@ const editorStore = create((set, get) => ({
         openedFileContentMap.set(fileId, jsonConfig)
 
         // 保存时才刷新设计器
-        if (editorComposite && currentOpenPageId === fileId) {
+        if (doRefresh && editorComposite && currentOpenPageId === fileId) {
           editorComposite.loadPageJSON(jsonConfig)
         }
       } catch (err) {

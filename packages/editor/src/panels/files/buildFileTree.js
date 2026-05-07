@@ -53,10 +53,16 @@ export const flattenTree = (tree) => {
   return result
 }
 
-/* 从树节点过滤掉 */
+/**
+ * 递归过滤树形结构数据，返回所有满足条件的节点（扁平化数组）
+ * @param {Array} treeData - 输入的树形结构数组
+ * @param {Function} filterCb - 过滤回调函数，接收当前节点作为参数，返回布尔值表示是否保留该节点
+ * @returns {Array} 包含所有满足过滤条件的节点的扁平化数组
+ */
 export const filterTree = (treeData, filterCb) => {
   const result = []
 
+  // 遍历当前层级的所有节点，递归处理子节点并收集符合条件的节点
   treeData.forEach(node => {
     if (node.children) {
       result.push(...filterTree(node.children, filterCb))
@@ -65,6 +71,37 @@ export const filterTree = (treeData, filterCb) => {
       result.push(node)
     }
   })
+  return result
+}
+
+/**
+ * 递归过滤树形结构数据，返回保持树形结构的结果
+ * @param {Array} treeData - 输入的树形结构数组
+ * @param {Function} filterCb - 过滤回调函数，接收当前节点作为参数，返回布尔值表示是否保留该节点
+ * @returns {Array} 保持树形结构的过滤后数组
+ */
+export const filterTreeKeepStructure = (treeData, filterCb) => {
+  const result = []
+
+  treeData.forEach(node => {
+    // 先递归过滤子节点
+    let filteredChildren = []
+    if (node.children) {
+      filteredChildren = filterTreeKeepStructure(node.children, filterCb)
+    }
+
+    // 判断当前节点是否匹配
+    const isMatch = filterCb(node)
+
+    // 如果当前节点匹配，或者其子节点中有匹配项（需要保留路径），则保留该节点
+    if (isMatch || filteredChildren.length > 0) {
+      result.push({
+        ...node,
+        children: filteredChildren.length > 0 ? filteredChildren : node.children
+      })
+    }
+  })
+
   return result
 }
 

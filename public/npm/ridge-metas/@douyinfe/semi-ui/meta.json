@@ -1,7 +1,7 @@
 {
   "name": "@douyinfe/semi-ui",
   "schemaVersion": "2.0",
-  "lastUpdated": "2026-04-29T10:06:02.626Z",
+  "lastUpdated": "2026-05-06T11:03:25.056Z",
   "generatedBy": "ridge-ui-cli",
   "components": [
     {
@@ -190,6 +190,7 @@
           "name": "src",
           "description": "图片地址",
           "label": "图片地址",
+          "required": true,
           "type": "image",
           "defaultValue": ""
         },
@@ -205,12 +206,16 @@
           "description": "图片显示宽度",
           "label": "宽度",
           "type": "string",
+          "required": true,
+          "hidden": true,
           "defaultValue": "100%"
         },
         {
           "name": "height",
           "description": "图片显示高度",
           "label": "高度",
+          "required": true,
+          "hidden": true,
           "type": "string",
           "defaultValue": "100%"
         },
@@ -956,6 +961,7 @@
           "description": "指示当前是否选中,配合 onChange 使用",
           "label": "是否选中",
           "control": "boolean",
+          "inputEvent": "onChange",
           "type": "boolean",
           "defaultValue": false
         },

@@ -5,7 +5,7 @@ import { withField, TreeSelect, Tree, TagInput, Popover, Icon, Tag, Typography }
 import { getAppTreeData } from '../../panels/files/utils.js'
 import appStore from '../../store/app.store.js'
 import editorStore from '../../store/editor.store'
-import { filterTree, mapTree } from '../../panels/files/buildFileTree.js'
+import { filterTreeKeepStructure, mapTree } from '../../panels/files/buildFileTree.js'
 
 // 资源文件地址选择, 支持从应用内和外部同时选择、单个或者多个。
 // 选择应用文件后会返回 composite:// 开头的路径
@@ -24,7 +24,7 @@ const AppFileSelectEdit = ({
   const { Title } = Typography
 
   useEffect(() => {
-    const filtered = filterTree(currentAppFilesTree, file => {
+    const filtered = filterTreeKeepStructure(currentAppFilesTree, file => {
       return file.mimeType && file.mimeType.indexOf(options.fileType) > -1
     })
     const data = mapTree(getAppTreeData(filtered, currentAppName), node => {
@@ -49,14 +49,14 @@ const AppFileSelectEdit = ({
       // 获取当前已选中的非应用内文件（外部文件）
       const externalFiles = (Array.isArray(value) ? value : []).filter(it => !it.startsWith(IN_APP_FILE_PREFIEX))
       // 新选中的应用内文件添加前缀
-      const newInternalFiles = filtered.map(node => IN_APP_FILE_PREFIEX + node.key)
+      const newInternalFiles = filtered.map(node => IN_APP_FILE_PREFIEX + node)
 
       onChange && onChange([...newInternalFiles, ...externalFiles])
     } else {
       const file = filtered[0] || ''
       if (file) {
         // 单选模式：直接添加前缀
-        onChange && onChange(IN_APP_FILE_PREFIEX + file.key)
+        onChange && onChange(IN_APP_FILE_PREFIEX + file)
         setVisible(false)
       }
     }

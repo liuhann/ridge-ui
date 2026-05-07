@@ -918,6 +918,7 @@ export default class WorkSpaceControl {
       } else if (this.moveable.target) {
         this.onElementRemoved(this.moveable.target)
       }
+      this.editorStore.getState().setCurrentPageChanged(true)
       this.moveable.target = null
     })
 
@@ -970,6 +971,7 @@ export default class WorkSpaceControl {
 
       ridgeNode.updateStyleConfig(newStyle)
     }
+    this.editorStore.getState().setCurrentPageChanged(true)
     this.moveable.updateTarget()
   }
 

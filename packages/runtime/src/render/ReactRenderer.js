@@ -4,7 +4,9 @@
 // 这里需要注释掉React、ReactDOM 否则此包会同外围编辑器等项目一起使用。而开发期间React是额外load的，会在
 // React hook 使用时报错 因此，React一定要使用window全局的React对象
 import Renderer from './Renderer'
+import createDebug from 'debug'
 
+const debug = createDebug('ridge:react-render')
 // 判断函数式 React 组件
 function isReactFunctionComponent (comp) {
   return typeof comp === 'function' && comp.prototype?.isReactComponent !== true && comp.toString().includes('React.createElement') || comp.toString().includes('JSX')
@@ -43,6 +45,7 @@ export default class ReactRenderer extends Renderer {
   }
 
   mount (el) {
+    debug('mount with props', this.props)
     this.el = el
     this.root = ReactDOM.createRoot(el)
     this.root.render(this.getRenderInstance())
@@ -104,6 +107,8 @@ export default class ReactRenderer extends Renderer {
     // 方法说明： If the React element was previously rendered into container,
     // this will perform an update on it and only mutate the DOM as necessary to reflect the latest React element.
     this.props = Object.assign({}, props, { ref: this.props.ref })
+
+    debug('update props', props)
     try {
       if (this.renderRef && this.renderRef.current && typeof this.renderRef.current.updateProps === 'function') {
         this.renderRef.current.updateProps(props)

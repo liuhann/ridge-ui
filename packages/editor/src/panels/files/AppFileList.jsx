@@ -179,49 +179,53 @@ const AppFileList = () => {
         </Dropdown.Item>
       )
     }
-    MORE_MENUS.push(
-      <Dropdown.Item
-        key='copy'
-        icon={<i className='bi bi-copy' />} onClick={() => {
-          onCopyClicked(data)
-        }}
-      >复制
-      </Dropdown.Item>
-    )
-    MORE_MENUS.push(
-      <Dropdown.Item
-        key='rename'
-        icon={<i className='bi bi-input-cursor-text' />}
-        onClick={() => {
-          setCurrentRename({
-            key: data.key,
-            value: label
-          })
-        }}
-      >重命名
-      </Dropdown.Item>
-    )
-    MORE_MENUS.push(
-      <Dropdown.Item
-        key='export'
-        icon={<i style={{ fontSize: '16px' }} className='bi bi-file-zip' />} onClick={() => {
-          onFileExportClick(data)
-        }}
-      >导出
-      </Dropdown.Item>
-    )
-    MORE_MENUS.push(<Dropdown.Divider key='div' />)
-    MORE_MENUS.push(
-      <Dropdown.Item
-        key='delete'
-        type='danger'
-        icon={<i className='bi bi-trash3' />}
-        onClick={() => {
-          onRemoveClicked(data)
-        }}
-      >删除
-      </Dropdown.Item>
-    )
+
+    if (data.id !== -1) {
+      MORE_MENUS.push(
+        <Dropdown.Item
+          key='copy'
+          icon={<i className='bi bi-copy' />} onClick={() => {
+            onCopyClicked(data)
+          }}
+        >复制
+        </Dropdown.Item>
+      )
+      MORE_MENUS.push(
+        <Dropdown.Item
+          key='rename'
+          icon={<i className='bi bi-input-cursor-text' />}
+          onClick={() => {
+            setCurrentRename({
+              key: data.key,
+              value: label
+            })
+          }}
+        >重命名
+        </Dropdown.Item>
+      )
+      MORE_MENUS.push(
+        <Dropdown.Item
+          key='export'
+          icon={<i style={{ fontSize: '16px' }} className='bi bi-file-zip' />} onClick={() => {
+            onFileExportClick(data)
+          }}
+        >导出
+        </Dropdown.Item>
+      )
+      MORE_MENUS.push(<Dropdown.Divider key='div' />)
+
+      MORE_MENUS.push(
+        <Dropdown.Item
+          key='delete'
+          type='danger'
+          icon={<i className='bi bi-trash3' />}
+          onClick={() => {
+            onRemoveClicked(data)
+          }}
+        >删除
+        </Dropdown.Item>
+      )
+    }
     return (
       <div className={'tree-label' + ((currentSelected && currentSelected.key === data.key) ? ' opened' : '')}>
         {(currentRename && currentRename.key === data.key)
@@ -252,7 +256,7 @@ const AppFileList = () => {
             >
               <i className='more-button bi bi-three-dots-vertical' />
             </Dropdown>
-            </>}
+          </>}
         {/* <Text
           onClick={() => {
             const now = new Date().getTime()
@@ -349,7 +353,7 @@ const AppFileList = () => {
           </Text>
         </Space>
         {/* 按钮工具栏：完美排版 */}
-        <RenderCreateDropDown />
+        {/* <RenderCreateDropDown /> */}
       </div>
 
       <DialogCreate
@@ -362,11 +366,19 @@ const AppFileList = () => {
         }}
       />
 
-      <ResizeGroup direction='vertical' className='file-list-resize-group'>
+      <ResizeGroup direction='vertical'>
+
+        {/* <ResizeHandler style={{
+          height: 4,
+          background: 'var(--semi-color-bg-0)',
+          zIndex: 99
+          }}
+          >
+          <div />
+          </ResizeHandler> */}
         <ResizeItem
-          minHeight='200px'
+          defaultSize='60%'
           style={{
-            height: '400px',
             overflowY: 'auto'
           }}
         >
@@ -388,23 +400,24 @@ const AppFileList = () => {
             }}
           />
         </ResizeItem>
-
-        <ResizeHandler style={{
-          height: 4,
-          background: 'var(--semi-color-bg-0)',
-          zIndex: 99
-        }}
+        <ResizeHandler
+          size='small' style={{
+            height: 4,
+            background: 'var(--semi-color-bg-0)',
+            zIndex: 99
+          }}
         >
           <div />
         </ResizeHandler>
-
-        <ResizeItem style={{
-          height: '400px',
-          overflowY: 'auto'
-        }}
+        <ResizeItem
+          defaultSize='40%' style={{
+            borderTop: '1px solid var(--semi-color-border)',
+            overflowY: 'auto'
+          }}
         >
           <OutlineTree />
         </ResizeItem>
+
       </ResizeGroup>
     </div>
   )

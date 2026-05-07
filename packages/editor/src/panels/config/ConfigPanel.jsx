@@ -236,6 +236,7 @@ const ConfigPanel = () => {
       if (componentMeta) {
         for (const prop of componentMeta.properties ?? []) {
           if (!prop.name) continue
+          if (prop.hidden) continue
           const field = {}
           Object.assign(field, prop, {
             field: 'props.' + prop.name,

@@ -5,6 +5,7 @@ import isEqual from 'lodash/isEqual.js'
 import { nanoid } from '../utils/string'
 import componentRegistry from '../service/ComponentRegistry'
 import merge from 'lodash/merge'
+import { getIconUrl } from '../panels/component/componentUtils'
 
 const defaultConfig = {
   editor: { hidden: false, locked: false },
@@ -188,7 +189,7 @@ export default class EditorElement extends Element {
   }
 
   getIcon () {
-    return <img className='outline-element-icon' src={this.getComponentMeta()?.icon} />
+    return <img className='outline-element-icon' src={getIconUrl(this.getComponentMeta()?.icon)} />
   }
 
   async loadMeta () {
@@ -318,11 +319,7 @@ export default class EditorElement extends Element {
         const defaultValue = prop.defaultValue
 
         // 如果配置里的值 === 默认值 → 删除，不导出
-        if (
-          propName !== undefined &&
-        defaultValue !== undefined &&
-        json.props[propName] === defaultValue
-        ) {
+        if (propName !== undefined && propName !== 'children' && defaultValue !== undefined && json.props[propName] === defaultValue && prop.required !== true) {
           delete json.props[propName]
         }
       }

@@ -317,33 +317,6 @@ class EditorComposite extends Composite {
     }
 
     treeNodeObject.icon = element.getIcon()
-    // update icon
-    // if (element.componentDefinition) {
-    //   if (element.componentDefinition.icon) {
-    //     if (element.componentDefinition.icon.$$typeof) {
-    //       treeNodeObject.icon = element.componentDefinition.icon
-    //     } else if (element.componentDefinition.icon.indexOf('.') > -1) {
-    //       treeNodeObject.icon = <img className='item-icon' src={this.context.baseUrl + '/' + element.componentDefinition.packageName + '/' + element.componentDefinition.icon} />
-    //     } else {
-    //       treeNodeObject.icon = <i className={element.componentDefinition.icon} />
-    //     }
-    //   }
-    //   for (const prop of element.componentDefinition.props || []) {
-    //     if (prop.type === 'slot' && element.config.props[prop.name]) {
-    //       if (!treeNodeObject.children) {
-    //         treeNodeObject.children = []
-    //       }
-    //       const childNode = this.getNode(element.config.props[prop.name])
-    //       treeNodeObject.children.push({
-    //         ...this.getElementTree(childNode),
-    //         parentKey: element.getId(),
-    //         slotLabel: prop.label
-    //         // parent: treeNodeObject
-    //       })
-    //       treeNodeObject.isLeaf = false
-    //     }
-    //   }
-    // }
     return treeNodeObject
   }
 
@@ -388,7 +361,27 @@ class EditorComposite extends Composite {
       }
     }
     config.children = this.children.map(n => n.getId())
-    return config
+
+    const cleaned = this.cleanUnusedElements(config)
+    return cleaned
+  }
+
+  cleanUnusedElements (pageJson) {
+    const rootChildren = pageJson.children || []
+    const elements = pageJson.elements || []
+    const keepIds = new Set(rootChildren)
+
+    // 第一步：收集所有【自身带 children 数组】的元素 ID（这些不能删）
+    for (const el of elements) {
+      if (Array.isArray(el.children)) {
+        keepIds.add(el.id)
+      }
+    }
+
+    // 第二步：只保留在 keepIds 里的元素
+    pageJson.elements = elements.filter(el => keepIds.has(el.id))
+
+    return pageJson
   }
 }
 
